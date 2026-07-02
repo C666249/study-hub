@@ -310,6 +310,13 @@ let currentMultipleSelections = {};
 let currentSubject = '刑法';
 let collapsedSections = new Set();  // 折叠的节
 let savedScrollY = 0;              // 离开首页时的滚动位置
+let currentTheme = localStorage.getItem('studyhub_theme') || 'light';  // 首页主题
+
+function toggleTheme() {
+    currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    localStorage.setItem('studyhub_theme', currentTheme);
+    render();
+}
 
 // 科目题库映射（Trae 的 JSON 加载后会填充这里）
 // ★ 科目注册表 — 加新科目只改这一行
@@ -533,6 +540,7 @@ function renderHome() {
     const allFav = favs.length;
     const total = ALL_QUESTIONS.length;
     const kpStats = getKnowledgePointStats(ALL_QUESTIONS);
+    const isDark = currentTheme === 'dark';
 
     // 动态作业列表
     const hwSet = [...new Set(ALL_QUESTIONS.map(q => q.homework))].sort((a,b) => b-a);
@@ -548,36 +556,29 @@ function renderHome() {
 
     // 暂无数据的科目显示占位
     if (total === 0) {
-        return `
-        <div class="home-dark">
-        <div class="aurora aurora-1"></div><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div>
-        <div class="stars" id="home-stars"></div>
-        <div class="max-w-md mx-auto px-4 py-4 space-y-4" style="position:relative;z-index:1">
-            <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #080c14 0%, #080c14 85%, transparent 100%);">
-                <div class="flex gap-1.5 overflow-x-auto">
-                    ${SUBJECT_LIST.map(s => {
-                        const active = currentSubject === s;
-                        return '<button onclick="switchSubject(\''+s+'\')" class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md '+(active?'bg-red-500 text-white shadow-red-200':'bg-white/70 text-gray-500')+'">'+s+'</button>';
-                    }).join('')}
-                </div>
+        const emptyTabs = SUBJECT_LIST.map(s => {
+            const active = currentSubject === s;
+            return '<button onclick="switchSubject(\''+s+'\')" class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md '+(active?'bg-red-500 text-white shadow-red-200':'bg-white/70 text-gray-500')+'">'+s+'</button>';
+        }).join('');
+        const emptyBody = `
+        <div class="max-w-md mx-auto px-4 py-4 space-y-4">
+            <div class="sticky top-0 z-20 pt-2 pb-1">
+                <div class="flex gap-1.5 overflow-x-auto">${emptyTabs}</div>
             </div>
-            <div class="text-center pt-2"><h1 class="text-2xl font-extrabold text-gray-100">${currentSubject}</h1></div>
+            <div class="text-center pt-2"><h1 class="text-2xl font-extrabold">${currentSubject}</h1></div>
             <div class="text-center py-12">
                 <div class="text-5xl mb-4">📦</div>
                 <div class="text-gray-400 text-sm mb-2">题库数据准备中</div>
                 <div class="text-gray-500 text-xs">Trae 正在生成 JSON…</div>
             </div>
-            <div class="text-center text-xs text-gray-600 pb-6">study-hub v1.0 · ${currentSubject}</div>
-        </div></div>`;
+            <div class="text-center text-xs text-gray-300 pb-6">study-hub v1.0 · ${currentSubject}</div>
+        </div>`;
+        if (isDark) return `<div class="home-dark"><div class="aurora aurora-1"></div><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div><div class="stars" id="home-stars"></div>${emptyBody}</div>`;
+        return emptyBody;
     }
 
-    return `
-    <div class="home-dark">
-    <div class="aurora aurora-1"></div>
-    <div class="aurora aurora-2"></div>
-    <div class="aurora aurora-3"></div>
-    <div class="stars" id="home-stars"></div>
-    <div class="max-w-md mx-auto px-4 py-4 space-y-4" style="position:relative;z-index:1">
+    const homeBody = `
+    <div class="max-w-md mx-auto px-4 py-4 space-y-4">
 
         <!-- Sticky Tabs Bar -->
         <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #fef2f2 0%, #fef2f2 85%, transparent 100%);">
@@ -592,7 +593,10 @@ function renderHome() {
 
         <!-- Header -->
         <div class="text-center pt-2 pb-1">
-            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">${currentSubject}</h1>
+            <div class="flex items-center justify-center gap-2">
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">${currentSubject}</h1>
+                <button onclick="toggleTheme()" class="shrink-0 w-7 h-7 rounded-full flex items-center justify-center text-sm bg-white/60 hover:bg-white transition-all" title="切换深色/浅色">${isDark?'☀️':'🌙'}</button>
+            </div>
             <div class="flex justify-center gap-4 mt-2 text-xs text-gray-500">
                 <span>已答 <b class="text-emerald-500">${allAnswered}</b></span>
                 <span>错题 <b class="text-rose-500">${allWrong}</b></span>
@@ -708,9 +712,12 @@ function renderHome() {
             <button onclick="resetAll()" class="w-full py-2.5 mt-2 bg-gray-100 text-gray-400 rounded-xl text-xs font-medium hover:bg-gray-200 transition-all">重置进度</button>
         </div>
 
-        <div class="text-center text-xs text-gray-300 pb-6">study-hub v1.0 · 刑法 · Netlify 自动部署</div>
-    </div>
+        <div class="text-center text-xs text-gray-300 pb-6">study-hub v1.0 · ${currentSubject} · Netlify 自动部署</div>
     </div>`;
+    if (isDark) {
+        return `<div class="home-dark"><div class="aurora aurora-1"></div><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div><div class="stars" id="home-stars"></div>${homeBody}</div>`;
+    }
+    return homeBody;
 }
 
 // ============================================================
