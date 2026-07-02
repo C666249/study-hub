@@ -266,20 +266,39 @@ let currentMultipleSelections = {};
 let currentSubject = '刑法';
 
 // 科目题库映射（Trae 的 JSON 加载后会填充这里）
-const SUBJECT_DATA = { '刑法': [...ALL_QUESTIONS], '马原': [], '行政法': [] };
+const SUBJECT_DATA = { '刑法': [...ALL_QUESTIONS], '马原': null, '行政法': null };
 
-function switchSubject(subject) {
+async function switchSubject(subject) {
     if (currentSubject === subject) return;
     currentSubject = subject;
     STORAGE_KEY = 'studyhub_progress_' + subject;
     WRONG_KEY = 'studyhub_wrong_' + subject;
     FAVORITES_KEY = 'studyhub_fav_' + subject;
-    // 切换到该科目的题库
-    ALL_QUESTIONS.length = 0;
-    if (SUBJECT_DATA[subject]) {
-        ALL_QUESTIONS.push(...SUBJECT_DATA[subject]);
-    }
     searchQuery = '';
+
+    // 已加载 → 直接切换
+    if (SUBJECT_DATA[subject] && SUBJECT_DATA[subject].length > 0) {
+        ALL_QUESTIONS.length = 0;
+        ALL_QUESTIONS.push(...SUBJECT_DATA[subject]);
+        goHome();
+        return;
+    }
+
+    // 尝试 fetch JSON（Netlify 部署后生效）
+    try {
+        const resp = await fetch('data/' + subject + '.json');
+        if (resp.ok) {
+            const data = await resp.json();
+            SUBJECT_DATA[subject] = data;
+            ALL_QUESTIONS.length = 0;
+            ALL_QUESTIONS.push(...data);
+            goHome();
+            return;
+        }
+    } catch(e) { /* fetch 失败 → 显示空状态 */ }
+
+    // 无数据 → 空状态
+    ALL_QUESTIONS.length = 0;
     goHome();
 }
 
