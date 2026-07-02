@@ -39,3 +39,11 @@ study-hub/
 - TDD：写测试 → 看失败 → 写实现 → 看通过
 - 每 Phase 停等用户确认
 - 移动端优先，竖排布局
+
+## 题库转换
+
+见 [docs/Trae-题库转换指南.md](docs/Trae-题库转换指南.md) — Trae AI 操作说明，docx → JSON 全流程。
+
+## 配色
+
+深色极光主题已录入 [图谱.md](../../../Users/h'x'h/.claude/skills/web-ui-designer/图谱.md) 第八节。
