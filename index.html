@@ -251,6 +251,15 @@ function submitAnswer(qid, answer) {
     const q = questionList.find(x => x.id === qid);
     if (!q) return;
 
+    // 简答/论述题不判对错，直接保存进度
+    if (q.type === 'short') {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+        saved[qid] = answer;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+        render();
+        return;
+    }
+
     const correct = isAnswerCorrect(answer, q.answer, q.type);
     const wrongIds = getWrongQuestions();
     if (correct) { const idx = wrongIds.indexOf(qid); if (idx >= 0) wrongIds.splice(idx, 1); }
@@ -336,6 +345,7 @@ function getAnsweredCount() { return questionList.filter(q => userAnswers[q.id])
 function getCorrectCount() {
     return questionList.filter(q => {
         const ua = userAnswers[q.id]; if (!ua) return false;
+        if (q.type === 'short') return true; // 简答题标记已复习即算完成
         return isAnswerCorrect(ua, q.answer, q.type);
     }).length;
 }
@@ -362,14 +372,23 @@ function renderHome() {
     });
 
     return `
-    <div class="max-w-md mx-auto px-4 py-5 space-y-4">
+    <div class="max-w-md mx-auto px-4 py-4 space-y-4">
+
+        <!-- Sticky Tabs Bar -->
+        <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #fef2f2 0%, #fef2f2 85%, transparent 100%);">
+            <div class="flex gap-1.5 overflow-x-auto scrollbar-hide">
+                <button class="shrink-0 px-5 py-2.5 bg-red-500 text-white rounded-full text-sm font-bold shadow-md shadow-red-200">刑法</button>
+                <button class="shrink-0 px-4 py-2.5 bg-white/70 text-gray-400 rounded-full text-sm font-medium hover:bg-white hover:text-gray-600 transition-all">马原</button>
+                <button class="shrink-0 px-4 py-2.5 bg-white/70 text-gray-400 rounded-full text-sm font-medium hover:bg-white hover:text-gray-600 transition-all">行政法</button>
+            </div>
+        </div>
 
         <!-- Header -->
         <div class="text-center pt-2 pb-1">
             <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">刑法</h1>
             <div class="flex justify-center gap-4 mt-2 text-xs text-gray-500">
-                <span>已答 <b class="text-red-500">${allAnswered}</b></span>
-                <span>错题 <b class="text-red-500">${allWrong}</b></span>
+                <span>已答 <b class="text-emerald-500">${allAnswered}</b></span>
+                <span>错题 <b class="text-rose-500">${allWrong}</b></span>
                 <span>收藏 <b class="text-amber-500">${allFav}</b></span>
                 <span>完成 <b class="text-gray-700">${total>0?Math.round(allAnswered/total*100):0}%</b></span>
             </div>
@@ -379,7 +398,7 @@ function renderHome() {
         <div class="glass-card p-3">
             <input id="search-input" type="search" placeholder="🔍 搜索知识点、题目或选项…"
                 oninput="handleSearchInput(this.value)"
-                class="w-full px-4 py-3 bg-gray-50 rounded-xl text-sm border-none outline-none focus:ring-2 focus:ring-red-300 transition-all"
+                class="w-full px-4 py-3 bg-sky-50/50 rounded-xl text-sm border border-sky-100 outline-none focus:ring-2 focus:ring-sky-300 focus:bg-white transition-all"
                 value="${escHtml(searchQuery)}">
             <div id="search-results-area" class="mt-2"></div>
         </div>
@@ -431,9 +450,9 @@ function renderHome() {
                             <div class="${c.dot} h-1.5 rounded-full progress-bar" style="width:${pct}%"></div>
                         </div>
                         <div id="hw${hw}_d" class="hidden mt-3 pt-3 border-t border-gray-100 space-y-1.5">
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 ${c.bg} ${c.text} rounded-xl text-sm font-medium hover:opacity-80">全部刷题</button>
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:true})" class="w-full py-2.5 bg-gray-100 text-gray-600 rounded-xl text-sm font-medium">随机挑战</button>
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-red-50 text-red-500 rounded-xl text-sm font-medium">错题重做</button>
+                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
+                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:true})" class="w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">随机挑战</button>
+                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
                         </div>` : ''}
                     </div>`;
                 }).join('')}
@@ -444,20 +463,20 @@ function renderHome() {
         <div class="grid grid-cols-2 gap-2.5">
             <div class="glass-card p-4">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="font-bold text-sm text-gray-800">❌ 错题本</div>
-                    <span class="text-xs font-bold ${allWrong>0?'text-red-500':'text-gray-300'}">${allWrong} 题</span>
+                    <div class="font-bold text-sm text-rose-700">❌ 错题本</div>
+                    <span class="text-xs font-bold ${allWrong>0?'text-rose-500':'text-gray-300'}">${allWrong} 题</span>
                 </div>
                 ${allWrong > 0 ? `
-                <button onclick="startPractice({wrongOnly:true})" class="w-full py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all">查看错题</button>
+                <button onclick="startPractice({wrongOnly:true})" class="w-full py-2.5 bg-rose-400 text-white rounded-xl text-sm font-medium hover:bg-rose-500 transition-all">查看错题</button>
                 ` : `<div class="text-xs text-gray-300 text-center py-2.5">暂无错题 🎉</div>`}
             </div>
             <div class="glass-card p-4">
                 <div class="flex items-center justify-between mb-2">
-                    <div class="font-bold text-sm text-gray-800">⭐ 收藏本</div>
-                    <span class="text-xs font-bold ${allFav>0?'text-amber-500':'text-gray-300'}">${allFav} 题</span>
+                    <div class="font-bold text-sm text-emerald-700">⭐ 收藏本</div>
+                    <span class="text-xs font-bold ${allFav>0?'text-emerald-500':'text-gray-300'}">${allFav} 题</span>
                 </div>
                 ${allFav > 0 ? `
-                <button onclick="startPractice({favOnly:true})" class="w-full py-2.5 bg-amber-400 text-white rounded-xl text-sm font-medium hover:bg-amber-500 transition-all">查看收藏</button>
+                <button onclick="startPractice({favOnly:true})" class="w-full py-2.5 bg-emerald-400 text-white rounded-xl text-sm font-medium hover:bg-emerald-500 transition-all">查看收藏</button>
                 ` : `<div class="text-xs text-gray-300 text-center py-2.5">点击⭐收藏题目</div>`}
             </div>
         </div>
@@ -466,10 +485,10 @@ function renderHome() {
         <div class="glass-card p-4">
             <div class="font-bold text-sm text-gray-800 mb-3">🎯 全局模式 & 模拟考试</div>
             <div class="grid grid-cols-2 gap-2 mb-3">
-                <button onclick="startPractice({shuffle:false})" class="py-3 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all">全部刷题</button>
-                <button onclick="startPractice({shuffle:true})" class="py-3 bg-amber-500 text-white rounded-xl text-sm font-medium hover:bg-amber-600 transition-all">随机挑战</button>
+                <button onclick="startPractice({shuffle:false})" class="py-3 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
+                <button onclick="startPractice({shuffle:true})" class="py-3 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">随机挑战</button>
             </div>
-            <button onclick="startExam()" class="w-full py-3 bg-gradient-to-r from-red-600 to-amber-500 text-white rounded-xl font-bold text-sm hover:from-red-700 hover:to-amber-600 transition-all">
+            <button onclick="startExam()" class="w-full py-3 bg-gradient-to-r from-rose-500 to-amber-500 text-white rounded-xl font-bold text-sm hover:from-rose-600 hover:to-amber-600 transition-all">
                 🎯 模拟考试（${total}题）
             </button>
             <button onclick="resetAll()" class="w-full py-2.5 mt-2 bg-gray-100 text-gray-400 rounded-xl text-xs font-medium hover:bg-gray-200 transition-all">重置进度</button>
