@@ -94,6 +94,34 @@ body { overscroll-behavior-y: none; }
 .home-dark .text-rose-500 { color: #fb7185; }
 .home-dark .text-emerald-700 { color: #6ee7b7; }
 .home-dark .text-emerald-500 { color: #34d399; }
+/* 轮转调色板覆写 */
+.home-dark .bg-sky-50 { background: rgba(6,182,212,0.08); }
+.home-dark .text-sky-600 { color: #7dd3fc; }
+.home-dark .border-sky-200 { border-color: rgba(6,182,212,0.15); }
+.home-dark .bg-violet-50 { background: rgba(139,92,246,0.08); }
+.home-dark .text-violet-600 { color: #c4b5fd; }
+.home-dark .border-violet-200 { border-color: rgba(139,92,246,0.15); }
+.home-dark .bg-pink-50 { background: rgba(236,72,153,0.08); }
+.home-dark .text-pink-600 { color: #f9a8d4; }
+.home-dark .border-pink-200 { border-color: rgba(236,72,153,0.15); }
+.home-dark .bg-indigo-50 { background: rgba(99,102,241,0.08); }
+.home-dark .text-indigo-600 { color: #a5b4fc; }
+.home-dark .border-indigo-200 { border-color: rgba(99,102,241,0.15); }
+.home-dark .bg-teal-50 { background: rgba(20,184,166,0.08); }
+.home-dark .text-teal-600 { color: #5eead4; }
+.home-dark .border-teal-200 { border-color: rgba(20,184,166,0.15); }
+.home-dark .bg-orange-50 { background: rgba(249,115,22,0.08); }
+.home-dark .text-orange-600 { color: #fdba74; }
+.home-dark .border-orange-200 { border-color: rgba(249,115,22,0.15); }
+.home-dark .bg-lime-50 { background: rgba(132,204,22,0.08); }
+.home-dark .text-lime-600 { color: #bef264; }
+.home-dark .border-lime-200 { border-color: rgba(132,204,22,0.15); }
+.home-dark .bg-cyan-50 { background: rgba(6,182,212,0.08); }
+.home-dark .text-cyan-600 { color: #67e8f9; }
+.home-dark .border-cyan-200 { border-color: rgba(6,182,212,0.15); }
+.home-dark .bg-fuchsia-50 { background: rgba(217,70,239,0.08); }
+.home-dark .text-fuchsia-600 { color: #f0abfc; }
+.home-dark .border-fuchsia-200 { border-color: rgba(217,70,239,0.15); }
 .home-dark .text-gray-200 { color: #e2e8f0; }
 .home-dark .text-gray-100 { color: #f1f5f9; }
 </style>
@@ -213,12 +241,28 @@ const ALL_QUESTIONS = [
   }
 ];
 
-const KNOWLEDGE_POINTS = [
-  { id: "危害行为", name: "危害行为", icon: "⚡", desc: "不作为犯罪·作为与不作为的分类", bg: "bg-red-50", text: "text-red-600", border: "border-red-200" },
-  { id: "因果关系", name: "因果关系", icon: "🔗", desc: "因果关系的认定与特点", bg: "bg-amber-50", text: "text-amber-600", border: "border-amber-200" },
-  { id: "犯罪主观方面", name: "犯罪主观方面", icon: "🧠", desc: "故意·过失的区分与认定", bg: "bg-blue-50", text: "text-blue-600", border: "border-blue-200" },
-  { id: "犯罪主体", name: "犯罪主体", icon: "👤", desc: "单位犯罪·刑事责任年龄与能力", bg: "bg-emerald-50", text: "text-emerald-600", border: "border-emerald-200" }
+// 知识点颜色轮转调色板
+const KP_COLORS = [
+  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
+  { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
+  { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200' },
+  { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
+  { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-200' },
+  { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200' },
+  { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200' },
+  { bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200' },
+  { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
+  { bg: 'bg-lime-50', text: 'text-lime-600', border: 'border-lime-200' },
+  { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200' },
+  { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', border: 'border-fuchsia-200' },
 ];
+
+// 科目元数据（作业标签等）
+const SUBJECT_META = {
+  '刑法': { homeworkLabels: { 1: '作业一（刑法的效力）', 2: '作业二（犯罪构成）' } },
+  '马原': { homeworkLabels: {} },
+  '行政法': { homeworkLabels: {} }
+};
 
 // ============================================================
 // STORAGE
@@ -474,12 +518,16 @@ function renderHome() {
     const total = ALL_QUESTIONS.length;
     const kpStats = getKnowledgePointStats(ALL_QUESTIONS);
 
+    // 动态作业列表
+    const hwSet = [...new Set(ALL_QUESTIONS.map(q => q.homework))].sort((a,b) => b-a);
     const hwStats = {};
-    [1,2].forEach(hw => {
+    const meta = SUBJECT_META[currentSubject] || {};
+    const hwLabels = meta.homeworkLabels || {};
+    hwSet.forEach(hw => {
         const qs = ALL_QUESTIONS.filter(q => q.homework === hw);
         const ans = qs.filter(q => saved[q.id]).length;
         const wr = qs.filter(q => wrong.includes(q.id)).length;
-        hwStats[hw] = { total: qs.length, answered: ans, wrong: wr };
+        hwStats[hw] = { total: qs.length, answered: ans, wrong: wr, label: hwLabels[hw] || '作业'+hw };
     });
 
     // 暂无数据的科目显示占位
@@ -550,18 +598,16 @@ function renderHome() {
         <div>
             <div class="section-title">📝 作业练习</div>
             <div class="space-y-2.5">
-                ${[2,1].map(hw => {
+                ${hwSet.map((hw, i) => {
                     const s = hwStats[hw];
                     const hasQ = s.total > 0;
-                    const colors = {1:{bg:'bg-red-50',text:'text-red-600',dot:'bg-red-500'},2:{bg:'bg-amber-50',text:'text-amber-600',dot:'bg-amber-500'}};
-                    const c = colors[hw]||colors[1];
+                    const c = KP_COLORS[i % KP_COLORS.length];
                     const pct = s.total>0 ? Math.round(s.answered/s.total*100) : 0;
-                    const labels = {1:'作业一（刑法的效力）',2:'作业二（犯罪构成）'};
                     return `
                     <div class="glass-card p-4" ${hasQ ? `onclick="document.getElementById('hw${hw}_d').classList.toggle('hidden')"` : ''}>
                         <div class="flex items-center justify-between">
                             <div>
-                                <div class="font-bold text-sm text-gray-800">${labels[hw]||'作业'+hw}</div>
+                                <div class="font-bold text-sm text-gray-800">${s.label}</div>
                                 <div class="text-xs text-gray-400 mt-0.5">${hasQ ? s.total+'题 · 已答'+s.answered+' · 错题'+s.wrong : '即将上线'}</div>
                             </div>
                             ${hasQ ? `
@@ -584,25 +630,26 @@ function renderHome() {
             </div>
         </div>
 
+        ${Object.keys(kpStats).length > 0 ? `
         <!-- Knowledge Points -->
         <div>
             <div class="section-title">📚 按知识点练习</div>
             <div class="space-y-2">
-                ${KNOWLEDGE_POINTS.map(kp => {
-                    const cnt = kpStats[kp.id] || 0;
+                ${Object.entries(kpStats).sort((a,b) => b[1]-a[1]).map(([name, cnt], i) => {
+                    const c = KP_COLORS[i % KP_COLORS.length];
                     return `
-                    <button onclick="startPractice({tag:'${kp.id}'})"
-                        class="tag-card w-full ${kp.bg} ${kp.text} border ${kp.border} rounded-2xl p-3.5 flex items-center gap-3 text-left">
-                        <span class="text-xl shrink-0">${kp.icon}</span>
+                    <button onclick="startPractice({tag:'${name}'})"
+                        class="tag-card w-full ${c.bg} ${c.text} border ${c.border} rounded-2xl p-3.5 flex items-center gap-3 text-left">
+                        <span class="text-lg shrink-0 w-8 h-8 rounded-lg ${c.bg} ${c.text} flex items-center justify-center font-bold">${i+1}</span>
                         <div class="flex-1 min-w-0">
-                            <div class="font-bold text-sm">${kp.name}</div>
-                            <div class="text-xs opacity-70 truncate">${kp.desc}</div>
+                            <div class="font-bold text-sm">${name}</div>
                         </div>
                         <span class="text-xs font-bold opacity-50 shrink-0">${cnt} 题 ›</span>
                     </button>`;
                 }).join('')}
             </div>
         </div>
+        ` : ''}
 
         <!-- Wrong + Favorites row -->
         <div class="grid grid-cols-2 gap-2.5">
