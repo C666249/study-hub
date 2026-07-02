@@ -1,0 +1,3102 @@
+[
+  {
+    "id": "hw1_judge_1",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法是实践中的宪法，宪法学为行政法和行政诉讼法学提供理论和法律依据，行政法与行政诉讼法学为宪法学提供实证基础。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_2",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "地方各级人民政府是地方各级国家权力机关的执行机关，是地方国家行政机关。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_3",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "被委托组织也具有行政主体资格，因此，其行为后果的法律责任由自己承担。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_4",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关在任何时候都只能做行政主体，而不能成为行政相对人。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_5",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关及其工作人员必须履行行政职责，但可以放弃行政职权。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_6",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法律关系的三要素是主观方面、客观方面和内容。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_7",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "正当的程序不仅仅是实体正义的工具，在许多情况下，只有通过正当程序方可求得正当的实体结果。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_8",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法的基本原则贯穿于行政立法、行政执法、行政司法和行政法制监督等各个环节。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_9",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政第三人是指行政主体针对行政相对人作出的行政行为有利害关系的其他公民、法人或组织，另外，也并非所有的行政法律关系均有行政第三人。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_10",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "限制公民人身自由的行政强制措施可以由法律和行政法规设定。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_11",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政主体享有广泛的行政裁量权，不过，从正义原则的要求和保障人权的目标考虑，即使是裁量权也不可以恣意妄为，而应当符合合理性原则的要求。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_12",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法的功能主要是规范和控制行政权，保护公民权益。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_13",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政委托中受委托组织是以自己名义对外行使权力，履行行政职责，其法律后果由委托的行政机关承担。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_14",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "除法律明确规定为国家秘密、商业秘密和个人隐私而不得公开的外，公共行政应该公开透明。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_15",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "公务员处分形式包括:警告、记过、记大过、降职、降级、开除。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_16",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "公务员的追偿责任是指在国家赔偿中，公务员对导致国家赔偿的国家侵权行为有故意、重大过失或其他法律规定的情形，赔偿义务机关在进行赔偿后，责令其承担部分或全部赔偿费用的责任。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_17",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国公务员实行职位分类制度，分为综合管理类、专业技术类和行政执法类。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_18",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政主体与行政行为主体是同一概念。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_19",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政活动的作出必须有法律的明文依据，否则不得为之。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_judge_20",
+    "type": "judge",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "合法的行政行为(或行政决定)一定也合理。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_1",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市政府决定一年内关停所有已经获得许可的烟花爆竹企业，每家补偿80万元，基本可以补偿各企业损失。市政府的这一行为体现了行政行为的(        )。",
+    "options": {
+      "A": "合法性原则",
+      "B": "合理性原则",
+      "C": "信赖保护原则",
+      "D": "比例原则"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_2",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于行政主体、行政机关的表述，正确的是(        )。",
+    "options": {
+      "A": "行政主体与行政机关没有任何关系",
+      "B": "行政主体就是行政机关",
+      "C": "行政机关在任何情况下都是行政主体",
+      "D": "行政主体包括行政机关"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_3",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列组织中不具有行政主体资格的是(        )。",
+    "options": {
+      "A": "街道办事处",
+      "B": "省人民政府",
+      "C": "国务院法制办",
+      "D": "市公安局"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_4",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关是否是行政主体需要一定的标准加以判断，下列哪一项不属于行政主体必备条件?(        )",
+    "options": {
+      "A": "是否享有法定的行政职权和职责",
+      "B": "是否以自己的名义独立行使职权",
+      "C": "管理的是内部事务还是外部事务",
+      "D": "能否作为行政诉讼的被告"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_5",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一个不是行政委托受托组织一般必须具备的条件?(        )",
+    "options": {
+      "A": "依法成立的管理公共事务的事业组织",
+      "B": "具有熟悉有关法律法规规章和业务的工作人员",
+      "C": "能够独立地承担法律责任",
+      "D": "对违法行为需进行技术检查和技术鉴定，应当有条件组织进行相应的技术检查或技术鉴定"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_6",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列不是行政法的正式渊源的是(        )。",
+    "options": {
+      "A": "法律",
+      "B": "地方性法规",
+      "C": "行政规章",
+      "D": "行政惯例"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_7",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一个不属于比例原则的内容构成?(        )",
+    "options": {
+      "A": "合法性",
+      "B": "适当性",
+      "C": "必要性",
+      "D": "衡量性"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_8",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据法律关系的主体不同，可将行政法律关系分为(        )。",
+    "options": {
+      "A": "对内行政法律关系和对外行政法律关系",
+      "B": "原生行政法律关系和派生行政法律关系",
+      "C": "单一行政法律关系和多重行政法律关系",
+      "D": "绝对行政法律关系和相对行政法律关系"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_9",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于行政法的特征说法错误的是(        )。",
+    "options": {
+      "A": "行政法是国内公法",
+      "B": "行政法是控权法也是保障法",
+      "C": "行政法是实体法与程序法的综合",
+      "D": "内容广泛、稳定"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_10",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《治安管理处罚法》是: (        )",
+    "options": {
+      "A": "法律",
+      "B": "行政法规",
+      "C": "地方性法规",
+      "D": "部门规章"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_11",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列在行政法上不具备行政主体资格的是(        )。",
+    "options": {
+      "A": "某县公安局",
+      "B": "行政机关委托的治安联防处",
+      "C": "某区街道办事处",
+      "D": "法律授权授予学位的高校"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_12",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《治安管理处罚法》第三十二条规定:非法携带枪支、弹药或者弩、匕首等国家规定的管制器具进入公共场所或者公共交通工具的，处五日以上十日以下拘留，可以并处五百元以下罚款。某自治区政府为了加强公共安全管理，制定和实施了《某某办法》规定:处十日以上十五日以下拘留，可以并处一千元以下罚款。下列说法正确的是(        )。",
+    "options": {
+      "A": "该自治区政府的做法违反了法律优先原则",
+      "B": "该自治区政府的做法符合行政合理性原则",
+      "C": "该自治区政府的做法符合行政合法性原则",
+      "D": "该自治区政府的做法符合行政效率原则"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_13",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "民警依据《治安管理处罚法》第23条，对扒乘地铁，影响地铁正常运行的李某进行处罚，调查发现李某还有犯罪前科，于是民警据此从重处罚。民警的执法行为违反了。(        )",
+    "options": {
+      "A": "合法性原则",
+      "B": "合理性原则",
+      "C": "比例原则",
+      "D": "信赖保护原则"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_14",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "刘某在某镇沿街路边搭建杂货铺，县建设局下发限期拆除通知后强制拆除，并对刘某作出罚款2万元的处罚。刘某起诉，法院经审理认为刘某的铺子并未占主干道，其违法行为没有严重到既需要拆除有需要顶格处罚的程度，判决将罚款改为1000元。该判决适用了哪一个原则?(        )",
+    "options": {
+      "A": "行政公开",
+      "B": "行政效率",
+      "C": "行政合理",
+      "D": "信赖保护"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_15",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "张某向县公安局出入境管理科提出办理护照的申请，工作人员分5次告知其申请的材料不全，要求补全。该县公安局的做法违反了(        )。",
+    "options": {
+      "A": "合法性原则",
+      "B": "合理性原则",
+      "C": "高效便民原则",
+      "D": "权责统一原则"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_16",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "警察在处理一起治安案件，发现其中一个当事人是自己的舅舅，则该警察提出回避申请。此处体现了(        )。",
+    "options": {
+      "A": "程序正当原则",
+      "B": "合理性原则",
+      "C": "权责统一原则",
+      "D": "行政效率原则"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_17",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "省国土资源部门向甲颁发了采矿许可证，有效期为10年，但是之后政策发生变化，省国土资源部门认为该许可证不适宜再继续存续下去，于是撤回该许可。甲可以以(        )原则为由提出补偿申请。",
+    "options": {
+      "A": "行政合法性",
+      "B": "信赖保护",
+      "C": "行政合理性",
+      "D": "权责统一"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_18",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列是行政法正式渊源的是(        )。",
+    "options": {
+      "A": "指导性案例",
+      "B": "习惯",
+      "C": "地方政府规章",
+      "D": "学术著作"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_19",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一事项设区的市的人大及其常委会不得制定地方性法规?(        )",
+    "options": {
+      "A": "环境保护",
+      "B": "历史文化保护",
+      "C": "城乡建设和管理",
+      "D": "文化教育"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_20",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列规范性法律文件的效力高于行政法规的是(        )。",
+    "options": {
+      "A": "法律",
+      "B": "地方政府规章",
+      "C": "部门规章",
+      "D": "自治条例"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_21",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "与司法相比，以下属于行政的特点的选项是:(        )",
+    "options": {
+      "A": "具有法定性",
+      "B": "具有程序性",
+      "C": "具有公正性",
+      "D": "具有整体性与能动性"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_22",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "2018年2月28日，党的十九届三中全会通过了《中共中央关于深化党的国家机构改革的决定》和《深化党的国家机构改革方案》，为新时代中国行政法的发展提供了更广阔的空间。你认为前述文件属于:(        )",
+    "options": {
+      "A": "宪法",
+      "B": "行政法",
+      "C": "党的政策",
+      "D": "组织法"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_23",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于我国行政法渊源的有:(        )",
+    "options": {
+      "A": "国务院某部委的会议纪要",
+      "B": "某市政府发布的征收过桥费的通知",
+      "C": "民法典的“婚姻家庭编”规定",
+      "D": "最高人民法院发布的行政案件审判指导案例"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_24",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下关于行政主体说法正确的是:(        )",
+    "options": {
+      "A": "行政机关都是行政主体",
+      "B": "基层自治组织不能成为行政主体",
+      "C": "事业单位不能成为行政主体",
+      "D": "其他社会组织的行政主体地位尚不明确"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_25",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于行政主体、行政机关、行政组织，以下说法正确的是:(        )",
+    "options": {
+      "A": "行政主体可以是组织也可以个人",
+      "B": "行政主体是法律术语",
+      "C": "行政机关是法律术语",
+      "D": "行政组织是法律术语"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_26",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于国家公务员权利的是:(        )",
+    "options": {
+      "A": "免职",
+      "B": "辞职",
+      "C": "辞退",
+      "D": "降职"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_27",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《公务员法》,下列属于对公务员行政处分的有:(        )",
+    "options": {
+      "A": "免职",
+      "B": "撤职",
+      "C": "拘留",
+      "D": "降薪"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_28",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于我国国家公务员分类说法错误的是:(        )",
+    "options": {
+      "A": "我国公务员分为政务类和业务类",
+      "B": "我国公务员分为领导职务和非领导职务公务员",
+      "C": "我国公务员分为各级人民政府组成人员的公务员和一般公务员",
+      "D": "我国实行公务员职位分类制度"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_29",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下属于领导职务公务员的有:(        )",
+    "options": {
+      "A": "调研员",
+      "B": "主任科员",
+      "C": "副处长",
+      "D": "巡视员"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_single_30",
+    "type": "single",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某县技术监督局委托县农业技术推广站对贩卖假种子的单位和个人行使处罚权，此时技术推广站行使处罚权的名义应该是: (        )",
+    "options": {
+      "A": "技术监督局",
+      "B": "农业技术推广站",
+      "C": "农业技术推广站执法队",
+      "D": "县人民政府"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_1",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法正式的法律渊源有(        )。",
+    "options": {
+      "A": "法律",
+      "B": "宪法",
+      "C": "地方性法规",
+      "D": "部门规章"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_2",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列选项中属于被派出机关的是(        )。",
+    "options": {
+      "A": "区公所",
+      "B": "街道办事处",
+      "C": "公安派出所",
+      "D": "行政公署"
+    },
+    "answer": "ABD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_3",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于我国行政法的表述正确的有(        )。",
+    "options": {
+      "A": "行政法是行为规范与裁判规范的统一",
+      "B": "行政法是规范和控制行政权力的法",
+      "C": "行政法的法源形式众多",
+      "D": "行政法没有统一的实体法典"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_4",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于行政法律关系的说法正确的是(        )。",
+    "options": {
+      "A": "必须一方是行政主体",
+      "B": "具有单方意志性",
+      "C": "权利义务是法定的，不得任意处分",
+      "D": "形态上的多样性"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_5",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政法与行政诉讼法主要研究内容包括(        )。",
+    "options": {
+      "A": "行政主体理论",
+      "B": "行政行为法律制度",
+      "C": "行政组织法律制度",
+      "D": "行政监督和救济法律制度"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_6",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列关于行政法的基本原则说法正确的是(        )。",
+    "options": {
+      "A": "贯穿于行政法治实践的全过程",
+      "B": "反映现代民主法治国家的宪法精神",
+      "C": "对行政法规范的价值和精神实质的高度概括",
+      "D": "可以弥补行政法规则的不足和漏洞"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_7",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "依据《立法法》的规定，地方政府规章的制定主体有(        ) 。",
+    "options": {
+      "A": "省、自治区、直辖市人民政府",
+      "B": "设区的市的人民政府",
+      "C": "自治州的人民政府",
+      "D": "经济特区所在地的市人民政府"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_8",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列具有行政主体资格的是:(        )",
+    "options": {
+      "A": "某街道办事处",
+      "B": "某自治区行政公署",
+      "C": "某公安局法制科",
+      "D": "公安部"
+    },
+    "answer": "ABD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_9",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政合理性原则的涵义包括(        )。",
+    "options": {
+      "A": "行政行为必须符合法律的精神和目的",
+      "B": "行政行为必须符合公正原则",
+      "C": "行政行为必须具有合理的动机",
+      "D": "行政行为不必考虑无关的因素"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_10",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《立法法》规定，可以制定地方性法规的主体是(        )。",
+    "options": {
+      "A": "某省地方人大",
+      "B": "某自治区政府",
+      "C": "某直辖市人大常委会",
+      "D": "某市政府"
+    },
+    "answer": "AC",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_11",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市公安局未经批准建造了一临时建筑，市规划主管部门多次责令拆除，公安局未执行，规划主管部门遂对公安局进行罚款。对于该起案件，以下说法正确的是:(        )",
+    "options": {
+      "A": "规划主管部门和公安局都是行政主体",
+      "B": "规划主管部门和公安局都是行政法律关系主体",
+      "C": "公安局是行政机关也是行政相对人",
+      "D": "该案件中行政法律关系的客体是行为"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_12",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于行政法调整对象的有:(        )",
+    "options": {
+      "A": "行政管理关系",
+      "B": "行政法制监督关系",
+      "C": "行政救济关系",
+      "D": "内部行政关系"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_13",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "有关行政法律关系主体的权利义务的表述，正确的是:(        )",
+    "options": {
+      "A": "行政法律关系主体的权利义务可以由双方当事人约定",
+      "B": "行政法律关系主体的权利义务具有不对等性",
+      "C": "行政法律关系主体的权利义务由法律规范事先规定",
+      "D": "行政法律关系主体的权利义务是重合的"
+    },
+    "answer": "BC",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_14",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下属于行政效率原则的要求是:(        )",
+    "options": {
+      "A": "效率应当凌驾于公正之上",
+      "B": "降低公共行政的人力成本",
+      "C": "精简行政机构和人员",
+      "D": "严格遵循行政程序和时限"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_15",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下可以直接面对相对人，对公共事务实行连续不间断管理和服务的是:(        )",
+    "options": {
+      "A": "行政主体",
+      "B": "行政机关",
+      "C": "行政组织",
+      "D": "行政体制"
+    },
+    "answer": "AB",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_16",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于我国的行政编制，以下说法正确的是:(        )",
+    "options": {
+      "A": "行政编制的组织及人员费用全部由国家财政支出",
+      "B": "行政编制总数由中央机构编制管理部门控制",
+      "C": "事业单位的职能、结构、人员规模和领导职数，不属于行政编制管理",
+      "D": "我国具有专门的《行政编制法》"
+    },
+    "answer": "AB",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_17",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于派出机关的是:",
+    "options": {
+      "A": "北京市XX区洋桥派出所 (BC)",
+      "B": "北京市XX区街道办事处",
+      "C": "山西省XX地区行署",
+      "D": "广东XX海关"
+    },
+    "answer": "BC",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_18",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据我国现行法律法规授权的情况，下列可以成为被授权的组织有:(        )",
+    "options": {
+      "A": "中国银行",
+      "B": "全国妇联",
+      "C": "市居民委员会",
+      "D": "清华大学"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_19",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国公务员权利义务的特点有: (        )",
+    "options": {
+      "A": "公务员的义务同时又都是权利",
+      "B": "公务员的义务与其职业道德规范有密切联系",
+      "C": "公务员的权利因公职而受到一定限制",
+      "D": "公务员享有公民所不能享有的某些权利"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw1_multiple_20",
+    "type": "multiple",
+    "homework": 1,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国公务员职位分类制度包含:(        )",
+    "options": {
+      "A": "综合管理类",
+      "B": "专业技术类",
+      "C": "行政执法类",
+      "D": "刑事司法类"
+    },
+    "answer": "ABC",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_1",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关申请人民法院强制执行前，应当催告当事人履行义务。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_2",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "依法没收的非法财物，必须按照国家规定公开拍卖。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_3",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据行政程序法原则，案卷之外的证据材料不能作为行政决定或裁决的依据。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_4",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》第21条的规定，受委托组织必须有熟悉有关法律、法规、规章和业务并取得行政执法资格的工作人员，也就是说受委托组织也可以是个人。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_5",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《行政处罚法》第24条规定，省、自治区、直辖市根据当地实际情况，可以决定将基层管理迫切需要的县级人民政府部门的行政处罚权交由能够有效承接的乡镇人民政府、街道办事处行使。此处乡镇人民政府、街道办事处是受委托组织。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_6",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政裁决必须有法律明确规定。行政裁决的客体或对象是行政争议，即行政机关与相对人之间的争议。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_7",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "实践中，行政确认形式多样，通常以鉴定、认定、认证、证明、确定等多种方式实施。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_8",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国目前的行政仲裁有劳动争议仲裁、社会保险仲裁、农村土地承包经营纠纷仲裁、人事争议仲裁以及其他经济纠纷仲裁。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_9",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政调查与行政检查性质相同，都是为了收集证据认定违法事实。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_10",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政检查是指依法享有检查权的行政主体了解行政相对人遵守法律、法规或者履行法定义务情况的行政行为。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_11",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政调解是行政仲裁的必经程序，即行政仲裁机关处理任何仲裁案件，在仲裁前必须先行调解。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_12",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "规范行政处罚的设定和实施，是行政处罚法的立法目的之一。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_13",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国没有《行政应急法》，也没有相应的行政应急法律规定，所以应当抓紧制定应急法。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_14",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政确认，是指行政主体依法对行政相对人的法律地位、特定法律关系或者有关法律事实进行甄别和确证，并以法定方式予以宣告的行政行为.(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_15",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，在边远、水上、交通不便地区，行政机关及其执法人员作出罚款决定后可以当场收缴罚款。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_16",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政确认只能由特定的行政机关作出，法律法规授权组织无权作出行政确认。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_17",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关可以依法制定行政处罚裁量基准，规范行政处罚裁量权。行政处罚裁量基准应当向社会公布。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_18",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，违法行为在两年内未被发现的，一律不再给予行政处罚。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_19",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "限制人身自由的行政处罚只能由公安机关和法律规定的其他机关行使。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_judge_20",
+    "type": "judge",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "罚过相当原则要求根据违法行为的事实、性质、情节以及社会危害程度来考量处罚行为的设定和决定。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_1",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《行政处罚法》规定，已满14周岁不满18周岁的未成年人有违法行为，____从轻或者减轻行政处罚。(        )",
+    "options": {
+      "A": "应当",
+      "B": "不得",
+      "C": "可以",
+      "D": "必须"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_2",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "税务机关依法强制行政相对方缴纳滞纳金的行为是:(        )",
+    "options": {
+      "A": "行政处罚",
+      "B": "执行罚",
+      "C": "行政裁定",
+      "D": "行政处分"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_3",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一项属于行政强制执行的方式:(        )",
+    "options": {
+      "A": "查封场所、设施或者财物",
+      "B": "加处罚款",
+      "C": "限制公民人身自由",
+      "D": "冻结存款"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_4",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，行政机关应当举行听证的，应当在(        )日前通知当事人及其有及其有关人员听证的时间和地点。 (        )",
+    "options": {
+      "A": "10日",
+      "B": "5日",
+      "C": "7日",
+      "D": "3日"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_5",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市举办青年运动会，民警参与观众进场前的安检工作，经过扫描仪检查，发现一名男子携带的单肩包内有可疑饮料一瓶，打开后带有明显的汽油味。据此情形，应当采取的处置措施是:(        )",
+    "options": {
+      "A": "将瓶装可疑饮料弃置后，对其放行进场",
+      "B": "将瓶装可疑饮料寄存，提醒其离场时拿走",
+      "C": "将瓶装可疑饮料暂扣，井带其人检查室盘查",
+      "D": "将瓶装可疑饮料没收，拒绝其进场并劝离"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_6",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对于行政调解，以下说法正确的是:(        )",
+    "options": {
+      "A": "行政调解只要双方当事人签字即可生效",
+      "B": "当事人不执行行政调解，通过诉讼最后解决争议",
+      "C": "行政调解的效力是终局行的",
+      "D": "所有行政调解都不能申请人民法院强制执行"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_7",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某省级人民政府为了上马一国家重点工程项目，占用某市农民的土地，省人民政府对被占用地农民给予各种补偿费用与安置费，并对多余的劳动力进行了安置。省人民政府此项行为属于:(        )",
+    "options": {
+      "A": "行政没收",
+      "B": "行政征用",
+      "C": "行政征收",
+      "D": "政府采购"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_8",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据行政法原理，解决行政合同的纠纷应通过:(        )",
+    "options": {
+      "A": "行政机关的自我约束",
+      "B": "经济法救济途径",
+      "C": "民法救济途径",
+      "D": "行政法救济途径"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_9",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某直辖市人民政府根据国务院的授权，决定由城建规划局统一行使行政机关的行政处罚权，但下列哪一职权是根据行政处罚法的规定，不能由城建规划局行使:(        )",
+    "options": {
+      "A": "生态环境保护局的罚款权",
+      "B": "国土资源局的没收权",
+      "C": "公安局的拘留权",
+      "D": "市场监督管理局的吊销营业执照权"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_10",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《人民警察法》第8条规定，公安机关的人民警察对严重危害社会治安秩序或者威胁公共安全的人员，可以强行带离现场、依法予以拘留或者采取法律规定的其他措施。该法律规定的“强行带离现场”属于(        )",
+    "options": {
+      "A": "行政处罚",
+      "B": "刑事强制措施",
+      "C": "行政强制执行",
+      "D": "行政强制措施"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_11",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市场监管局以涉嫌非法销售汽车为由扣押某公司5辆汽车，对此以下说法是正确的是:(        )",
+    "options": {
+      "A": "市场监管局扣押汽车的最长期限为90日",
+      "B": "对扣押车辆，市场监管局可以委托第三人保管",
+      "C": "市场监管局可以委托城管执法局实施扣押",
+      "D": "对扣押车辆进行检测的费用，由某公司承担"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_12",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于行政处罚的执行，下列哪一说法是正确的:(        )",
+    "options": {
+      "A": "行政处罚的执行属于行政强制措施",
+      "B": "行政处罚的执行包括当事人自我履行和强制执行",
+      "C": "行政处罚的执行旨在合法合理地落实行政处罚决定",
+      "D": "强制执行指的是行政机关自己执行"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_13",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，两个以上行政机关都有管辖权的，由____管辖:(        )",
+    "options": {
+      "A": "先立案的行政机关",
+      "B": "级别高的行政机关",
+      "C": "级别低的行政机关",
+      "D": "先受理的行政机关"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_14",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政合同与其他行政行为相比较，有下列特征:(        )",
+    "options": {
+      "A": "以双方当事人意思表示一致为成立要件",
+      "B": "行政机关在行政合同中是民事主体身份",
+      "C": "具有很强的行政强制力",
+      "D": "行政机关在合同履行中享有特殊权利，是一种单方行政行为"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_15",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下属于行政应急的特点是:(        )",
+    "options": {
+      "A": "权力优先",
+      "B": "预防优先",
+      "C": "程序优先",
+      "D": "保障优先"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_16",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "执法部门作出的行政处罚决定，法律、法规未规定具体强制执行机关或者规定由人民法院强制执行的，由(        )申请人民法院强制执行。(        )",
+    "options": {
+      "A": "相关行政管理机关",
+      "B": "本级人民政府",
+      "C": "执法部门上级主管机关",
+      "D": "执法部门"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_17",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "通报批评、警告属于行政处罚中的:(        )",
+    "options": {
+      "A": "资格性处罚",
+      "B": "行为性处罚",
+      "C": "申诫性处罚",
+      "D": "财产性处罚"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_18",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于一事不再罚制度的适用，下列哪一说法是正确的:(        )",
+    "options": {
+      "A": "同一个违法行为的判断，主要是看违法主体的数量",
+      "B": "同一个违法行为违反多个法律规范，应当给予罚款处罚的，按照罚款数额高的规定处罚",
+      "C": "对同一个违法行为，不得既给予罚款处罚，又作出没收决定",
+      "D": "对当事人的同一个违法行为，不得给予两次以上的行政处罚"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_19",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一项属于行政机关采取的行政强制措施:(        )",
+    "options": {
+      "A": "公安交管局暂扣违章驾车张某的驾驶执照6个月",
+      "B": "税务机关将被扣押的财物依法拍卖以抵缴税款",
+      "C": "市场监管局对甲企业有效期届满未申请延续的营业执照予以注销",
+      "D": "药品监督管理局查封可能危害人体健康的药品"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_20",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关及其执法人员当场收缴罚款的，必须向当事人出具国务院财政部门或者省、自治区、直辖市人民政府财政部门统一自发的(        )。(        )",
+    "options": {
+      "A": "收据",
+      "B": "票据",
+      "C": "专用票据",
+      "D": "专用收据"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_21",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政强制法》的规定，行政强制，包括(        )和行政强制执行:(        )",
+    "options": {
+      "A": "冻结转账",
+      "B": "查封",
+      "C": "扣押",
+      "D": "行政强制措施"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_22",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政强制法》的规定，行政强制执行过程中，第三人对执行标的主张权利，确有理由的，行政机关应当:(        )",
+    "options": {
+      "A": "终结执行",
+      "B": "执行回转",
+      "C": "中止执行",
+      "D": "暂缓执行"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_23",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下哪一选项是指行政机关依法对违反行政管理秩序的公民、法人和其他组织以减损权益或者增加义务的方式予以惩戒的行为:(        )",
+    "options": {
+      "A": "行政强制",
+      "B": "行政检查",
+      "C": "行政许可",
+      "D": "行政处罚"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_24",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，违法行为在两年内未被发现的，不再给予行政处罚。违法行为的期限从____开始计算。(        )",
+    "options": {
+      "A": "从行为违法行为终了之日起计算",
+      "B": "违法行为有连续或者继续状态的，从行为终了之日起计算",
+      "C": "从违法行为发生之日起计算",
+      "D": "受害人发现其权益受到违法行为侵害之日计算"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_25",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据法律规定，行政机关实施查封、扣押的，查封、扣押的期限不得超过:(        )",
+    "options": {
+      "A": "20日",
+      "B": "10日",
+      "C": "30日",
+      "D": "15日"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_26",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "执法人员当场作出的行政处罚决定，应当报所属行政机关:(        )",
+    "options": {
+      "A": "审批",
+      "B": "审核",
+      "C": "批准",
+      "D": "备案"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_27",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关及其执法人员在作出行政处罚决定之前，未向当事人告知拟作出的行政处罚内容及事实、理由、依据，或者拒绝听取当事人的陈述、申辩的:(        )",
+    "options": {
+      "A": "推定具有公定力",
+      "B": "不得作出行政处罚决定",
+      "C": "对当事人具有拘束力",
+      "D": "具有执行力"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_28",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "省级地方性法规可以设定的行政强制措施种类有:(        )",
+    "options": {
+      "A": "扣押财物",
+      "B": "限制公民人身自由",
+      "C": "以上答案都不对",
+      "D": "冻结存款、汇款"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_29",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对查封、扣押的场所、设施或者财物，行政机关应当妥善保管(        );造成损失的，应当承担(        ):(        )",
+    "options": {
+      "A": "可以使用但不得毁损;赔偿责任",
+      "B": "不得使用或者毁损;赔偿责任",
+      "C": "不得使用或者毁损;补偿责任",
+      "D": "可以使用或者毁损;补偿责任"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_single_30",
+    "type": "single",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "《行政处罚法》第六十条规定:行政机关应当自行政处罚案件立案之日起(        )日内作出行政处罚决定。法律、法规、规章另有规定的，从其规定。 (        )",
+    "options": {
+      "A": "60",
+      "B": "90",
+      "C": "15",
+      "D": "30"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_1",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于行政处罚公开原则，下列哪些说法是正确的:(        )",
+    "options": {
+      "A": "依据公开",
+      "B": "内部会议也必须公开",
+      "C": "结果公开",
+      "D": "程序公开"
+    },
+    "answer": "ACD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_2",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政处罚法》的规定，以下属于当场处罚程序的规定是:(        )",
+    "options": {
+      "A": "填写预定格式、编有号码的行政处罚决定书",
+      "B": "出具法律规定的财政部门统一制发的专用票据",
+      "C": "执法人员应当向当事人出示执法证件",
+      "D": "执法人员当场收缴罚款"
+    },
+    "answer": "ABC",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_3",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政合同中行政机关与相对人之间的关系是，(        )",
+    "options": {
+      "A": "平等",
+      "B": "意思表示一致",
+      "C": "命令与服从",
+      "D": "协商"
+    },
+    "answer": "ABD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_4",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列违反行政处罚程序规定的是:(        )",
+    "options": {
+      "A": "行政处罚证据不足",
+      "B": "政机关作出行政处罚决定前，未依法向当事人告知应处罚的事实，理由和依据",
+      "C": "行政机关拒绝听取的陈述、申辩",
+      "D": "行政处罚没有法定依据"
+    },
+    "answer": "BC",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_5",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据行政处罚法的规定，有权设定没收违法所得，责令停产，停业处罚的规范性文件有:(        )",
+    "options": {
+      "A": "规章",
+      "B": "行政法规",
+      "C": "地方性法规",
+      "D": "法律"
+    },
+    "answer": "BD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_6",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "以下属于行政确认的事项有:(        )",
+    "options": {
+      "A": "市场监管部门对产品质量的认证",
+      "B": "用人单位对工伤事故的认定",
+      "C": "人民法院对当事人专利权的确认",
+      "D": "工商行政对驰名商标的认定"
+    },
+    "answer": "AD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_7",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于行政征收的是:(        )",
+    "options": {
+      "A": "民用燃气费",
+      "B": "违章停车费",
+      "C": "水资源费",
+      "D": "营业税"
+    },
+    "answer": "CD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_8",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列有关行政指导说法正确的有:(        )",
+    "options": {
+      "A": "行政指导是一种柔性的、非强制性的行政行为",
+      "B": "行政指导是现代社会积极行政的表现",
+      "C": "行政指导不属于人民法院行政诉讼的受案范围",
+      "D": "行政指导是不直接产生法律效果的行为"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_9",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政征收与行政征用的共同点是:(        )",
+    "options": {
+      "A": "都是取得相对人财产的所有权",
+      "B": "都是无偿取得相对人的财产",
+      "C": "都是单方行政行为",
+      "D": "都具有强制性"
+    },
+    "answer": "CD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_10",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关调查终结，可做出如下决定:(        )",
+    "options": {
+      "A": "确有应受处罚的违法行为，根据情节轻重及具体情况作出行政处罚",
+      "B": "违法行为已构成犯罪的，依法移送司法机关",
+      "C": "违法行为轻微，依法可以不予行政处罚的，不予行政处罚",
+      "D": "违法事实不能成立，不得给予行政处罚"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_11",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "商户某甲因销售货物时经常有短斤少两的现象，工商管理部门发现后决定对其处以吊销营业执照的处罚。对此，下列表述正确的有:(        )",
+    "options": {
+      "A": "听证应当公开举行",
+      "B": "工商管理部门应告知某甲有要求举行听证的权利",
+      "C": "某甲既可以自己参加听证，也可以委托他人代理参加听证",
+      "D": "举行听证的费用由工商管理部门与某甲合理分担"
+    },
+    "answer": "ABC",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_12",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政强制法》的规定，下列属于行政强制执行方式的是:(        )",
+    "options": {
+      "A": "吊销许可证、执照",
+      "B": "加处罚款或者滞纳金",
+      "C": "划拨存款、汇款",
+      "D": "拍卖或者依法处理查封、扣押的场所、设施或者财物"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_13",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列有关行政指导的说法，正确的是:(        )",
+    "options": {
+      "A": "行政指导的目的与一般行政行为的目的一致",
+      "B": "相对人对行政指导不可以置之不理",
+      "C": "倡导、希望、说服、劝告都可以作为行政指导的方式",
+      "D": "行政指导必须在行政主体的管辖权限范围内"
+    },
+    "answer": "ACD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_14",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关在作出行政处罚之前，应当向当事人告知的事项有: (        )",
+    "options": {
+      "A": "作出行政处罚决定的事实",
+      "B": "作出行政处罚的理由和依据",
+      "C": "作出行政处罚决定时上级行政机关的意见",
+      "D": "当事人依法享有的权利"
+    },
+    "answer": "ABD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_15",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于行政征收,下列说法正确的是:(        )",
+    "options": {
+      "A": "行政征收涉及公权力对公民财产权的剥夺,由宪法和法律作出规定",
+      "B": "行政征收属于典型的双方行政行为",
+      "C": "行政征收具有无偿性,相对人没有补偿",
+      "D": "行政征收只涉及金钱与实物,不涉及劳务"
+    },
+    "answer": "AD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_16",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政强制执行的主体有:(        )",
+    "options": {
+      "A": "人民检察院",
+      "B": "人民法院",
+      "C": "行政机关",
+      "D": "仲裁机构"
+    },
+    "answer": "BC",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_17",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政处罚适用当场程序的必备条件是:(        )",
+    "options": {
+      "A": "违法事实确凿",
+      "B": "当事人对当场行政处罚无异议",
+      "C": "有法定依据",
+      "D": "符合当场处罚的范围"
+    },
+    "answer": "ACD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_18",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "王某家住甲县，在乙县生产伪劣商品，经过丙县运输到丁县进行销售。有权对王某违法行为进行处罚的行政机关有:(        )",
+    "options": {
+      "A": "甲县",
+      "B": "丁县",
+      "C": "乙县",
+      "D": "丙县"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_19",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一行政行为属于行政强制措施:(        )",
+    "options": {
+      "A": "审计局封存转移会计凭证的被审计单位的有关资料",
+      "B": "公安交通执法大队暂扣酒后驾车的贾某机动车驾驶证6个月",
+      "C": "税务局扣押某企业价值相当于应纳税款的商品",
+      "D": "公安机关对醉酒的王某采取约束性措施至酒醒"
+    },
+    "answer": "ACD",
+    "explanation": ""
+  },
+  {
+    "id": "hw3_multiple_20",
+    "type": "multiple",
+    "homework": 3,
+    "tags": [
+      "未分类"
+    ],
+    "question": "根据《行政强制法》的规定，下列说法正确的是:(        )",
+    "options": {
+      "A": "当事人的场所、设施或者财物已被其他国家机关依法查封的，不得重复查封",
+      "B": "行政机关履行行政管理职责，依照法律、法规的规定，实施行政强制措施",
+      "C": "因查封、扣押发生的保管费由行政机关承担",
+      "D": "行政强制措施权经行政机关负责人同意，可以委托给其他行政机关"
+    },
+    "answer": "ABC",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_1",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "申请人不服复议机关维持原行政行为的，只能以作出原具体行政行为的行政机关为被告。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_2",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "原告向两个以上有管辖权的人民法院提起诉讼的，由最先立案的人民法院管辖。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_3",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关工作人员行使与职权无关的个人行为造成的损害，国家不承担赔偿责任。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_4",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国国家赔偿包括行政赔偿、民事赔偿和刑事赔偿。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_5",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对于被诉具体行政行为，行政机关也可以在诉讼过程中向人民法院提出申请执行。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_6",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "经复议机关复议的，复议机关为赔偿义务机关。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_7",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "在行政复议过程中，被申请人可以自行向申请人和其他有关组织或者个人收集证据。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_8",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政诉讼案件一律由最初作出行政行为的行政机关所在地人民法院管辖。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_9",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "消除影响、恢复名誉、赔礼道歉也是国家赔偿的赔偿方式。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_10",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "人民法院审理行政诉讼案件一般只审查行政行为的合法性。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_11",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "涉及国家秘密、商业秘密和个人隐私的案件，一律不公开审理。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_12",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "各级地方人民政府司法行政部门是地方人民政府具体办理行政复议案件事项的法定机构。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_13",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "赔偿义务机关是指代表国家接受赔偿请求、支付赔偿费用、参加赔偿诉讼的国家机关。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_14",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "赔偿请求人请求国家赔偿的时效为3年。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_15",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关可以成为行政诉讼的原告。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_16",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政诉讼被告有举证责任，但不排除对某些事项应由原告提供证据。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_17",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政复议申请人应当以书面形式申请行政复议，不能以口头形式申请。(        )",
+    "options": null,
+    "answer": "错",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_18",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "有权申请行政复议的公民死亡的，其近亲属可以申请行政复议。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_19",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "人民法院在接到起诉状时对符合《行政诉讼法》规定的起诉条件的，应当登记立案。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_judge_20",
+    "type": "judge",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "经复议的案件，复议机关改变原具体行政行为的复议机关是被告。(        )",
+    "options": null,
+    "answer": "对",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_1",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市某区人民政府决定将区国资局管理的地方小煤矿出售，小煤矿的承包经营人以侵犯经营自主权为由申请行政复议，复议机关应该是(        )。",
+    "options": {
+      "A": "市国资局",
+      "B": "市经贸委",
+      "C": "市政府",
+      "D": "区政府"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_2",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政赔偿的责任主体是(        )。",
+    "options": {
+      "A": "法律法规授权组织",
+      "B": "行政机关",
+      "C": "国家",
+      "D": "行政主体"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_3",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某公安局民警甲在一次治安检查中被公民乙打伤，县公安局认定乙妨碍公务，对乙作出罚款200元的行政处罚。甲认为处罚过轻。下列说法正确的是(        )。",
+    "options": {
+      "A": "对乙受到的处罚决定，甲应当先申请行政复议，对复议决定不服再提起行政诉讼",
+      "B": "对乙受到的处罚决定，甲可申请行政复议，但不能提起行政诉讼",
+      "C": "甲可以对乙提起民事诉讼",
+      "D": "对乙受到的处罚决定，甲既不能申请行政复议，也不能提起行政诉讼"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_4",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "国家对行政机关及其工作人员的合法行为造成的损失应给予(        )。",
+    "options": {
+      "A": "行政赔偿",
+      "B": "司法赔偿",
+      "C": "行政补偿",
+      "D": "民事赔偿"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_5",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列哪一个情形当事人必须先申请行政复议，对复议决定不服的，才可以提起行政诉讼?(        )",
+    "options": {
+      "A": "高某因为偷税被税务机关处罚，高某不服",
+      "B": "县政府为王某颁发集体土地使用权证，杨某认为该行为侵犯了自己已有的集体土地使用权",
+      "C": "对县自然资源局的作出的处罚不服",
+      "D": "派出所因顾某打架对其作出了处罚，顾某认为处罚太重"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_6",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "在行政诉讼中，人民法院认为被告不履行法定职责，但判决责令其履行法定职责已无实际意义的，应当 (        )。",
+    "options": {
+      "A": "作出确认违法的裁决",
+      "B": "责令被告采取相应的补救措施",
+      "C": "向被告和有关机关提出司法建议",
+      "D": "作出确认无效的判决"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_7",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市某县公安局违法对村民王某作出行政拘留决定，王某向市公安局申请复议。请求撤销拘留决定。市公安局经审查作出撤销决定之后，王某欲请求国家赔偿 (        )。",
+    "options": {
+      "A": "应首先向某县人民政府提出行政赔偿请求",
+      "B": "应首先向某市公安局提出行政赔偿请求",
+      "C": "可以直接向某县人民法院提起行政赔偿诉讼",
+      "D": "应先向某县公安局提出行政赔偿请求"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_8",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列选项哪一情形是不能提起行政复议的行政行为?(        )",
+    "options": {
+      "A": "民政部门对翁某成立社团的申请不予批准的行",
+      "B": "某市交管局发布了对排气量1升以下的汽车不予上牌照的规定，据此对吴某的汽车不予上牌照的行为",
+      "C": "某乡镇政府发布通告劝导农民种植高效农作物的行为",
+      "D": "城建部门将施工企业的资质由一级变更为二级的行为"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_9",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某区环保局因某新建水电站未报批环境影响评价文件，且已投入生产使用，给予其罚款10万元的处罚。水电站不服，申请复议，复议机关作出维持处罚的复议决定书。下列哪一个说法是正确的?(        )",
+    "options": {
+      "A": "水电站对复议决定不服向法院起诉，应由复议机关所在地的法院管辖",
+      "B": "如复议期间案件涉及法律适用问题，需要有权机关作出解释，行政复议终止",
+      "C": "复议机构应当仅为某区政府",
+      "D": "复议决定书一经送达，即发生法律效力"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_10",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "经王某请求，国家专利复审机构宣告授予李某的专利权无效，并于某年5月20日向李某送达决定书。6月10日李某因交通意外死亡。李某妻子不服决定，向法院提起行政诉讼。下列哪一个说法是正确的? (        )",
+    "options": {
+      "A": "本案原告应先申请行政复议再起诉",
+      "B": "李某妻子应以李某代理人身份起诉",
+      "C": "法院应当通知王某作为第三人参加诉讼",
+      "D": "本案原告的起诉期限为60日"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_11",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对受委托的组织作出的具体行政行为不服申请复议的，复议机关是:(        )",
+    "options": {
+      "A": "委托的行政机关",
+      "B": "该组织",
+      "C": "委托的行政机关的本级政府",
+      "D": "该组织的上一级组织"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_12",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市政府依王某申请作出复议决定，撤销市房管局对王某房屋的错误登记，并责令房管局在一定期限内重新登记。市房管局拒不执行行政复议决定，王某可采取哪一个措施?(        )",
+    "options": {
+      "A": "申请人民法院强制执行",
+      "B": "对房管局不作为再次申请行政复议",
+      "C": "请求市政府责令房管局限期履行，并可以约谈被申请人的有关负责人或者予以通报批评",
+      "D": "申请市政府强制执行"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_13",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于行政赔偿与行政补偿之间关系，说法正确的有:(        )",
+    "options": {
+      "A": "两者发生的基础相同",
+      "B": "两者的性质不同",
+      "C": "两者发生的时间相同，都是事后补救的",
+      "D": "两者补救范围相同"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_14",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列不属于行政赔偿义务机关的是 (        )。",
+    "options": {
+      "A": "行政复议机关",
+      "B": "行政机关委托的组织",
+      "C": "法律法规授权组织",
+      "D": "行政机关"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_15",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政机关的派出机构在没有法律、法规或者规章授权的情况下，以自己的名义作出具体行政行为，当事人不服提起诉讼的，应当以____为被告。(        )",
+    "options": {
+      "A": "该派出机构",
+      "B": "在对外发生法律效力的文书上署名的机关",
+      "C": "该行政机关",
+      "D": "该行政机关的上一级行政机关"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_16",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "国务院某部对某企业作出50万元的行政处罚，该企业不服，向该部申请行政复议，下列说法正确的是(        )。",
+    "options": {
+      "A": "如复议过程中，企业撤回复议申请的，不得以同一事实和理由再次申请行政复议。",
+      "B": "企业委托代理人参加复议的，可以口头委托。",
+      "C": "如果企业向国务院申请裁决，对裁决不服的，向法院起诉，法院应该不予受理。",
+      "D": "在行政复议中，不对该罚款决定的适当性进行审查。"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_17",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某公民被县公安局违法拘留l0日，该公民不服申诉至县政府，县政府作出了改处15日拘留的处罚复议决定。关于该公民遭受的损害的行政赔偿说法正确的是:(        )",
+    "options": {
+      "A": "县公安局不予赔偿",
+      "B": "县政府全部赔偿",
+      "C": "县政府只对加重部分赔偿",
+      "D": "县公安局全部赔偿"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_18",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "关于国家赔偿，以下说法正确的是:(        )",
+    "options": {
+      "A": "精神损害赔偿仅限于造成严重后果的情形",
+      "B": "行政赔偿只能单独提出请求",
+      "C": "经复议机关复议的，复议机关为赔偿义务机关",
+      "D": "只要国家机关及其工作人员行使职权的行为造成了损害，国家就应当承担赔偿责任"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_19",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "我国国家赔偿以国家机关及其工作人员行使职权时的(        )为前提条件。",
+    "options": {
+      "A": "无过错责任",
+      "B": "个人过错",
+      "C": "行为违法",
+      "D": "公务过错"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_20",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对法律、法规授权组织作出的具体行政行为不服申请复议的，复议机关是:(        )",
+    "options": {
+      "A": "该组织的上一级组织",
+      "B": "该组织",
+      "C": "直接主管该组织的行政机关",
+      "D": "直接主管该组织的行政机关的本级政府"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_21",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市中级人民法院在审理一起行政案件时，发现在与案件有关问题上，部委规章之间、部委规章与地方规章和地方性法规之间都有不—致的地方，则依照法律，法院正确的做法是(        )。",
+    "options": {
+      "A": "法院在该案件中决定依据地方性法规审理案件",
+      "B": "规章之间不一致的，该中院可以送请国务院作出解释或裁决",
+      "C": "法院在判决中宣布该地方规章因为同地方性法规相抵触而无效",
+      "D": "部委规章与地方规章之间不一致的，法院应当优先适用部委规章"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_22",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某派出所以扰乱公共秩序为由扣押了高某的拖拉机。高不服，以派出所为被告提起行政诉讼。诉讼中，法院认为被告应是县公安局，要求变更被告，高不同意。法院下列哪一做法是正确的?(        )",
+    "options": {
+      "A": "裁定驳回起诉",
+      "B": "裁定终结诉讼",
+      "C": "以县公安局为被告审理本案",
+      "D": "以派出所为被告继续审理本案"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_23",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对县级以上的地方人民政府的派出机关的具体行政行为不服申请复议，复议机关是:(        )",
+    "options": {
+      "A": "设立该派出机关的人民政府的上一级行政机关",
+      "B": "该派出机关",
+      "C": "设立该派出机关的人民政府",
+      "D": "A或者C"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_24",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "市场监督管理局郑某与个体户王某久有积怨，借执行公务之机，以王某销售伪劣商品为由扣押王某营业执照，将其货物查封，查封期间遇暴雨货物淋湿。王某不服，向市场监督管理局提出赔偿请求。市场监督管理局应作何处理?(        )",
+    "options": {
+      "A": "郑某行为纯属个人行为，与市场监督管理局无关，王某的损失应由郑某赔偿",
+      "B": "市场监督管理局应对王某的损失负赔偿责任",
+      "C": "市场监督管理局应归还王某的营业执照，解除对货物的查封，但对自然原因造成的货物损失不负赔偿责任",
+      "D": "郑某行为是滥用职权，王某的损失应由郑某赔偿"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_25",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "市城管执法局委托镇政府负责对一风景区域进行城管执法。镇政府接到举报并经现场勘验，认定刘某擅自建房并组织强制拆除。刘某父亲和嫂子称房屋系二人共建，拆除行为侵犯合法权益，向法院起诉，法院予以受理。关于此案，下列哪一个说法是不正确的?(        )",
+    "options": {
+      "A": "刘某父亲和嫂子应当提供证据证明房屋为二人共建或与拆除行为有利害关系",
+      "B": "被告应当提供证据和依据证明有拆除房屋的决定权和强制执行的权力",
+      "C": "此案的被告是镇政府",
+      "D": "如法院对拆除房屋进行现场勘验，应当邀请当地基层组织或当事人所在单位派人参加"
+    },
+    "answer": "C",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_26",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "甲、乙两村分别位于某市两县境内，因土地权属纠纷向市政府申请解决，市政府裁决争议土地属于甲村所有。乙村不服。向省政府申请复议，复议机关确认争议的土地属于乙村所有。甲村不服行政复议决定，提起行政诉讼，下列哪一个法院对本案有管辖权?(        )",
+    "options": {
+      "A": "市政府所在地的基层人民法院",
+      "B": "争议土地所在地的中级人民法院",
+      "C": "争议土地所在地的基层人民法院",
+      "D": "省政府所在地的中级人民法院"
+    },
+    "answer": "B",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_27",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "相对人认为具体行政行为侵犯其合法权益的，一般应当自知道该具体行政行为之日起____内提出行政复议中请。但是法律规定的申请期限超过上述时限的除外。 (        )",
+    "options": {
+      "A": "15日",
+      "B": "30日",
+      "C": "90日",
+      "D": "60日"
+    },
+    "answer": "D",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_single_28",
+    "type": "single",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市决定整顿农贸市场，区市场监督管理局和税务局进行联合检查时，发现某个体工商户没有办理纳税登记，经税务局提请，市场监督管理局对其作出了吊销营业执照的处罚。如该个体商户申请复议，被申请人应是(        )。",
+    "options": {
+      "A": "区市场监督管理局",
+      "B": "区税务局和市场监督管理局",
+      "C": "区税务局",
+      "D": "区市场监督管理局和税务局的共同上级机关"
+    },
+    "answer": "A",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_1",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "证据是能够证明案件事实并表现为一定证据形式的事实材料，下列哪一项属于行政诉讼可定案证据的条件: (        )",
+    "options": {
+      "A": "证据的关联性",
+      "B": "证据的客观真实性",
+      "C": "证据的合法性",
+      "D": "证据的合理性"
+    },
+    "answer": "ABC",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_2",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "金某因举报单位负责人贪污问题遭到殴打，于案发当日向某区公安分局某派出所报案。但派出所久拖不理。金某向区公安分局申请复议，区公安分局以未成立复议机构为由拒绝受理，并告知金某向上级机关申请复议。下列哪些说法是正确的是:(        )",
+    "options": {
+      "A": "金某应当向某区人民政府申请复议",
+      "B": "金某可以以公安派出所为被申请人申请复议",
+      "C": "区公安分局应当告知金某向区政府申请复议",
+      "D": "金某可以向某派出所所在地的人民法院提起行政诉讼"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_3",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "行政诉讼期间不停止被诉行政行为的执行, 下列哪些情形可以例外?(        )",
+    "options": {
+      "A": "原告认为需要停止执行的",
+      "B": "人民法院依职权认为需要停止执行的",
+      "C": "有关法律、法规规定可以停止执行的",
+      "D": "被告认为需要停止执行的"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_4",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某县税务局将个体户沈某的纳税由定额纳税变更为自行申报，并在认定沈某的申报纳税额低于定额纳税额后，要求沈某缴纳相应的税款、滞纳金，并处以罚款。沈某不服，对税务局的哪些行为可直接向法院提起行政诉讼? (        )",
+    "options": {
+      "A": "罚款的决定",
+      "B": "要求缴纳滞纳金的决定",
+      "C": "要求缴纳税款的决定",
+      "D": "由定额纳税变更为自行申报的决定"
+    },
+    "answer": "AB",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_5",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "刘某因殴打周某、张某及其10岁的女儿而被某县公安局决定拘留5日，刘某申请复议，复议机关变更具体行政行为为拘留3日。复议期间，周某因病死亡。在该案中，对复议决定有权提起行政诉讼的原告包括 (        )。",
+    "options": {
+      "A": "周某的近亲属",
+      "B": "刘某",
+      "C": "张某的女儿",
+      "D": "张某"
+    },
+    "answer": "ABCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_6",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列属于行政诉讼受案范围的是:(        )",
+    "options": {
+      "A": "黄某不服市政府发布的征收土地补偿标准直接向法院起诉",
+      "B": "王某以区房管局不履行双方签订的房屋征收补偿协议为由向法院起诉",
+      "C": "某企业以市场监督管理局滥用行政权力限制竞争为由向法院起诉",
+      "D": "方某在妻子失踪后向公安局报案要求立案侦查，遭拒绝后向法院起诉确认公安局的行为违法"
+    },
+    "answer": "BC",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_7",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "甲县宋某到乙县访亲，因醉酒被乙县公安局扣留24小时。宋某认为乙县公安局的行为违法，提起行政诉讼。下列哪些说法是正确的是:(        )",
+    "options": {
+      "A": "扣留宋某的行为为行政处罚",
+      "B": "乙县法院对此案有管辖权",
+      "C": "宋某的亲戚为本案的第三人",
+      "D": "甲县法院对此案有管辖权"
+    },
+    "answer": "BD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_8",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "国家不承担行政赔偿责任的主要情形有:(        )",
+    "options": {
+      "A": "行政相对方自己的行为致使损害发生的",
+      "B": "法律规定的“不可抗力”造成的损害",
+      "C": "公安民警违法使用武器警械造成的损害",
+      "D": "公务员实施的与行使职权无关的个人行为"
+    },
+    "answer": "ABD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_9",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "规划局认定一公司所建房屋违反规划，向该公司发出《拆除所建房屋通知》，要求公司在15日内拆除房屋。到期后，该公司未拆除所建房屋，该局发出《关于限期拆除所建房屋的通知》，要求公司在10日内自动拆除，否则将依法强制执行。下列哪些说法是正确的是:(        )",
+    "options": {
+      "A": "公司可以对《拆除所建房屋通知》提起行政诉讼",
+      "B": "在作出《拆除所建房屋通知》时，规划局可以适用简易程序",
+      "C": "《关于限期拆除所建房屋的通知》是行政处罚",
+      "D": "《拆除所建房屋通知》与《关于限期拆除所建房屋的通知》性质不同"
+    },
+    "answer": "AD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_10",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "下列证据中，不能作为人民法院认定被诉具体行政行为合法的根据的有 :(        )",
+    "options": {
+      "A": "人民法院在诉讼过程中依法调取的证据",
+      "B": "未经法庭质证的证据",
+      "C": "被告在诉讼中经人民法院准许补充收集的证据",
+      "D": "被告代理人在诉讼过程中自行向原告收集的证据"
+    },
+    "answer": "BD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_11",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "某市交通管理局发布文件，规定对高速公路过往车辆收取过路费。徐某驾车经过被收费，认为属于乱收费，欲提起行政复议。下列说法正确的是:(        )",
+    "options": {
+      "A": "徐某可以只针对该文件提起复议审查",
+      "B": "徐某可直接对征收行为提起行政复议",
+      "C": "徐某可以在对征收行为提起复议时要求对该文件进行审查",
+      "D": "徐某可不必经过复议，直接向法院提起行政诉讼"
+    },
+    "answer": "BCD",
+    "explanation": ""
+  },
+  {
+    "id": "hw4_multiple_12",
+    "type": "multiple",
+    "homework": 4,
+    "tags": [
+      "未分类"
+    ],
+    "question": "对于下列起诉，哪些不属于行政诉讼受案范围:(        )",
+    "options": {
+      "A": "环保局干部孙某对定期考核被定为不称职不服向法院起诉",
+      "B": "某公司与县政府签订天然气特许经营协议，发生纠纷后该公司以县政府不依法履行协议向法院起诉",
+      "C": "李某与房屋征收主管部门签订房屋征收补偿协议,因李某不履行协议征收主管部门向法院起诉",
+      "D": "县政府发布全县征地补偿安置标准的文件，村民万某以文件确定的补偿标照过低为由向法院起诉"
+    },
+    "answer": "ACD",
+    "explanation": ""
+  }
+]

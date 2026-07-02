@@ -8,7 +8,7 @@
 
 `study-hub` 是一个通用刷题学习系统（单 HTML + localStorage + Netlify 部署）。当前只含刑法 10 道题作为测试数据。
 
-你的任务：**批量将 docx 题库转为 JSON，补充解析，放入对应目录。**
+你的任务：**批量将 docx 题库转为 JSON，放入对应目录。**
 
 工作目录：`d:\Claude\projects\study-hub\`
 
