@@ -310,7 +310,12 @@ let currentMultipleSelections = {};
 let currentSubject = '刑法';
 
 // 科目题库映射（Trae 的 JSON 加载后会填充这里）
-const SUBJECT_DATA = { '刑法': [...ALL_QUESTIONS], '马原': null, '行政法': null };
+// ★ 科目注册表 — 加新科目只改这一行
+const SUBJECT_LIST = ['刑法', '马原', '行政法'];
+
+// 自动构建: 刑法内嵌, 其他 fetch
+const SUBJECT_DATA = Object.fromEntries(SUBJECT_LIST.map(s => [s, null]));
+SUBJECT_DATA['刑法'] = [...ALL_QUESTIONS];
 
 async function switchSubject(subject) {
     if (currentSubject === subject) return;
@@ -539,7 +544,7 @@ function renderHome() {
         <div class="max-w-md mx-auto px-4 py-4 space-y-4" style="position:relative;z-index:1">
             <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #080c14 0%, #080c14 85%, transparent 100%);">
                 <div class="flex gap-1.5 overflow-x-auto">
-                    ${['刑法','马原','行政法'].map(s => {
+                    ${SUBJECT_LIST.map(s => {
                         const active = currentSubject === s;
                         return '<button onclick="switchSubject(\''+s+'\')" class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md '+(active?'bg-red-500 text-white shadow-red-200':'bg-white/70 text-gray-500')+'">'+s+'</button>';
                     }).join('')}
@@ -566,7 +571,7 @@ function renderHome() {
         <!-- Sticky Tabs Bar -->
         <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #fef2f2 0%, #fef2f2 85%, transparent 100%);">
             <div class="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                ${['刑法','马原','行政法'].map(s => {
+                ${SUBJECT_LIST.map(s => {
                     const active = currentSubject === s;
                     return `<button onclick="switchSubject('${s}')"
                         class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${active ? 'bg-red-500 text-white shadow-red-200' : 'bg-white/70 text-gray-500 hover:bg-white hover:text-gray-600 shadow-none'}">${s}</button>`;
