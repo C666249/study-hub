@@ -320,7 +320,7 @@ function toggleTheme() {
 
 // 科目题库映射（Trae 的 JSON 加载后会填充这里）
 // ★ 科目注册表 — 加新科目只改这一行
-const SUBJECT_LIST = ['刑法', '马原', '行政法'];
+const SUBJECT_LIST = ['马原', '行政法', '刑法'];
 
 // 自动构建: 刑法内嵌, 其他 fetch
 const SUBJECT_DATA = Object.fromEntries(SUBJECT_LIST.map(s => [s, null]));
@@ -640,8 +640,8 @@ function renderHome() {
                             </div>` : ''}
                         </div>
                         ${hasQ ? `
-                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-3">
-                            <div class="${c.dot} h-1.5 rounded-full progress-bar" style="width:${pct}%"></div>
+                        <div class="w-full bg-gray-200 rounded-full h-2 mt-3">
+                            <div class="${c.dot} h-2 rounded-full progress-bar" style="width:${pct}%"></div>
                         </div>
                         <div id="hw${hw}_d" class="hidden mt-3 pt-3 border-t border-gray-100 space-y-1.5">
                             <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
@@ -908,8 +908,10 @@ function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(
 // ============================================================
 function render() {
     const app = document.getElementById('app');
-    // 离开首页前记住滚动位置
-    if (currentView === 'home') savedScrollY = window.scrollY;
+    // 离开首页时记住滚动（非首页视图且有星空元素说明刚从首页切走）
+    if (currentView !== 'home' && document.getElementById('home-stars')) {
+        savedScrollY = window.scrollY;
+    }
     if (currentView === 'home') {
         app.innerHTML = renderHome();
         // 生成星空
