@@ -308,6 +308,8 @@ let isExamMode = false;
 let searchQuery = '';
 let currentMultipleSelections = {};
 let currentSubject = '刑法';
+let collapsedSections = new Set();  // 折叠的节
+let savedScrollY = 0;              // 离开首页时的滚动位置
 
 // 科目题库映射（Trae 的 JSON 加载后会填充这里）
 // ★ 科目注册表 — 加新科目只改这一行
@@ -397,6 +399,15 @@ function startExam() {
     render();
 }
 
+function toggleSection(id) {
+    if (collapsedSections.has(id)) collapsedSections.delete(id);
+    else collapsedSections.add(id);
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('hidden');
+    // 翻转三角
+    const arrow = document.getElementById(id + '_arrow');
+    if (arrow) arrow.style.transform = collapsedSections.has(id) ? 'rotate(-90deg)' : 'rotate(0deg)';
+}
 function goHome() { isExamMode = false; currentView = 'home'; searchQuery = ''; render(); }
 function showResult() { currentView = 'result'; render(); }
 function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; currentMultipleSelections = {}; render(); } }
@@ -601,8 +612,11 @@ function renderHome() {
 
         <!-- Homework (most important, first) -->
         <div>
-            <div class="section-title">📝 作业练习</div>
-            <div class="space-y-2.5">
+            <div class="section-title flex items-center gap-1 cursor-pointer select-none" onclick="toggleSection('hw-section')">
+                <span>📝 作业练习</span>
+                <span id="hw-section_arrow" class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${collapsedSections.has('hw-section')?'-90deg':'0deg'})">▼</span>
+            </div>
+            <div id="hw-section" class="space-y-2.5 ${collapsedSections.has('hw-section')?'hidden':''}">
                 ${hwSet.map((hw, i) => {
                     const s = hwStats[hw];
                     const hasQ = s.total > 0;
@@ -638,8 +652,11 @@ function renderHome() {
         ${Object.keys(kpStats).length > 0 ? `
         <!-- Knowledge Points -->
         <div>
-            <div class="section-title">📚 按知识点练习</div>
-            <div class="space-y-2">
+            <div class="section-title flex items-center gap-1 cursor-pointer select-none" onclick="toggleSection('kp-section')">
+                <span>📚 按知识点练习</span>
+                <span id="kp-section_arrow" class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${collapsedSections.has('kp-section')?'-90deg':'0deg'})">▼</span>
+            </div>
+            <div id="kp-section" class="space-y-2 ${collapsedSections.has('kp-section')?'hidden':''}">
                 ${Object.entries(kpStats).sort((a,b) => b[1]-a[1]).map(([name, cnt], i) => {
                     const c = KP_COLORS[i % KP_COLORS.length];
                     return `
@@ -884,6 +901,8 @@ function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(
 // ============================================================
 function render() {
     const app = document.getElementById('app');
+    // 离开首页前记住滚动位置
+    if (currentView === 'home') savedScrollY = window.scrollY;
     if (currentView === 'home') {
         app.innerHTML = renderHome();
         // 生成星空
@@ -898,6 +917,8 @@ function render() {
             }
         }
         if (searchQuery) setTimeout(() => handleSearchInput(searchQuery), 50);
+        // 恢复滚动位置
+        if (savedScrollY > 0) setTimeout(() => window.scrollTo(0, savedScrollY), 60);
     }
     else if (currentView === 'quiz') app.innerHTML = renderQuiz();
     else if (currentView === 'result') app.innerHTML = renderResult();
