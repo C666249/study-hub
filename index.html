@@ -69,6 +69,33 @@ body { overscroll-behavior-y: none; }
 .home-dark body { background: #080c14; }
 /* sticky tabs 栏暗色背景 */
 .home-dark [style*="fef2f2"] { background: linear-gradient(180deg, #080c14 0%, #080c14 85%, transparent 100%) !important; }
+/* 知识点卡片专用深色 */
+.home-dark .bg-red-50 { background: rgba(239,68,68,0.08); }
+.home-dark .bg-amber-50 { background: rgba(245,158,11,0.08); }
+.home-dark .bg-blue-50 { background: rgba(59,130,246,0.08); }
+.home-dark .bg-emerald-50 { background: rgba(16,185,129,0.08); }
+.home-dark .text-red-600 { color: #fca5a5; }
+.home-dark .text-amber-600 { color: #fcd34d; }
+.home-dark .text-blue-600 { color: #93c5fd; }
+.home-dark .text-emerald-600 { color: #6ee7b7; }
+.home-dark .border-red-200 { border-color: rgba(239,68,68,0.15); }
+.home-dark .border-amber-200 { border-color: rgba(245,158,11,0.15); }
+.home-dark .border-blue-200 { border-color: rgba(59,130,246,0.15); }
+.home-dark .border-emerald-200 { border-color: rgba(16,185,129,0.15); }
+/* 作业卡片颜色覆写 */
+.home-dark .bg-red-500 { background-color: #ef4444; }
+.home-dark .bg-amber-500 { background-color: #f59e0b; }
+.home-dark .bg-emerald-500 { background-color: #10b981; }
+.home-dark .bg-blue-500 { background-color: #3b82f6; }
+.home-dark .bg-rose-400 { background-color: #fb7185; }
+.home-dark .bg-emerald-400 { background-color: #34d399; }
+.home-dark .bg-rose-50 { background: rgba(251,113,133,0.1); }
+.home-dark .text-rose-700 { color: #fda4af; }
+.home-dark .text-rose-500 { color: #fb7185; }
+.home-dark .text-emerald-700 { color: #6ee7b7; }
+.home-dark .text-emerald-500 { color: #34d399; }
+.home-dark .text-gray-200 { color: #e2e8f0; }
+.home-dark .text-gray-100 { color: #f1f5f9; }
 </style>
 </head>
 <body class="min-h-dvh" style="background: linear-gradient(180deg, #fef2f2 0%, #fff7ed 50%, #fffbeb 100%);">
@@ -454,25 +481,7 @@ function renderHome() {
             <div id="search-results-area" class="mt-2"></div>
         </div>
 
-        <!-- Knowledge Points -->
-        <div>
-            <div class="section-title">📚 按知识点练习</div>
-            <div class="grid grid-cols-2 gap-2.5">
-                ${KNOWLEDGE_POINTS.map(kp => {
-                    const cnt = kpStats[kp.id] || 0;
-                    return `
-                    <button onclick="startPractice({tag:'${kp.id}'})"
-                        class="tag-card ${kp.bg} ${kp.text} border ${kp.border} rounded-2xl p-3.5 text-left">
-                        <div class="text-xl mb-1">${kp.icon}</div>
-                        <div class="font-bold text-sm">${kp.name}</div>
-                        <div class="text-xs opacity-70 mt-0.5">${kp.desc}</div>
-                        <div class="text-xs font-bold mt-2 opacity-50">${cnt} 题</div>
-                    </button>`;
-                }).join('')}
-            </div>
-        </div>
-
-        <!-- Homework -->
+        <!-- Homework (most important, first) -->
         <div>
             <div class="section-title">📝 作业练习</div>
             <div class="space-y-2.5">
@@ -506,6 +515,26 @@ function renderHome() {
                             <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
                         </div>` : ''}
                     </div>`;
+                }).join('')}
+            </div>
+        </div>
+
+        <!-- Knowledge Points -->
+        <div>
+            <div class="section-title">📚 按知识点练习</div>
+            <div class="space-y-2">
+                ${KNOWLEDGE_POINTS.map(kp => {
+                    const cnt = kpStats[kp.id] || 0;
+                    return `
+                    <button onclick="startPractice({tag:'${kp.id}'})"
+                        class="tag-card w-full ${kp.bg} ${kp.text} border ${kp.border} rounded-2xl p-3.5 flex items-center gap-3 text-left">
+                        <span class="text-xl shrink-0">${kp.icon}</span>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold text-sm">${kp.name}</div>
+                            <div class="text-xs opacity-70 truncate">${kp.desc}</div>
+                        </div>
+                        <span class="text-xs font-bold opacity-50 shrink-0">${cnt} 题 ›</span>
+                    </button>`;
                 }).join('')}
             </div>
         </div>
