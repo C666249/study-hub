@@ -223,9 +223,9 @@ const KNOWLEDGE_POINTS = [
 // ============================================================
 // STORAGE
 // ============================================================
-const STORAGE_KEY = 'studyhub_progress_刑法';
-const WRONG_KEY = 'studyhub_wrong_刑法';
-const FAVORITES_KEY = 'studyhub_fav_刑法';
+let STORAGE_KEY = 'studyhub_progress_刑法';
+let WRONG_KEY = 'studyhub_wrong_刑法';
+let FAVORITES_KEY = 'studyhub_fav_刑法';
 
 function getWrongQuestions() { try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); } catch(e) { return []; } }
 function saveWrongQuestions(ids) { localStorage.setItem(WRONG_KEY, JSON.stringify(ids)); }
@@ -263,6 +263,25 @@ let currentShuffleMode = false, currentWrongOnlyMode = false, currentFavoritesOn
 let isExamMode = false;
 let searchQuery = '';
 let currentMultipleSelections = {};
+let currentSubject = '刑法';
+
+// 科目题库映射（Trae 的 JSON 加载后会填充这里）
+const SUBJECT_DATA = { '刑法': [...ALL_QUESTIONS], '马原': [], '行政法': [] };
+
+function switchSubject(subject) {
+    if (currentSubject === subject) return;
+    currentSubject = subject;
+    STORAGE_KEY = 'studyhub_progress_' + subject;
+    WRONG_KEY = 'studyhub_wrong_' + subject;
+    FAVORITES_KEY = 'studyhub_fav_' + subject;
+    // 切换到该科目的题库
+    ALL_QUESTIONS.length = 0;
+    if (SUBJECT_DATA[subject]) {
+        ALL_QUESTIONS.push(...SUBJECT_DATA[subject]);
+    }
+    searchQuery = '';
+    goHome();
+}
 
 // ============================================================
 // NAVIGATION
@@ -444,6 +463,31 @@ function renderHome() {
         hwStats[hw] = { total: qs.length, answered: ans, wrong: wr };
     });
 
+    // 暂无数据的科目显示占位
+    if (total === 0) {
+        return `
+        <div class="home-dark">
+        <div class="aurora aurora-1"></div><div class="aurora aurora-2"></div><div class="aurora aurora-3"></div>
+        <div class="stars" id="home-stars"></div>
+        <div class="max-w-md mx-auto px-4 py-4 space-y-4" style="position:relative;z-index:1">
+            <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #080c14 0%, #080c14 85%, transparent 100%);">
+                <div class="flex gap-1.5 overflow-x-auto">
+                    ${['刑法','马原','行政法'].map(s => {
+                        const active = currentSubject === s;
+                        return '<button onclick="switchSubject(\''+s+'\')" class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md '+(active?'bg-red-500 text-white shadow-red-200':'bg-white/70 text-gray-500')+'">'+s+'</button>';
+                    }).join('')}
+                </div>
+            </div>
+            <div class="text-center pt-2"><h1 class="text-2xl font-extrabold text-gray-100">${currentSubject}</h1></div>
+            <div class="text-center py-12">
+                <div class="text-5xl mb-4">📦</div>
+                <div class="text-gray-400 text-sm mb-2">题库数据准备中</div>
+                <div class="text-gray-500 text-xs">Trae 正在生成 JSON…</div>
+            </div>
+            <div class="text-center text-xs text-gray-600 pb-6">study-hub v1.0 · ${currentSubject}</div>
+        </div></div>`;
+    }
+
     return `
     <div class="home-dark">
     <div class="aurora aurora-1"></div>
@@ -455,15 +499,17 @@ function renderHome() {
         <!-- Sticky Tabs Bar -->
         <div class="sticky top-0 z-20 pt-2 pb-1" style="background: linear-gradient(180deg, #fef2f2 0%, #fef2f2 85%, transparent 100%);">
             <div class="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                <button class="shrink-0 px-5 py-2.5 bg-red-500 text-white rounded-full text-sm font-bold shadow-md shadow-red-200">刑法</button>
-                <button class="shrink-0 px-4 py-2.5 bg-white/70 text-gray-400 rounded-full text-sm font-medium hover:bg-white hover:text-gray-600 transition-all">马原</button>
-                <button class="shrink-0 px-4 py-2.5 bg-white/70 text-gray-400 rounded-full text-sm font-medium hover:bg-white hover:text-gray-600 transition-all">行政法</button>
+                ${['刑法','马原','行政法'].map(s => {
+                    const active = currentSubject === s;
+                    return `<button onclick="switchSubject('${s}')"
+                        class="shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all shadow-md ${active ? 'bg-red-500 text-white shadow-red-200' : 'bg-white/70 text-gray-500 hover:bg-white hover:text-gray-600 shadow-none'}">${s}</button>`;
+                }).join('')}
             </div>
         </div>
 
         <!-- Header -->
         <div class="text-center pt-2 pb-1">
-            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">刑法</h1>
+            <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">${currentSubject}</h1>
             <div class="flex justify-center gap-4 mt-2 text-xs text-gray-500">
                 <span>已答 <b class="text-emerald-500">${allAnswered}</b></span>
                 <span>错题 <b class="text-rose-500">${allWrong}</b></span>
