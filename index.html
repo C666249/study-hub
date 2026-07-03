@@ -731,7 +731,7 @@ function renderHome() {
                 <span id="kp-section_arrow" class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${collapsedSections.has('kp-section')?'-90deg':'0deg'})">▼</span>
             </div>
             <div id="kp-section" class="space-y-2 ${collapsedSections.has('kp-section')?'hidden':''}">
-                ${Object.entries(kpStats).sort((a,b) => b[1]-a[1]).map(([name, cnt], i) => {
+                ${Object.entries(kpStats).sort((a,b) => extractSortNum(a[0]) - extractSortNum(b[0])).map(([name, cnt], i) => {
                     const c = KP_COLORS[i % KP_COLORS.length];
                     return `
                     <button onclick="startPractice({tag:'${name}'})"
