@@ -132,116 +132,9 @@ body { overscroll-behavior-y: none; }
 
 <script>
 // ============================================================
-// DATA
+// DATA — 所有题库通过 fetch JSON 动态加载，不硬编码
 // ============================================================
-const ALL_QUESTIONS = [
-  {
-    id: "s2_1", type: "single", homework: 2, tags: ["危害行为"],
-    question: "下列哪一选项构成不作为犯罪？",
-    options: {
-      A: "丁邀秦某到风景区漂流，在漂流筏转弯时，秦某的安全带突然松开致其摔落河中。丁未下河救人，秦某溺亡",
-      B: "乙女拒绝周某求爱，周某说「如不答应，我就跳河自杀」。乙明知周某可能跳河，仍不同意。周某跳河后，乙未呼救，周某溺亡",
-      C: "甲到湖中游泳，见武某也在游泳。武某突然腿抽筋，向唯一在场的甲呼救。甲未予理睬，武某溺亡",
-      D: "丙与贺某到水库游泳。丙为显示泳技，将不善游泳的贺某拉到深水区教其游泳。贺某忽然沉没，丙有点害怕，忙游上岸，贺某溺亡"
-    },
-    answer: "D",
-    explanation: "A、B、C均无刑法上救助义务，不构成犯罪。D正确：丙主动将不善游泳的贺某拉至深水区，先行行为使其产生救助义务，能救而不救，成立不作为犯罪。"
-  },
-  {
-    id: "s2_2", type: "single", homework: 2, tags: ["危害行为"],
-    question: "行为人在实施不纯正不作为犯罪时，其罪过：",
-    options: { A: "只能是过失", B: "既可以是故意，也可以是过失", C: "只能是间接故意", D: "只能是故意" },
-    answer: "B",
-    explanation: "不纯正不作为犯的主观罪过既可以是故意，也可以是过失。如故意不救助致人死亡（故意），过失不履行义务导致火灾（过失）。"
-  },
-  {
-    id: "s2_3", type: "single", homework: 2, tags: ["因果关系"],
-    question: "关于因果关系，下列哪一选项是错误的？",
-    options: {
-      A: "甲将被害人衣服点燃，被害人跳河灭火而溺亡。甲行为与被害人死亡具有因果关系",
-      B: "乙在被害人住宅放火，被害人为救婴儿冲入宅内被烧死。乙行为与被害人死亡具有因果关系",
-      C: "丙在高速路将被害人推下车，被害人被后面车辆轧死。丙行为与被害人死亡具有因果关系",
-      D: "丁毁坏被害人面容，被害人感觉无法见人而自杀。丁行为与被害人死亡具有因果关系"
-    },
-    answer: "D",
-    explanation: "A、B、C均具有刑法上的因果关系（介入因素不异常）。D错误：毁容与被害人自杀之间不具有刑法因果关系，自杀属于异常的介入因素。"
-  },
-  {
-    id: "s2_4", type: "single", homework: 2, tags: ["犯罪主观方面"],
-    question: "甲贩运假烟，驾车路过某检查站时，被工商执法部门拦住检查。检查人员乙正登车检查时，甲突然发动汽车夺路而逃。乙抓住汽车车门的把手不放，甲为摆脱乙，在疾驶时突然急刹车，导致乙头部着地身亡。甲对乙死亡的心理态度属于下列哪一选项？",
-    options: { A: "直接故意", B: "间接故意", C: "疏忽大意的过失", D: "过于自信的过失" },
-    answer: "B",
-    explanation: "甲为逃跑在疾驶时急刹车，明知该行为极可能导致抓住车门的乙伤亡，却为摆脱乙而放任死亡结果发生，属于间接故意。非积极追求（排除A），也非过失（排除C、D）。"
-  },
-  {
-    id: "s2_5", type: "single", homework: 2, tags: ["犯罪主观方面"],
-    question: "养花专业户李某为防止偷花，在花房周围私拉电网。一日晚，白某偷花不慎触电，经送医院抢救，不治身亡。李某对这种结果的主观心理态度是什么？",
-    options: { A: "间接故意", B: "直接故意", C: "过于自信的过失", D: "疏忽大意的过失" },
-    answer: "A",
-    explanation: "李某私拉电网，明知可能导致他人触电伤亡，却为防偷花对该结果持放任态度，属于间接故意。"
-  },
-  {
-    id: "s2_6", type: "single", homework: 2, tags: ["犯罪主体"],
-    question: "下列有关单位犯罪的说法哪一项是错误的？",
-    options: {
-      A: "就同一犯罪而言，单位犯罪与自然人犯罪的既遂标准完全相同",
-      B: "单位犯罪既可以是故意犯罪，也可以是过失犯罪",
-      C: "行政机关可以成为单位犯罪的主体",
-      D: "经企业领导集体研究决定并实施的盗窃电力的行为，可以成立单位犯罪，但不对单位判处罚金，只处罚作出该决定的单位领导和直接实施盗窃行为的责任人员"
-    },
-    answer: "D",
-    explanation: "D错误：盗窃罪刑法未规定单位可构成，不能认定为单位犯罪，只能按自然人共同犯罪追责。A、B、C均为正确。"
-  },
-  {
-    id: "s2_7", type: "single", homework: 2, tags: ["危害行为"],
-    question: "甲因家中停电而点燃蜡烛时，意识到蜡烛没有放稳，有可能倾倒引起火灾，但想到如果就此引起火灾，反而可以获得高额的保险赔偿，于是外出吃饭，后来果然引起火灾，并将邻居家的房屋烧毁。甲以失火为由向保险公司索赔，获得赔偿。对于此案，下列哪一选项是正确的？",
-    options: {
-      A: "就保险诈骗罪而言，甲的行为属于作为与不作为的结合",
-      B: "就放火罪而言，甲的行为属于作为与不作为的结合",
-      C: "就保险诈骗罪而言，甲的行为属于不作为犯",
-      D: "就放火罪而言，甲的行为属于不作为犯"
-    },
-    answer: "D",
-    explanation: "甲点燃蜡烛后明知不稳可能起火，负有消除危险的作为义务，但故意不履行、放任火灾发生，属于不作为的放火罪。保险诈骗罪是以虚构事实、骗取保险金的作为方式实施。"
-  },
-  {
-    id: "s2_8", type: "single", homework: 2, tags: ["犯罪主观方面"],
-    question: "关于过失犯的论述，下列哪一选项是错误的？",
-    options: {
-      A: "过失犯罪，法律有规定的才负刑事责任。这里的「法律」不限于刑事法律",
-      B: "只有实际发生危害结果时，才成立过失犯",
-      C: "过失犯的刑事责任一般轻于与之对应的故意犯的刑事责任",
-      D: "认识到可能发生危害结果，但结果的发生违背行为人意志的，成立过失犯"
-    },
-    answer: "A",
-    explanation: "A错误：《刑法》规定「过失犯罪，法律有规定的才负刑事责任」，此处仅限于刑事法律。B、C、D均为正确表述。"
-  },
-  {
-    id: "s2_9", type: "single", homework: 2, tags: ["犯罪主体"],
-    question: "甲（十五周岁）的下列哪一行为成立犯罪？",
-    options: {
-      A: "受意图骗取保险金的张某指使，将张某的汽车推到悬崖下毁坏",
-      B: "春节期间放鞭炮，导致邻居失火，造成十多万元财产损失",
-      C: "因偷拿苹果遭摊主喝骂，遂掏出水果刀将其刺成轻伤",
-      D: "骗取他人数额巨大财物，为抗拒抓捕，当场使用暴力将他人打成重伤"
-    },
-    answer: "D",
-    explanation: "15周岁只对八类严重故意犯罪负刑事责任：故意杀人、故意伤害致人重伤/死亡、强奸、抢劫、贩卖毒品、放火、爆炸、投放危险物质。D属故意伤害致人重伤，应负刑责。A、B、C均不在列。"
-  },
-  {
-    id: "s2_10", type: "single", homework: 2, tags: ["因果关系"],
-    question: "关于刑法上的因果关系，下列哪一判断是正确的？",
-    options: {
-      A: "甲、乙没有意思联络，碰巧同时向丙开枪，且均打中了丙的心脏。甲、乙的行为与丙的死亡之间不具有因果关系",
-      B: "甲追赶小偷乙，乙慌忙中撞上疾驶汽车身亡。甲的行为与乙的死亡之间具有因果关系",
-      C: "甲开枪射击乙，乙迅速躲闪，子弹击中乙身后的丙。甲的行为与丙的死亡之间不具有因果关系",
-      D: "甲以杀人故意向乙的食物中投放了足以致死的毒药，但在该毒药起作用前，丙开枪杀死了乙。甲的行为与乙的死亡之间不具有因果关系"
-    },
-    answer: "D",
-    explanation: "D正确：毒药尚未起作用，丙开枪是独立、异常介入因素，直接导致死亡，切断甲投毒的因果关系。A、C均具有因果关系，B不具有刑法上的因果关系。"
-  }
-];
-
+const ALL_QUESTIONS = [];
 // 知识点颜色轮转调色板
 const KP_COLORS = [
   { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', via: 'red' },
@@ -278,9 +171,20 @@ let STORAGE_KEY = 'studyhub_progress_马原';
 let WRONG_KEY = 'studyhub_wrong_马原';
 let FAVORITES_KEY = 'studyhub_fav_马原';
 
-function getWrongQuestions() { try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); } catch(e) { return []; } }
+function getValidIds(key) {
+    try {
+        const ids = JSON.parse(localStorage.getItem(key) || '[]');
+        if (!ALL_QUESTIONS.length) return ids;
+        const validSet = new Set(ALL_QUESTIONS.map(q => q.id));
+        const valid = ids.filter(id => validSet.has(id));
+        // Auto-clean: if stale IDs found, save cleaned list back
+        if (valid.length !== ids.length) localStorage.setItem(key, JSON.stringify(valid));
+        return valid;
+    } catch(e) { return []; }
+}
+function getWrongQuestions() { return getValidIds(WRONG_KEY); }
 function saveWrongQuestions(ids) { localStorage.setItem(WRONG_KEY, JSON.stringify(ids)); }
-function getFavorites() { try { return JSON.parse(localStorage.getItem(FAVORITES_KEY) || '[]'); } catch(e) { return []; } }
+function getFavorites() { return getValidIds(FAVORITES_KEY); }
 function saveFavorites(ids) { localStorage.setItem(FAVORITES_KEY, JSON.stringify(ids)); }
 
 // ============================================================
@@ -396,9 +300,8 @@ function toggleTheme() {
 // ★ 科目注册表 — 加新科目只改这一行
 const SUBJECT_LIST = ['马原', '行政法', '刑法'];
 
-// 自动构建: 刑法内嵌, 其他 fetch
+// 所有科目通过 fetch JSON 动态加载
 const SUBJECT_DATA = Object.fromEntries(SUBJECT_LIST.map(s => [s, null]));
-SUBJECT_DATA['刑法'] = [...ALL_QUESTIONS];
 
 async function switchSubject(subject) {
     if (currentSubject === subject) return;
@@ -1121,26 +1024,26 @@ function render() {
     else if (currentView === 'result') app.innerHTML = renderResult();
 }
 
-// 初始化：尝试加载马原数据，失败则回退到刑法
+// 初始化：按 SUBJECT_LIST 顺序尝试加载第一个可用的科目
 (async function init() {
-    if (SUBJECT_DATA['马原'] && SUBJECT_DATA['马原'].length > 0) { render(); return; }
-    try {
-        const resp = await fetch('data/马原.json');
-        if (resp.ok) {
-            const data = await resp.json();
-            SUBJECT_DATA['马原'] = data;
-            ALL_QUESTIONS.length = 0;
-            ALL_QUESTIONS.push(...data);
-        }
-    } catch(e) {
-        // fetch 失败（本地 file://），用内嵌刑法兜底
-        currentSubject = '刑法';
-        STORAGE_KEY = 'studyhub_progress_刑法';
-        WRONG_KEY = 'studyhub_wrong_刑法';
-        FAVORITES_KEY = 'studyhub_fav_刑法';
-        ALL_QUESTIONS.length = 0;
-        ALL_QUESTIONS.push(...SUBJECT_DATA['刑法']);
+    for (const subj of SUBJECT_LIST) {
+        try {
+            const resp = await fetch('data/' + subj + '.json');
+            if (resp.ok) {
+                const data = await resp.json();
+                SUBJECT_DATA[subj] = data;
+                ALL_QUESTIONS.length = 0;
+                ALL_QUESTIONS.push(...data);
+                currentSubject = subj;
+                STORAGE_KEY = 'studyhub_progress_' + subj;
+                WRONG_KEY = 'studyhub_wrong_' + subj;
+                FAVORITES_KEY = 'studyhub_fav_' + subj;
+                render();
+                return;
+            }
+        } catch(e) { /* 继续尝试下一个科目 */ }
     }
+    // 所有科目加载失败，显示空状态
     render();
 })();
 </script>
