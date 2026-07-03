@@ -396,7 +396,19 @@ function startPractice(opts = {}) {
 
     userAnswers = {};
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
-    questionList.forEach(q => { userAnswers[q.id] = saved[q.id] || null; });
+    if (opts.resetWrong) {
+        // 错题重做：错题答案清空，非错题保留
+        const wrongSet = new Set(getWrongQuestions());
+        questionList.forEach(q => { userAnswers[q.id] = wrongSet.has(q.id) ? null : (saved[q.id] || null); });
+    } else {
+        questionList.forEach(q => { userAnswers[q.id] = saved[q.id] || null; });
+    }
+
+    // 进度恢复：跳到第一个未答题
+    if (!opts.startId && !opts.shuffle && !opts.resetWrong) {
+        const firstUnanswered = questionList.findIndex(q => !saved[q.id]);
+        if (firstUnanswered >= 0) currentQuestionIndex = firstUnanswered;
+    }
 
     currentHomework = opts.hw || 'all';
     currentType = opts.type || 'all';
@@ -696,7 +708,8 @@ function renderHome() {
                     <span class="text-xs font-bold ${allWrong>0?'text-rose-500':'text-gray-300'}">${allWrong} 题</span>
                 </div>
                 ${allWrong > 0 ? `
-                <button onclick="startPractice({wrongOnly:true})" class="w-full py-2.5 bg-rose-400 text-white rounded-xl text-sm font-medium hover:bg-rose-500 transition-all">查看错题</button>
+                <button onclick="startPractice({wrongOnly:true,resetWrong:true,shuffle:true})" class="w-full py-2.5 bg-rose-400 text-white rounded-xl text-sm font-medium hover:bg-rose-500 transition-all">重做错题</button>
+                <button onclick="startPractice({wrongOnly:true})" class="w-full py-2 bg-rose-100 text-rose-500 rounded-xl text-xs font-medium hover:bg-rose-200 transition-all mt-1">查看记录</button>
                 ` : `<div class="text-xs text-gray-300 text-center py-2.5">暂无错题 🎉</div>`}
             </div>
             <div class="glass-card p-4">
@@ -818,7 +831,7 @@ function renderQuiz() {
         <!-- Top bar -->
         <div class="flex items-center justify-between mb-3">
             <button onclick="goHome()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">← 返回</button>
-            <span class="text-xs text-gray-400">${currentQuestionIndex+1}/${total}</span>
+            <button onclick="showQuestionNav()" class="text-xs text-gray-500 hover:text-gray-700 bg-white/60 px-2 py-1 rounded-lg font-mono">${currentQuestionIndex+1}/${total}</button>
             <button onclick="showResult()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">统计 →</button>
         </div>
 
@@ -922,6 +935,49 @@ function resetAll() {
 }
 
 function toggleDetail(qid) { const el=document.getElementById('detail-'+qid), ar=document.getElementById('darrow-'+qid); if(!el)return; el.classList.toggle('hidden'); if(ar)ar.style.transform=el.classList.contains('hidden')?'rotate(0deg)':'rotate(90deg)'; }
+
+// ── 题号导航弹窗 ──
+let navPressTimer = null;
+function showQuestionNav() {
+    const overlay = document.createElement('div');
+    overlay.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
+    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    let h = '<div class="bg-white rounded-2xl p-5 max-w-sm w-full max-h-[80vh] overflow-y-auto">';
+    h += '<div class="font-bold text-gray-800 mb-3">题目导航</div><div class="grid grid-cols-5 gap-2">';
+    questionList.forEach(function(q, i) {
+        var ua = userAnswers[q.id], isAns = !!ua, bg = 'bg-gray-100 text-gray-500';
+        if (isAns) {
+            var correct = q.type === 'multiple' ? ua.split('').sort().join('') === q.answer.split('').sort().join('') : ua === q.answer;
+            bg = correct ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500';
+        }
+        if (i === currentQuestionIndex) bg += ' ring-2 ring-indigo-400';
+        h += '<button onclick="jumpToQuestion('+i+');var o=document.querySelector(\\'#qnav-overlay\\');if(o)o.remove()"';
+        h += ' onmousedown="startNavPreview('+i+',event)" onmouseup="clearNavPreview()" onmouseleave="clearNavPreview()"';
+        h += ' ontouchstart="startNavPreview('+i+',event)" ontouchend="clearNavPreview()"';
+        h += ' class="'+bg+' rounded-lg py-2 text-xs font-bold transition-all hover:scale-105">'+(i+1)+'</button>';
+    });
+    h += '</div></div>';
+    overlay.innerHTML = h;
+    overlay.id = 'qnav-overlay';
+    document.body.appendChild(overlay);
+}
+function jumpToQuestion(idx) { currentQuestionIndex = idx; currentMultipleSelections = {}; render(); }
+function startNavPreview(idx, e) {
+    clearNavPreview();
+    navPressTimer = setTimeout(function() {
+        var q = questionList[idx]; if (!q) return;
+        var tip = document.createElement('div');
+        tip.id = 'qnav-tip';
+        tip.className = 'fixed z-50 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-lg max-w-[260px] pointer-events-none';
+        var cx = e.touches ? e.touches[0].clientX : e.clientX;
+        var cy = e.touches ? e.touches[0].clientY : e.clientY;
+        tip.style.left = Math.min(cx + 10, window.innerWidth - 270) + 'px';
+        tip.style.top = Math.max(cy - 60, 10) + 'px';
+        tip.innerHTML = '<span class="text-gray-400">'+(idx+1)+'.</span> ' + escHtml(q.question.substring(0, 80)) + (q.question.length>80?'…':'');
+        document.body.appendChild(tip);
+    }, 400);
+}
+function clearNavPreview() { if (navPressTimer) clearTimeout(navPressTimer); var t=document.getElementById('qnav-tip'); if(t) t.remove(); }
 function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ============================================================
