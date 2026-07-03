@@ -294,6 +294,30 @@ function searchQuestions(query, questions) {
 }
 function getQuestionsByTag(tag, questions) { return !tag ? [...questions] : questions.filter(q => (q.tags||[]).includes(tag)); }
 function getKnowledgePointStats(qs) { const s={}; qs.forEach(q => (q.tags||[]).forEach(t => s[t]=(s[t]||0)+1)); return s; }
+function extractSortNum(v) {
+    if (typeof v === 'number') return v;
+    const s = String(v);
+    // Arabic: "第1章", "练习3"
+    let m = s.match(/(\d+)/);
+    if (m) return parseInt(m[1]);
+    // Chinese: 一～十
+    const cn = {'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9,'十':10};
+    m = s.match(/[一二三四五六七八九十]/);
+    if (m) {
+        // Check for 十X pattern (十一→11, 二十→20)
+        const m2 = s.match(/([一二三])?十([一二三四五六七八九])?/);
+        if (m2) {
+            let v = 0;
+            if (m2[1]) v += cn[m2[1]] * 10;
+            else if (m2[0].startsWith('十')) v += 10;
+            if (m2[2]) v += cn[m2[2]];
+            return v;
+        }
+        return cn[m[0]] || 0;
+    }
+    return 999; // no number → sort last
+}
+function naturalSort(a, b) { return extractSortNum(a) - extractSortNum(b); }
 function shuffleArray(arr) { const r=[...arr]; for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];} return r; }
 
 // ============================================================
@@ -566,7 +590,7 @@ function renderHome() {
     const isDark = currentTheme === 'dark';
 
     // 动态作业列表
-    const hwSet = [...new Set(ALL_QUESTIONS.map(q => q.homework))].sort((a,b) => b-a);
+    const hwSet = [...new Set(ALL_QUESTIONS.map(q => q.homework))].sort(naturalSort);
     const hwStats = {};
     const meta = SUBJECT_META[currentSubject] || {};
     const hwLabels = meta.homeworkLabels || {};
