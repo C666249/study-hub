@@ -380,9 +380,19 @@ function startPractice(opts = {}) {
     if (opts.tag) pool = getQuestionsByTag(opts.tag, pool);
     if (opts.wrongOnly) { const ids = getWrongQuestions(); pool = pool.filter(q => ids.includes(q.id)); }
     if (opts.favOnly) { const ids = getFavorites(); pool = pool.filter(q => ids.includes(q.id)); }
+    // 搜索/精准跳转: 按指定 ID 列表过滤
+    if (opts.searchIds) {
+        const idSet = new Set(opts.searchIds.split(','));
+        pool = pool.filter(q => idSet.has(q.id));
+    }
 
     questionList = pool;
     if (opts.shuffle && questionList.length > 1) questionList = shuffleArray(questionList);
+    // 精准跳转到指定题目
+    if (opts.startId) {
+        const idx = questionList.findIndex(q => q.id === opts.startId);
+        if (idx >= 0) currentQuestionIndex = idx;
+    }
 
     userAnswers = {};
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -494,7 +504,7 @@ function handleSearchInput(val) {
     }
     const kpStats = getKnowledgePointStats(results);
     area.innerHTML = `
-        <button onclick="startPractice({shuffle:false}); document.getElementById('search-input').value=''; searchQuery=''; render();"
+        <button onclick="document.getElementById('search-input').value='';startPractice({searchIds:'${results.map(r=>r.id).join(',')}',shuffle:false})"
             class="w-full py-2.5 bg-red-500 text-white rounded-xl text-sm font-medium hover:bg-red-600 transition-all mb-2">
             练习全部 ${results.length} 题
         </button>
@@ -503,14 +513,15 @@ function handleSearchInput(val) {
         </div>
         <div class="space-y-1.5 max-h-48 overflow-y-auto">
             ${results.slice(0, 8).map(r => {
-                const hw = r.homework === 2 ? '作业二' : '作业一';
+                const hw = '作业'+r.homework;
                 const preview = r.question.length > 35 ? r.question.substring(0,35)+'…' : r.question;
-                return `<div class="text-xs text-gray-600 py-1.5 px-2 bg-gray-50 rounded-lg flex items-center gap-2">
+                return `<button onclick="document.getElementById('search-input').value='';startPractice({searchIds:'${results.map(r=>r.id).join(',')}',startId:'${r.id}'})"
+                    class="w-full text-left text-xs text-gray-600 py-1.5 px-2 bg-gray-50 rounded-lg flex items-center gap-2 hover:bg-gray-100 transition-all">
                     <span class="shrink-0 w-5 h-5 rounded-md bg-red-100 text-red-500 flex items-center justify-center" style="font-size:10px">${r.type==='judge'?'判':r.type==='multiple'?'多':'单'}</span>
                     <span class="truncate">${escHtml(preview)}</span>
                     <span class="shrink-0 text-gray-400">${hw}</span>
                     ${(r.tags||[]).map(t=>'<span class="shrink-0 px-1.5 py-0.5 rounded text-red-400 bg-red-50" style="font-size:10px">'+t+'</span>').join('')}
-                </div>`;
+                </button>`;
             }).join('')}
             ${results.length > 8 ? '<div class="text-xs text-gray-400 text-center py-1">还有 '+(results.length-8)+' 题…</div>' : ''}
         </div>`;
