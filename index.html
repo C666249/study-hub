@@ -917,48 +917,52 @@ function renderQuiz() {
     }
 
     return `
-    <div class="max-w-md mx-auto px-4 py-4">
-        <!-- Top bar -->
-        <div class="flex items-center justify-between mb-3">
-            <button onclick="goHome()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">← 返回</button>
-            <button onclick="showQuestionNav()" class="text-xs text-gray-500 hover:text-gray-700 bg-white/60 px-2 py-1 rounded-lg font-mono">${currentQuestionIndex+1}/${total}</button>
-            <button onclick="showResult()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">统计 →</button>
-        </div>
-
-        <!-- Progress -->
-        <div class="w-full bg-gray-200 rounded-full h-1.5 mb-4">
-            <div class="bg-gradient-to-r from-red-500 to-amber-400 h-1.5 rounded-full progress-bar" style="width:${progress}%"></div>
-        </div>
-
-        <!-- Question card -->
-        <div class="glass-card p-5 mb-4 fade-in">
-            <div class="flex items-center gap-1.5 mb-3 flex-wrap">
-                ${isExamMode?'<span class="px-2 py-0.5 bg-red-100 text-red-500 rounded-full text-xs font-bold">考试</span>':''}
-                <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">${getHwLabel(q.homework)}</span>
-                <span class="px-2 py-0.5 ${tc.bg} ${tc.text} rounded-full text-xs font-bold">${typeLabels[q.type]||q.type}</span>
-                ${(q.tags||[]).map(t => '<span class="px-2 py-0.5 bg-red-50 text-red-400 rounded-full text-xs">'+t+'</span>').join('')}
+    <div class="max-w-md mx-auto min-h-dvh flex flex-col">
+        <!-- Sticky top bar + progress -->
+        <div class="sticky top-0 z-20 px-4 pt-4 pb-2 bg-white/90 backdrop-blur-sm border-b border-gray-100">
+            <div class="flex items-center justify-between mb-2">
+                <button onclick="goHome()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">← 返回</button>
+                <button onclick="showQuestionNav()" class="text-xs text-gray-500 hover:text-gray-700 bg-white/60 px-2 py-1 rounded-lg font-mono">${currentQuestionIndex+1}/${total}</button>
+                <button onclick="showResult()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">统计 →</button>
             </div>
-
-            <div class="text-base text-gray-800 leading-relaxed mb-5">${q.question}</div>
-            ${answerSection}
-
-            ${isAns && q.type !== 'short' ? `
-            <div class="mt-5 p-4 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
-                <div class="font-bold text-sm ${isCorrect?'text-green-700':'text-red-700'} mb-1">${isCorrect?'✅ 回答正确！':'❌ 回答错误'}</div>
-                <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${escHtml(String(q.answer).replace(/\d+分\s*$/,''))}</div>
-                ${q.detail && q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+formatExplanation(q.explanation)+'</div></div>' : ''}
-                ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
-                <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
-                    ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
-                </button>
-            </div>` : ''}
+            <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="bg-gradient-to-r from-red-500 to-amber-400 h-1.5 rounded-full progress-bar" style="width:${progress}%"></div>
+            </div>
         </div>
 
-        <!-- Bottom nav -->
-        <div class="flex items-center gap-3">
-            <button onclick="prevQuestion()" class="flex-1 py-3 px-4 bg-white/70 border border-gray-200 text-gray-500 rounded-xl text-sm font-medium disabled:opacity-40" ${currentQuestionIndex===0?'disabled':''}>← 上一题</button>
-            <span class="text-xs text-gray-400 shrink-0">已答${answered}</span>
-            <button onclick="${currentQuestionIndex>=total-1?'showResult()':'nextQuestion()'}" class="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all">${currentQuestionIndex>=total-1?'查看结果':'下一题 →'}</button>
+        <!-- Scrollable question area -->
+        <div class="flex-1 px-4 py-3 pb-24">
+            <div class="glass-card p-5 mb-4 fade-in">
+                <div class="flex items-center gap-1.5 mb-3 flex-wrap">
+                    ${isExamMode?'<span class="px-2 py-0.5 bg-red-100 text-red-500 rounded-full text-xs font-bold">考试</span>':''}
+                    <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">${getHwLabel(q.homework)}</span>
+                    <span class="px-2 py-0.5 ${tc.bg} ${tc.text} rounded-full text-xs font-bold">${typeLabels[q.type]||q.type}</span>
+                    ${(q.tags||[]).map(t => '<span class="px-2 py-0.5 bg-red-50 text-red-400 rounded-full text-xs">'+t+'</span>').join('')}
+                </div>
+
+                <div class="text-base text-gray-800 leading-relaxed mb-5">${q.question}</div>
+                ${answerSection}
+
+                ${isAns && q.type !== 'short' ? `
+                <div class="mt-5 p-4 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
+                    <div class="font-bold text-sm ${isCorrect?'text-green-700':'text-red-700'} mb-1">${isCorrect?'✅ 回答正确！':'❌ 回答错误'}</div>
+                    <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${escHtml(String(q.answer).replace(/\d+分\s*$/,''))}</div>
+                    ${q.detail && q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+formatExplanation(q.explanation)+'</div></div>' : ''}
+                    ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
+                    <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
+                        ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
+                    </button>
+                </div>` : ''}
+            </div>
+        </div>
+
+        <!-- Sticky bottom nav -->
+        <div class="fixed bottom-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-sm border-t border-gray-100">
+            <div class="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+                <button onclick="prevQuestion()" class="flex-1 py-3 px-4 bg-white/70 border border-gray-200 text-gray-500 rounded-xl text-sm font-medium disabled:opacity-40" ${currentQuestionIndex===0?'disabled':''}>← 上一题</button>
+                <span class="text-xs text-gray-400 shrink-0">已答${answered}</span>
+                <button onclick="${currentQuestionIndex>=total-1?'showResult()':'nextQuestion()'}" class="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all">${currentQuestionIndex>=total-1?'查看结果':'下一题 →'}</button>
+            </div>
         </div>
     </div>`;
 }
