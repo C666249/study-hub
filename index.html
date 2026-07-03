@@ -721,7 +721,7 @@ function renderHome() {
                     return `
                     <!-- Group header -->
                     <div class="flex items-center gap-1.5 cursor-pointer select-none pt-1" onclick="toggleSection('hwgroup-${gkSafe}')">
-                        <span class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${gCollapsed?'-90deg':'0deg'})">▼</span>
+                        <span id="hwgroup-${gkSafe}_arrow" class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${gCollapsed?'-90deg':'0deg'})">▼</span>
                         <span class="text-xs font-bold text-gray-500 tracking-wide">${group.label}</span>
                         <span class="text-xs text-gray-400">(${group.items.length})</span>
                     </div>
@@ -756,7 +756,7 @@ function renderHome() {
                             </div>`;
                         }).join('')}
                     </div>
-                    ${!isLast ? '<div style="height:2px; background:linear-gradient(90deg,'+HW_DIVIDER_GRADIENT+')"></div>' : ''}
+                    ${!isLast ? '<div style="height:1px; background:linear-gradient(90deg,'+HW_DIVIDER_GRADIENT+')"></div>' : ''}
                     `;
                 }).join('')}
             </div>
