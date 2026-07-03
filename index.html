@@ -137,7 +137,7 @@ body { overscroll-behavior-y: none; }
 const ALL_QUESTIONS = [];
 // 知识点颜色轮转调色板
 const KP_COLORS = [
-  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', via: 'red' },
+  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
   { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', via: 'amber' },
   { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200', via: 'sky' },
   { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', via: 'emerald' },
@@ -936,8 +936,6 @@ function formatExplanation(expl) {
         return '<span class="inline-block mr-3 mb-1"><b class="'+cls+'">'+icon+' '+m[1]+'</b> '+escHtml(m[3].trim())+'</span>';
     }).join('');
 }
-function toggleDetail(qid) { const el=document.getElementById('detail-'+qid), ar=document.getElementById('darrow-'+qid); if(!el)return; el.classList.toggle('hidden'); if(ar)ar.style.transform=el.classList.contains('hidden')?'rotate(0deg)':'rotate(90deg)'; }
-
 // ── 题号导航弹窗 ──
 let navPressTimer = null;
 function showQuestionNav() {
