@@ -243,18 +243,18 @@ const ALL_QUESTIONS = [
 
 // 知识点颜色轮转调色板
 const KP_COLORS = [
-  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200' },
-  { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200' },
-  { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200' },
-  { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200' },
-  { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-200' },
-  { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200' },
-  { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200' },
-  { bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200' },
-  { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200' },
-  { bg: 'bg-lime-50', text: 'text-lime-600', border: 'border-lime-200' },
-  { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200' },
-  { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', border: 'border-fuchsia-200' },
+  { bg: 'bg-red-50', text: 'text-red-600', border: 'border-red-200', via: 'red' },
+  { bg: 'bg-amber-50', text: 'text-amber-600', border: 'border-amber-200', via: 'amber' },
+  { bg: 'bg-sky-50', text: 'text-sky-600', border: 'border-sky-200', via: 'sky' },
+  { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'border-emerald-200', via: 'emerald' },
+  { bg: 'bg-violet-50', text: 'text-violet-600', border: 'border-violet-200', via: 'violet' },
+  { bg: 'bg-pink-50', text: 'text-pink-600', border: 'border-pink-200', via: 'pink' },
+  { bg: 'bg-indigo-50', text: 'text-indigo-600', border: 'border-indigo-200', via: 'indigo' },
+  { bg: 'bg-teal-50', text: 'text-teal-600', border: 'border-teal-200', via: 'teal' },
+  { bg: 'bg-orange-50', text: 'text-orange-600', border: 'border-orange-200', via: 'orange' },
+  { bg: 'bg-lime-50', text: 'text-lime-600', border: 'border-lime-200', via: 'lime' },
+  { bg: 'bg-cyan-50', text: 'text-cyan-600', border: 'border-cyan-200', via: 'cyan' },
+  { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', border: 'border-fuchsia-200', via: 'fuchsia' },
 ];
 
 // 科目元数据（作业标签等）
@@ -753,7 +753,7 @@ function renderHome() {
                             </div>`;
                         }).join('')}
                     </div>
-                    ${!isLast ? '<div class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-1"></div>' : ''}
+                    ${!isLast ? '<div class="h-px bg-gradient-to-r from-transparent via-'+KP_COLORS[gi % KP_COLORS.length].via+'-300 to-transparent my-1"></div>' : ''}
                     `;
                 }).join('')}
             </div>
