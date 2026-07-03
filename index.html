@@ -257,8 +257,8 @@ const KP_COLORS = [
   { bg: 'bg-fuchsia-50', text: 'text-fuchsia-600', border: 'border-fuchsia-200', via: 'fuchsia' },
 ];
 
-// 作业组分隔线
-const HW_DIVIDER_GRADIENT = 'transparent 0%, #0FE1BE 20%, #0FE1DA 50%, #0FB4E1 80%, transparent 100%';
+// 作业组分隔线 冰蓝+翡翠绿轮转
+const HW_DIVIDER_COLORS = ['border-sky-300', 'border-emerald-300'];
 
 // 科目元数据（作业标签等）
 const SUBJECT_META = {
@@ -756,7 +756,7 @@ function renderHome() {
                             </div>`;
                         }).join('')}
                     </div>
-                    ${!isLast ? '<div style="height:1px; background:linear-gradient(90deg,'+HW_DIVIDER_GRADIENT+')"></div>' : ''}
+                    ${!isLast ? '<div class="border-t '+HW_DIVIDER_COLORS[gi % HW_DIVIDER_COLORS.length]+'"></div>' : ''}
                     `;
                 }).join('')}
             </div>
