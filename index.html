@@ -272,11 +272,11 @@ const SUBJECT_META = {
 };
 
 // ============================================================
-// STORAGE
+// STORAGE — keys must match currentSubject to avoid cross-subject data mix
 // ============================================================
-let STORAGE_KEY = 'studyhub_progress_刑法';
-let WRONG_KEY = 'studyhub_wrong_刑法';
-let FAVORITES_KEY = 'studyhub_fav_刑法';
+let STORAGE_KEY = 'studyhub_progress_马原';
+let WRONG_KEY = 'studyhub_wrong_马原';
+let FAVORITES_KEY = 'studyhub_fav_马原';
 
 function getWrongQuestions() { try { return JSON.parse(localStorage.getItem(WRONG_KEY) || '[]'); } catch(e) { return []; } }
 function saveWrongQuestions(ids) { localStorage.setItem(WRONG_KEY, JSON.stringify(ids)); }
@@ -1135,6 +1135,9 @@ function render() {
     } catch(e) {
         // fetch 失败（本地 file://），用内嵌刑法兜底
         currentSubject = '刑法';
+        STORAGE_KEY = 'studyhub_progress_刑法';
+        WRONG_KEY = 'studyhub_wrong_刑法';
+        FAVORITES_KEY = 'studyhub_fav_刑法';
         ALL_QUESTIONS.length = 0;
         ALL_QUESTIONS.push(...SUBJECT_DATA['刑法']);
     }
