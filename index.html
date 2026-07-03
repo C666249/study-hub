@@ -951,7 +951,7 @@ function showQuestionNav() {
             bg = correct ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-500';
         }
         if (i === currentQuestionIndex) bg += ' ring-2 ring-indigo-400';
-        h += '<button onclick="jumpToQuestion('+i+');var o=document.querySelector(\\'#qnav-overlay\\');if(o)o.remove()"';
+        h += '<button onclick="jumpToQuestion('+i+')"';
         h += ' onmousedown="startNavPreview('+i+',event)" onmouseup="clearNavPreview()" onmouseleave="clearNavPreview()"';
         h += ' ontouchstart="startNavPreview('+i+',event)" ontouchend="clearNavPreview()"';
         h += ' class="'+bg+' rounded-lg py-2 text-xs font-bold transition-all hover:scale-105">'+(i+1)+'</button>';
@@ -961,7 +961,7 @@ function showQuestionNav() {
     overlay.id = 'qnav-overlay';
     document.body.appendChild(overlay);
 }
-function jumpToQuestion(idx) { currentQuestionIndex = idx; currentMultipleSelections = {}; render(); }
+function jumpToQuestion(idx) { currentQuestionIndex = idx; currentMultipleSelections = {}; var o=document.getElementById('qnav-overlay'); if(o) o.remove(); render(); }
 function startNavPreview(idx, e) {
     clearNavPreview();
     navPressTimer = setTimeout(function() {
