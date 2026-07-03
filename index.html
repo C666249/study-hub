@@ -315,31 +315,51 @@ function extractSortNum(v) {
     return 999;
 }
 function getHwGroupKey(hw) {
-    // Text before the number = format group. Normalize "练习" vs "练习题"
+    // Pattern key: replace number with #, keep surrounding structural chars
+    // "第1章 ABC" → "第#章" (strips chapter name after 章)
+    // "第一次作业" → "第#次作业"
+    // "平时作业（一）" → "平时作业（#）"
+    // "马克思主义哲学练习题二" → "马克思主义哲学练习#" (normalize 题)
     const s = String(hw);
-    let idx = -1;
+    let numStr = '', idx = -1;
     let am = s.match(/(\d+)/);
-    if (am) idx = am.index;
-    else { let cm = s.match(/[一二三四五六七八九十百]+/); if (cm) idx = cm.index; }
-    let prefix = idx >= 0 ? s.substring(0, idx) : s;
-    return prefix.replace(/[题\s]+$/, '');
+    if (am) { numStr = am[0]; idx = am.index; }
+    else { let cm = s.match(/[一二三四五六七八九十百]+/); if (cm) { numStr = cm[0]; idx = cm.index; } }
+    if (idx < 0) return s;
+    let pattern = s.substring(0, idx) + '#' + s.substring(idx + numStr.length);
+    // Normalize: strip chapter-specific name after "章" so all chapters share one group
+    pattern = pattern.replace(/^(第#章).*/, '$1');
+    // Normalize: "练习#" == "练习题#" → strip trailing 题 before #
+    pattern = pattern.replace(/题#/, '#');
+    return pattern;
 }
-function buildHwSortOrder(hwList) {
-    // Group by format prefix, order groups by min-num, then items by num
+function getGroupLabel(pattern) {
+    // Auto-label from pattern: strip （#） wrapper, replace # with N (only when not at edges)
+    if (pattern === '第#章') return '章节练习';
+    if (pattern === '#') return '作业练习';
+    let label = pattern.replace(/[（(]\s*#\s*[）)]/, '');
+    label = label.replace(/#$/, '').replace('#', 'N');
+    return label.trim();
+}
+function getHwGroups(hwList) {
+    // Returns: [{ key, label, items[], minNum }] sorted by (minNum, key.length, key)
     const groups = new Map();
     hwList.forEach(hw => {
         const gk = getHwGroupKey(hw);
         if (!groups.has(gk)) groups.set(gk, []);
         groups.get(gk).push(hw);
     });
-    // Sort groups: by min number within each group
-    const sortedGroups = [...groups.entries()].map(([gk, items]) => ({
-        gk, items,
+    const result = [...groups.entries()].map(([key, items]) => ({
+        key, items,
+        label: getGroupLabel(key),
         minNum: Math.min(...items.map(h => extractSortNum(h)))
-    })).sort((a, b) => a.minNum !== b.minNum ? a.minNum - b.minNum : a.gk.length !== b.gk.length ? a.gk.length - b.gk.length : (a.gk < b.gk ? -1 : 1));
-    // Sort items within each group by number
-    sortedGroups.forEach(g => g.items.sort((a, b) => extractSortNum(a) - extractSortNum(b)));
-    return sortedGroups.flatMap(g => g.items);
+    }));
+    result.sort((a, b) =>
+        a.minNum !== b.minNum ? a.minNum - b.minNum :
+        a.key.length !== b.key.length ? a.key.length - b.key.length :
+        (a.key < b.key ? -1 : 1));
+    result.forEach(g => g.items.sort((a, b) => extractSortNum(a) - extractSortNum(b)));
+    return result;
 }
 function shuffleArray(arr) { const r=[...arr]; for(let i=r.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[r[i],r[j]]=[r[j],r[i]];} return r; }
 
@@ -613,16 +633,16 @@ function renderHome() {
     const isDark = currentTheme === 'dark';
 
     // 动态作业列表
-    const hwSet = buildHwSortOrder([...new Set(ALL_QUESTIONS.map(q => q.homework))]);
+    const hwGroups = getHwGroups([...new Set(ALL_QUESTIONS.map(q => q.homework))]);
     const hwStats = {};
     const meta = SUBJECT_META[currentSubject] || {};
     const hwLabels = meta.homeworkLabels || {};
-    hwSet.forEach(hw => {
+    hwGroups.forEach(g => g.items.forEach(hw => {
         const qs = ALL_QUESTIONS.filter(q => q.homework === hw);
         const ans = qs.filter(q => saved[q.id]).length;
         const wr = qs.filter(q => wrong.includes(q.id)).length;
         hwStats[hw] = { total: qs.length, answered: ans, wrong: wr, label: hwLabels[hw] || (typeof hw === 'number' ? '作业'+hw : String(hw)) };
-    });
+    }));
 
     // 暂无数据的科目显示占位
     if (total === 0) {
@@ -691,34 +711,50 @@ function renderHome() {
                 <span id="hw-section_arrow" class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${collapsedSections.has('hw-section')?'-90deg':'0deg'})">▼</span>
             </div>
             <div id="hw-section" class="space-y-2.5 ${collapsedSections.has('hw-section')?'hidden':''}">
-                ${hwSet.map((hw, i) => {
-                    const s = hwStats[hw];
-                    const hasQ = s.total > 0;
-                    const c = KP_COLORS[i % KP_COLORS.length];
-                    const pct = s.total>0 ? Math.round(s.answered/s.total*100) : 0;
+                ${hwGroups.map((group, gi) => {
+                    const gkSafe = group.key.replace(/#/g, '_');
+                    const gCollapsed = collapsedSections.has('hwgroup-'+gkSafe);
+                    const isLast = gi === hwGroups.length - 1;
                     return `
-                    <div class="glass-card p-4" ${hasQ ? `onclick="document.getElementById('hw${hw}_d').classList.toggle('hidden')"` : ''}>
-                        <div class="flex items-center justify-between">
-                            <div>
-                                <div class="font-bold text-sm text-gray-800">${s.label}</div>
-                                <div class="text-xs text-gray-400 mt-0.5">${hasQ ? s.total+'题 · 已答'+s.answered+' · 错题'+s.wrong : '即将上线'}</div>
-                            </div>
-                            ${hasQ ? `
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-bold ${c.text}">${pct}%</span>
-                                <span class="text-gray-300 text-lg">›</span>
-                            </div>` : ''}
-                        </div>
-                        ${hasQ ? `
-                        <div class="w-full bg-gray-200 rounded-full h-1.5 mt-3">
-                            <div class="bg-emerald-500 h-1.5 rounded-full progress-bar" style="width:${pct}%"></div>
-                        </div>
-                        <div id="hw${hw}_d" class="hidden mt-3 pt-3 border-t border-gray-100 space-y-1.5">
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:true})" class="w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">随机挑战</button>
-                            <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
-                        </div>` : ''}
-                    </div>`;
+                    <!-- Group header -->
+                    <div class="flex items-center gap-1.5 cursor-pointer select-none pt-1" onclick="toggleSection('hwgroup-${gkSafe}')">
+                        <span class="text-xs transition-transform duration-200" style="display:inline-block;transform:rotate(${gCollapsed?'-90deg':'0deg'})">▼</span>
+                        <span class="text-xs font-bold text-gray-500 tracking-wide">${group.label}</span>
+                        <span class="text-xs text-gray-400">(${group.items.length})</span>
+                    </div>
+                    <div id="hwgroup-${gkSafe}" class="space-y-2 ${gCollapsed?'hidden':''}">
+                        ${group.items.map((hw, i) => {
+                            const s = hwStats[hw];
+                            const hasQ = s.total > 0;
+                            const c = KP_COLORS[(gi * 10 + i) % KP_COLORS.length];
+                            const pct = s.total>0 ? Math.round(s.answered/s.total*100) : 0;
+                            return `
+                            <div class="glass-card p-4" ${hasQ ? `onclick="document.getElementById('hw_${gkSafe}_${i}_d').classList.toggle('hidden')"` : ''}>
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="font-bold text-sm text-gray-800">${s.label}</div>
+                                        <div class="text-xs text-gray-400 mt-0.5">${hasQ ? s.total+'题 · 已答'+s.answered+' · 错题'+s.wrong : '即将上线'}</div>
+                                    </div>
+                                    ${hasQ ? `
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-xs font-bold ${c.text}">${pct}%</span>
+                                        <span class="text-gray-300 text-lg">›</span>
+                                    </div>` : ''}
+                                </div>
+                                ${hasQ ? `
+                                <div class="w-full bg-gray-200 rounded-full h-1.5 mt-3">
+                                    <div class="bg-emerald-500 h-1.5 rounded-full progress-bar" style="width:${pct}%"></div>
+                                </div>
+                                <div id="hw_${gkSafe}_${i}_d" class="hidden mt-3 pt-3 border-t border-gray-100 space-y-1.5">
+                                    <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
+                                    <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:true})" class="w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">随机挑战</button>
+                                    <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
+                                </div>` : ''}
+                            </div>`;
+                        }).join('')}
+                    </div>
+                    ${!isLast ? '<div class="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-1"></div>' : ''}
+                    `;
                 }).join('')}
             </div>
         </div>
@@ -904,8 +940,8 @@ function renderQuiz() {
             <div class="mt-5 p-4 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
                 <div class="font-bold text-sm ${isCorrect?'text-green-700':'text-red-700'} mb-1">${isCorrect?'✅ 回答正确！':'❌ 回答错误'}</div>
                 <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${escHtml(String(q.answer).replace(/\d+分\s*$/,''))}</div>
-                ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
                 ${q.detail && q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+formatExplanation(q.explanation)+'</div></div>' : ''}
+                ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
                 <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
                     ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
                 </button>
