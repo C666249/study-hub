@@ -574,7 +574,7 @@ function renderHome() {
         const qs = ALL_QUESTIONS.filter(q => q.homework === hw);
         const ans = qs.filter(q => saved[q.id]).length;
         const wr = qs.filter(q => wrong.includes(q.id)).length;
-        hwStats[hw] = { total: qs.length, answered: ans, wrong: wr, label: hwLabels[hw] || '作业'+hw };
+        hwStats[hw] = { total: qs.length, answered: ans, wrong: wr, label: hwLabels[hw] || (typeof hw === 'number' ? '作业'+hw : String(hw)) };
     });
 
     // 暂无数据的科目显示占位
@@ -768,6 +768,7 @@ function renderQuiz() {
     const isFav = getFavorites().includes(q.id);
 
     const hwLabels = {1:'作业一',2:'作业二'};
+    function getHwLabel(hw) { return hwLabels[hw] || (typeof hw === 'number' ? '作业'+hw : String(hw)); }
     const typeLabels = {judge:'判断',single:'单选',multiple:'多选',short:'简答'};
     const typeColors = {judge:{bg:'bg-purple-50',text:'text-purple-600'},single:{bg:'bg-blue-50',text:'text-blue-600'},multiple:{bg:'bg-green-50',text:'text-green-600'},short:{bg:'bg-orange-50',text:'text-orange-600'}};
     const tc = typeColors[q.type] || typeColors.single;
@@ -844,7 +845,7 @@ function renderQuiz() {
         <div class="glass-card p-5 mb-4 fade-in">
             <div class="flex items-center gap-1.5 mb-3 flex-wrap">
                 ${isExamMode?'<span class="px-2 py-0.5 bg-red-100 text-red-500 rounded-full text-xs font-bold">考试</span>':''}
-                <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">${hwLabels[q.homework]||'作业'+q.homework}</span>
+                <span class="px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full text-xs font-bold">${getHwLabel(q.homework)}</span>
                 <span class="px-2 py-0.5 ${tc.bg} ${tc.text} rounded-full text-xs font-bold">${typeLabels[q.type]||q.type}</span>
                 ${(q.tags||[]).map(t => '<span class="px-2 py-0.5 bg-red-50 text-red-400 rounded-full text-xs">'+t+'</span>').join('')}
             </div>
@@ -855,20 +856,12 @@ function renderQuiz() {
             ${isAns && q.type !== 'short' ? `
             <div class="mt-5 p-4 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
                 <div class="font-bold text-sm ${isCorrect?'text-green-700':'text-red-700'} mb-1">${isCorrect?'✅ 回答正确！':'❌ 回答错误'}</div>
-                <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${q.answer}</div>
-                ${q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-600">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : ''}
+                <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${escHtml(String(q.answer).replace(/\d+分\s*$/,''))}</div>
+                ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
+                ${q.detail && q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+formatExplanation(q.explanation)+'</div></div>' : ''}
                 <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
                     ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
                 </button>
-                ${q.detail && q.detail.length > 0 ? `
-                <div class="mt-2 pt-2 border-t border-gray-200/50">
-                    <button onclick="toggleDetail('${q.id}')" class="text-xs font-medium text-gray-400 hover:text-gray-600 transition-all">
-                        <span id="darrow-${q.id}" class="inline-block transition-transform duration-200" style="font-size:9px">▶</span> 详细解析
-                    </button>
-                    <div id="detail-${q.id}" class="hidden mt-2 text-xs text-gray-500 leading-relaxed bg-gray-50 rounded-lg p-3">
-                        ${escHtml(q.detail)}
-                    </div>
-                </div>` : ''}
             </div>` : ''}
         </div>
 
@@ -934,6 +927,18 @@ function resetAll() {
     }
 }
 
+function formatExplanation(expl) {
+    if (!expl) return '';
+    // Split "A. 正确。...B. 错误。..." into per-option lines
+    const parts = expl.split(/(?=[A-E][.．]\s*(?:正确|错误))/);
+    return parts.map(p => {
+        const m = p.match(/^([A-E])[.．]\s*(正确|错误)[.。]\s*(.+)/);
+        if (!m) return p.trim();
+        const icon = m[2] === '正确' ? '✓' : '✗';
+        const cls = m[2] === '正确' ? 'text-emerald-600' : 'text-rose-500';
+        return '<span class="inline-block mr-3 mb-1"><b class="'+cls+'">'+icon+' '+m[1]+'</b> '+escHtml(m[3].trim())+'</span>';
+    }).join('');
+}
 function toggleDetail(qid) { const el=document.getElementById('detail-'+qid), ar=document.getElementById('darrow-'+qid); if(!el)return; el.classList.toggle('hidden'); if(ar)ar.style.transform=el.classList.contains('hidden')?'rotate(0deg)':'rotate(90deg)'; }
 
 // ── 题号导航弹窗 ──
