@@ -7,6 +7,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <style>
 * { -webkit-tap-highlight-color: transparent; }
+#qnav-overlay * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
 body { overscroll-behavior-y: none; }
 .glass-card {
     background: rgba(255,255,255,0.85);
@@ -1039,7 +1040,7 @@ let navPressTimer = null;
 function showQuestionNav() {
     const overlay = document.createElement('div');
     overlay.className = 'fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4';
-    overlay.onclick = function(e) { if (e.target === overlay) overlay.remove(); };
+    overlay.onclick = function(e) { if (e.target === overlay) { overlay.remove(); dismissNavPreview(); } };
     let h = '<div class="bg-white rounded-2xl p-5 max-w-sm w-full max-h-[80vh] overflow-y-auto">';
     h += '<div class="font-bold text-gray-800 mb-3">题目导航</div><div class="grid grid-cols-5 gap-2 select-none" style="-webkit-user-select:none;user-select:none">';
     questionList.forEach(function(q, i) {
@@ -1050,29 +1051,30 @@ function showQuestionNav() {
         }
         if (i === currentQuestionIndex) bg += ' ring-2 ring-indigo-400';
         h += '<button onclick="jumpToQuestion('+i+')"';
-        h += ' onmousedown="startNavPreview('+i+',event)" onmouseup="clearNavPreview()" onmouseleave="clearNavPreview()"';
-        h += ' ontouchstart="startNavPreview('+i+',event)" ontouchend="clearNavPreview()" ontouchmove="clearNavPreview()"';
+        h += ' onmousedown="startNavPreview('+i+',event)" onmouseleave="clearNavPreview()"';
+        h += ' ontouchstart="startNavPreview('+i+',event)" ontouchmove="clearNavPreview()"';
         h += ' oncontextmenu="return false"';
-        h += ' class="'+bg+' rounded-lg py-2 text-xs font-bold transition-all hover:scale-105">'+(i+1)+'</button>';
+        h += ' class="'+bg+' rounded-lg py-2 text-xs font-bold transition-all hover:scale-105 select-none" style="-webkit-user-select:none;user-select:none;-webkit-touch-callout:none">'+(i+1)+'</button>';
     });
     h += '</div></div>';
     overlay.innerHTML = h;
     overlay.id = 'qnav-overlay';
     document.body.appendChild(overlay);
 }
-function jumpToQuestion(idx) { currentQuestionIndex = idx; currentMultipleSelections = {}; var o=document.getElementById('qnav-overlay'); if(o) o.remove(); render(); }
+function jumpToQuestion(idx) { currentQuestionIndex = idx; currentMultipleSelections = {}; dismissNavPreview(); var o=document.getElementById('qnav-overlay'); if(o) o.remove(); render(); }
 function startNavPreview(idx, e) {
-    clearNavPreview();
+    dismissNavPreview();
     navPressTimer = setTimeout(function() {
         var q = questionList[idx]; if (!q) return;
         var tip = document.createElement('div');
         tip.id = 'qnav-tip';
-        tip.className = 'fixed z-50 bg-gray-900 text-white text-xs rounded-xl p-3 shadow-lg max-w-[300px] pointer-events-none leading-relaxed';
+        tip.className = 'fixed z-50 bg-gray-900 text-white text-xs rounded-xl shadow-lg max-w-[300px] leading-relaxed';
+        tip.onclick = function(ev) { ev.stopPropagation(); dismissNavPreview(); };
         var cx = e.touches ? e.touches[0].clientX : e.clientX;
         var cy = e.touches ? e.touches[0].clientY : e.clientY;
         tip.style.left = Math.min(cx + 10, window.innerWidth - 310) + 'px';
         tip.style.top = Math.max(cy - 80, 10) + 'px';
-        var html = '<span class="text-gray-400 font-bold">'+(idx+1)+'.</span> <span class="font-bold">'+escHtml(q.question)+'</span>';
+        var html = '<div class="flex items-start justify-between gap-2 p-3"><div class="flex-1"><span class="text-gray-400 font-bold">'+(idx+1)+'.</span> <span class="font-bold">'+escHtml(q.question)+'</span>';
         if (q.options) {
             html += '<div class="mt-1.5 pt-1.5 border-t border-gray-700 text-gray-300">';
             for (var k in q.options) {
@@ -1080,11 +1082,13 @@ function startNavPreview(idx, e) {
             }
             html += '</div>';
         }
+        html += '</div><button class="shrink-0 w-5 h-5 rounded-full bg-gray-700 hover:bg-gray-600 text-gray-400 flex items-center justify-center text-xs leading-none" onclick="event.stopPropagation();dismissNavPreview()">&times;</button></div>';
         tip.innerHTML = html;
         document.body.appendChild(tip);
     }, 400);
 }
-function clearNavPreview() { if (navPressTimer) clearTimeout(navPressTimer); var t=document.getElementById('qnav-tip'); if(t) t.remove(); }
+function dismissNavPreview() { if (navPressTimer) clearTimeout(navPressTimer); navPressTimer = null; var t=document.getElementById('qnav-tip'); if(t) t.remove(); }
+function clearNavPreview() { if (navPressTimer) clearTimeout(navPressTimer); }
 function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ============================================================
