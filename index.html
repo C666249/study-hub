@@ -375,7 +375,7 @@ function startPractice(opts = {}) {
     currentMultipleSelections = {};
 
     let pool = [...ALL_QUESTIONS];
-    if (opts.hw && opts.hw !== 'all') pool = pool.filter(q => q.homework === parseInt(opts.hw));
+    if (opts.hw && opts.hw !== 'all') { const n = parseInt(opts.hw); pool = pool.filter(q => isNaN(n) ? q.homework === opts.hw : q.homework === n); }
     if (opts.type && opts.type !== 'all') pool = pool.filter(q => q.type === opts.type);
     if (opts.tag) pool = getQuestionsByTag(opts.tag, pool);
     if (opts.wrongOnly) { const ids = getWrongQuestions(); pool = pool.filter(q => ids.includes(q.id)); }
@@ -847,6 +847,15 @@ function renderQuiz() {
                 <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
                     ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
                 </button>
+                ${q.detail && q.detail.length > 0 ? `
+                <div class="mt-2 pt-2 border-t border-gray-200/50">
+                    <button onclick="toggleDetail('${q.id}')" class="text-xs font-medium text-gray-400 hover:text-gray-600 transition-all">
+                        <span id="darrow-${q.id}" class="inline-block transition-transform duration-200" style="font-size:9px">▶</span> 详细解析
+                    </button>
+                    <div id="detail-${q.id}" class="hidden mt-2 text-xs text-gray-500 leading-relaxed bg-gray-50 rounded-lg p-3">
+                        ${escHtml(q.detail)}
+                    </div>
+                </div>` : ''}
             </div>` : ''}
         </div>
 
@@ -912,6 +921,7 @@ function resetAll() {
     }
 }
 
+function toggleDetail(qid) { const el=document.getElementById('detail-'+qid), ar=document.getElementById('darrow-'+qid); if(!el)return; el.classList.toggle('hidden'); if(ar)ar.style.transform=el.classList.contains('hidden')?'rotate(0deg)':'rotate(90deg)'; }
 function escHtml(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 // ============================================================
