@@ -307,7 +307,7 @@ let currentShuffleMode = false, currentWrongOnlyMode = false, currentFavoritesOn
 let isExamMode = false;
 let searchQuery = '';
 let currentMultipleSelections = {};
-let currentSubject = '刑法';
+let currentSubject = '马原';
 let collapsedSections = new Set();  // 折叠的节
 let savedScrollY = 0;              // 离开首页时的滚动位置
 let currentTheme = localStorage.getItem('studyhub_theme') || 'light';  // 首页主题
@@ -944,7 +944,25 @@ function render() {
     else if (currentView === 'result') app.innerHTML = renderResult();
 }
 
-render();
+// 初始化：尝试加载马原数据，失败则回退到刑法
+(async function init() {
+    if (SUBJECT_DATA['马原'] && SUBJECT_DATA['马原'].length > 0) { render(); return; }
+    try {
+        const resp = await fetch('data/马原.json');
+        if (resp.ok) {
+            const data = await resp.json();
+            SUBJECT_DATA['马原'] = data;
+            ALL_QUESTIONS.length = 0;
+            ALL_QUESTIONS.push(...data);
+        }
+    } catch(e) {
+        // fetch 失败（本地 file://），用内嵌刑法兜底
+        currentSubject = '刑法';
+        ALL_QUESTIONS.length = 0;
+        ALL_QUESTIONS.push(...SUBJECT_DATA['刑法']);
+    }
+    render();
+})();
 </script>
 </body>
 </html>
