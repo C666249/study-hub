@@ -360,7 +360,8 @@ function startPractice(opts = {}) {
     // 搜索/精准跳转: 按指定 ID 列表过滤
     if (opts.searchIds) {
         const idSet = new Set(opts.searchIds.split(','));
-        pool = pool.filter(q => idSet.has(q.id));
+        const seen = new Set();
+        pool = pool.filter(q => { if (!idSet.has(q.id)) return false; if (seen.has(q.id)) return false; seen.add(q.id); return true; });
     }
 
     questionList = pool;
