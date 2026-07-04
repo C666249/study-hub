@@ -77,6 +77,17 @@ def id_prefix(filename: str) -> str:
     return clean[:12]
 
 
+def detect_type(label: str) -> str:
+    """从题型标签中检测类型：单/多/判/简"""
+    if '单' in label:
+        return 'single'
+    if '多' in label:
+        return 'multiple'
+    if '判' in label:
+        return 'judge'
+    return 'short'
+
+
 def clean_answer(ans: str, qtype: str) -> str:
     """清洗答案：去分数、去HTML标签"""
     ans = ans.strip()

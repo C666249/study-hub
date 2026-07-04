@@ -13,15 +13,19 @@
 
 ```
 study-hub/
-├── index.html          ← 主应用（待构建）
-├── src/
-│   └── core.js         ← 纯逻辑函数（isAnswerCorrect, searchQuestions, shuffleArray 等）
+├── index.html              ← 主应用
+├── tools/
+│   ├── convert.py          ← docx→JSON 转换器主入口
+│   └── plugins/            ← 格式插件（review/xuexitong/numbered）
 ├── tests/
-│   └── core.test.js    ← 核心逻辑测试
+│   └── core.test.js        ← 核心逻辑测试
 ├── data/
-│   └── 刑法.json        ← 题库（每科一个 JSON）
+│   └── 马原.json            ← 题库（每科一个 JSON）
+├── docs/
+│   ├── docx-format-guide.md ← LLM 生成 docx 规范
+│   └── add-subject.md      ← 加新科目流程
 └── .github/workflows/
-    └── pages.yml       ← 自动部署
+    └── pages.yml           ← 自动部署
 ```
 
 ## 核心函数签名
@@ -43,7 +47,10 @@ study-hub/
 
 ## 题库转换
 
-见 [docs/Trae-题库转换指南.md](docs/Trae-题库转换指南.md) — Trae AI 操作说明，docx → JSON 全流程。
+`tools/convert.py` — python-docx 插件式转换器，支持 3 种格式自动检测。
+- 双击 `D:\桌面的\题库转换.lnk` 启动
+- 格式规范见 [docs/docx-format-guide.md](docs/docx-format-guide.md)
+- 加新科目见 [docs/add-subject.md](docs/add-subject.md)
 
 ## 配色
 

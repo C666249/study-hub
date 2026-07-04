@@ -1,6 +1,6 @@
 # study-hub docx 题库规范 — LLM 生成提示词
 
-复制以下内容给 LLM，生成的 docx 可直接用 `convert.js` 转换为 JSON 导入刷题系统。
+复制以下内容给 LLM，生成的 docx 可直接用 `tools/convert.py` 转换为 JSON 导入刷题系统。
 
 ---
 
@@ -54,7 +54,7 @@
 
 ## 解析器说明（给开发者参考）
 
-上述提示词生成的 docx 会被 `convert.js` 按以下规则解析：
+上述提示词生成的 docx 会被 `tools/convert.py`（python-docx 插件式转换器）按以下规则解析：
 
 | docx 内容 | JSON 字段 | 答题页显示 |
 |-----------|-----------|------------|

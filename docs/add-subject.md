@@ -20,7 +20,7 @@
 将 docx 放到一个文件夹，双击 `D:\桌面的\题库转换.lnk`（或终端运行）：
 
 ```bash
-node D:\桌面的\convert.js
+python D:\Claude\projects\study-hub\tools\convert.py
 ```
 
 粘贴文件夹路径，回车。每个 docx 会在同目录生成同名 `.json`。

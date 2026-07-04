@@ -13,7 +13,7 @@
 """
 
 from docx import Document
-from .base import Question, id_prefix, clean_answer
+from .base import Question, id_prefix, clean_answer, detect_type
 import re
 
 
@@ -46,7 +46,7 @@ def extract(doc: Document, filepath: str) -> list[Question]:
             i += 1
             continue
 
-        qtype = _detect_type(qm.group(2))
+        qtype = detect_type(qm.group(2))
 
         # 收集题干（直到第一个 A. 选项行或 我的答案 行）
         i += 1
@@ -117,11 +117,3 @@ def extract(doc: Document, filepath: str) -> list[Question]:
     return questions
 
 
-def _detect_type(label: str) -> str:
-    if '单' in label:
-        return 'single'
-    if '多' in label:
-        return 'multiple'
-    if '判' in label:
-        return 'judge'
-    return 'short'
