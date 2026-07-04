@@ -1056,10 +1056,10 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: AI_MODEL,
             messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。\n\n格式要求：\n- 使用要点式回答，每条单独一行\n- 用 • 或 1. 分点列出\n- 关键词用「」标注\n- 每题控制在150字以内\n- 不要长篇大段' },
+                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用中文回答用户的问题。\n\n回答要求：\n- 按逻辑分点，每条单独一行\n- 关键词用「」突出\n- 解释要具体，说清为什么，适当举例\n- 每题控制在300字以内' },
                 { role: 'user', content: ctx }
             ],
-            max_tokens: 400,
+            max_tokens: 600,
             temperature: 0.7
         })
     }).then(r => r.json()).then(data => {
