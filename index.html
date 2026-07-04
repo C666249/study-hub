@@ -20,6 +20,13 @@ body { overscroll-behavior-y: none; }
 .tag-card { transition: all 0.2s ease; }
 .tag-card:active { transform: scale(0.96); }
 .option-btn:active { transform: scale(0.98); }
+/* AI 聊天面板 */
+#ai-chat-panel { transition: transform 0.3s ease, opacity 0.3s ease; }
+#ai-chat-panel.hidden-panel { transform: translateY(20px); opacity: 0; pointer-events: none; }
+.ai-msg { animation: msgIn 0.2s ease-out; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.ai-typing::after { content: '|'; animation: blink 0.8s infinite; }
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
 .progress-bar { transition: width 0.35s ease; }
 .fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -874,6 +881,25 @@ function renderQuiz() {
                 <button onclick="${currentQuestionIndex>=total-1?'showResult()':'nextQuestion()'}" class="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all">${currentQuestionIndex>=total-1?'查看结果':'下一题 →'}</button>
             </div>
         </div>
+
+        <!-- AI 助手按钮 -->
+        <button onclick="toggleAiChat()" class="fixed bottom-20 right-4 z-30 w-11 h-11 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-purple-200 flex items-center justify-center text-xl hover:scale-110 transition-all" title="AI 答疑">💬</button>
+
+        <!-- AI 聊天面板 -->
+        <div id="ai-chat-panel" class="hidden-panel fixed bottom-32 right-4 z-30 w-[calc(100vw-2rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:60vh">
+            <div class="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
+                <span class="text-sm font-bold">🤖 AI 答疑</span>
+                <button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button>
+            </div>
+            <div id="ai-chat-msgs" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-sm" style="min-height:80px;max-height:40vh">
+                <div class="text-gray-400 text-xs text-center py-2">基于当前题目和知识点，随时提问</div>
+            </div>
+            <div class="flex items-center gap-2 px-3 py-2 border-t border-gray-100">
+                <input id="ai-chat-input" type="text" placeholder="问知识点..." class="flex-1 px-3 py-2 bg-gray-50 rounded-lg text-sm outline-none border border-gray-200 focus:border-purple-400"
+                    onkeydown="if(event.key==='Enter')sendAiMsg()">
+                <button onclick="sendAiMsg()" class="shrink-0 w-9 h-9 rounded-lg bg-purple-500 text-white flex items-center justify-center text-sm hover:bg-purple-600 transition-all">➤</button>
+            </div>
+        </div>
     </div>`;
 }
 
@@ -982,6 +1008,75 @@ function formatExplanation(expl) {
         return '<span class="inline-block mr-3 mb-1"><b class="'+cls+'">'+icon+' '+m[1]+'</b> '+escHtml(m[3].trim())+'</span>';
     }).join('');
 }
+// ── AI 答疑 ──
+const AI_API_KEY = 'sk-WES8VsOhWEkpWpWjK5dkn1nh4vi7Te9P5AduH456OAy5H7KI';
+const AI_ENDPOINT = 'https://apihub.agnes-ai.com/v1/chat/completions';
+const AI_MODEL = 'Agnes-2.0-Flash';
+let aiChatOpen = false;
+let aiLoading = false;
+
+function toggleAiChat() {
+    aiChatOpen = !aiChatOpen;
+    const panel = document.getElementById('ai-chat-panel');
+    if (!panel) return;
+    if (aiChatOpen) { panel.classList.remove('hidden-panel'); }
+    else { panel.classList.add('hidden-panel'); }
+}
+
+function sendAiMsg() {
+    const input = document.getElementById('ai-chat-input');
+    const msgs = document.getElementById('ai-chat-msgs');
+    if (!input || !msgs || aiLoading) return;
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    aiLoading = true;
+
+    // 显示用户消息
+    msgs.innerHTML += '<div class=\"ai-msg text-right\"><span class=\"inline-block bg-purple-100 text-purple-800 rounded-xl px-3 py-1.5 text-xs max-w-[85%] text-left\">'+escHtml(text)+'</span></div>';
+    // 显示加载中
+    msgs.innerHTML += '<div id=\"ai-loading\" class=\"ai-msg text-gray-400 text-xs\">思考中<span class=\"ai-typing\"></span></div>';
+    msgs.scrollTop = msgs.scrollHeight;
+
+    // 构建上下文
+    const q = questionList[currentQuestionIndex];
+    let ctx = '【当前题目】\n' + (q.question||'') + '\n';
+    if (q.options) {
+        ctx += '选项：\n';
+        for (const [k,v] of Object.entries(q.options)) ctx += k+'. '+v+'\n';
+    }
+    if (q.answer) ctx += '正确答案：'+q.answer+'\n';
+    if (q.explanation) ctx += '解析：'+q.explanation.substring(0, 300)+'\n';
+    if (q.detail) ctx += '知识点：'+q.detail+'\n';
+    ctx += '\n【科目】'+currentSubject+'\n【用户问题】'+text;
+
+    fetch(AI_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+AI_API_KEY },
+        body: JSON.stringify({
+            model: AI_MODEL,
+            messages: [
+                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。回答控制在200字以内，直击要点。' },
+                { role: 'user', content: ctx }
+            ],
+            max_tokens: 400,
+            temperature: 0.7
+        })
+    }).then(r => r.json()).then(data => {
+        aiLoading = false;
+        const loadingEl = document.getElementById('ai-loading');
+        if (loadingEl) loadingEl.remove();
+        const reply = data.choices && data.choices[0] ? data.choices[0].message.content : '抱歉，AI 暂时无法回答。';
+        msgs.innerHTML += '<div class=\"ai-msg\"><span class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%]\">'+escHtml(reply)+'</span></div>';
+        msgs.scrollTop = msgs.scrollHeight;
+    }).catch(e => {
+        aiLoading = false;
+        const loadingEl = document.getElementById('ai-loading');
+        if (loadingEl) loadingEl.remove();
+        msgs.innerHTML += '<div class=\"ai-msg text-red-400 text-xs\">网络错误，请重试</div>';
+    });
+}
+
 // ── 题号导航弹窗 ──
 let navPressTimer = null;
 function showQuestionNav() {
