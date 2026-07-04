@@ -1056,7 +1056,7 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: AI_MODEL,
             messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。回答控制在200字以内，直击要点。' },
+                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。\n\n格式要求：\n- 使用要点式回答，每条单独一行\n- 用 • 或 1. 分点列出\n- 关键词用「」标注\n- 每题控制在150字以内\n- 不要长篇大段' },
                 { role: 'user', content: ctx }
             ],
             max_tokens: 400,
@@ -1067,7 +1067,8 @@ function sendAiMsg() {
         const loadingEl = document.getElementById('ai-loading');
         if (loadingEl) loadingEl.remove();
         const reply = data.choices && data.choices[0] ? data.choices[0].message.content : '抱歉，AI 暂时无法回答。';
-        msgs.innerHTML += '<div class=\"ai-msg\"><span class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%]\">'+escHtml(reply)+'</span></div>';
+        const replyHtml = escHtml(reply).replace(/\n/g, '<br>');
+        msgs.innerHTML += '<div class=\"ai-msg\"><span class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%]\" style=\"white-space:pre-wrap\">'+replyHtml+'</span></div>';
         msgs.scrollTop = msgs.scrollHeight;
     }).catch(e => {
         aiLoading = false;
