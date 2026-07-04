@@ -727,6 +727,11 @@ function renderHome() {
                 🎯 模拟考试（${total}题）
             </button>
             <button onclick="resetAll()" class="w-full py-2.5 mt-2 bg-gray-100 text-gray-400 rounded-xl text-xs font-medium hover:bg-gray-200 transition-all">重置进度</button>
+            <div class="flex gap-2 mt-2">
+                <button onclick="exportData()" class="flex-1 py-2 bg-white/60 border border-gray-200 text-gray-500 rounded-xl text-xs font-medium hover:bg-white transition-all">💾 备份</button>
+                <button onclick="document.getElementById('import-file').click()" class="flex-1 py-2 bg-white/60 border border-gray-200 text-gray-500 rounded-xl text-xs font-medium hover:bg-white transition-all">📥 恢复</button>
+                <input type="file" id="import-file" accept=".json" onchange="importData(this)" class="hidden">
+            </div>
         </div>
 
         <div class="text-center text-xs text-gray-300 pb-6">study-hub v1.0 · ${currentSubject} · Netlify 自动部署</div>
@@ -922,6 +927,46 @@ function resetAll() {
         localStorage.removeItem(FAVORITES_KEY);
         render();
     }
+}
+function exportData() {
+    const backup = {};
+    const total = localStorage.length;
+    for (let i = 0; i < total; i++) {
+        const key = localStorage.key(i);
+        if (key && key.startsWith('studyhub_')) {
+            backup[key] = localStorage.getItem(key);
+        }
+    }
+    const blob = new Blob([JSON.stringify(backup, null, 2)], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'study-hub-backup-' + new Date().toISOString().slice(0,10) + '.json';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+function importData(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backup = JSON.parse(e.target.result);
+            const keys = Object.keys(backup);
+            if (keys.length === 0 || !keys[0].startsWith('studyhub_')) {
+                alert('文件格式不正确，请选择 study-hub 备份文件');
+                return;
+            }
+            if (!confirm('将恢复 ' + keys.length + ' 个存储项（覆盖当前数据），确定继续？')) return;
+            keys.forEach(k => localStorage.setItem(k, backup[k]));
+            alert('恢复完成！页面将刷新。');
+            location.reload();
+        } catch(ex) {
+            alert('文件解析失败，请检查文件是否损坏');
+        }
+    };
+    reader.readAsText(file);
+    input.value = '';
 }
 
 function formatExplanation(expl) {
