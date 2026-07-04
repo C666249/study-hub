@@ -840,6 +840,7 @@ function renderQuiz() {
             <div class="flex items-center justify-between mb-2">
                 <button onclick="goHome()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">← 返回</button>
                 <button onclick="showQuestionNav()" class="text-xs text-gray-500 hover:text-gray-700 bg-white/60 px-2 py-1 rounded-lg font-mono">${currentQuestionIndex+1}/${total}</button>
+                <span class="text-xs text-gray-400">已答${answered}</span>
                 <button onclick="showResult()" class="text-sm text-gray-500 hover:text-gray-700 px-3 py-1.5 bg-white/60 rounded-lg">统计 →</button>
             </div>
             <div class="w-full bg-gray-200 rounded-full h-1.5">
@@ -875,18 +876,15 @@ function renderQuiz() {
 
         <!-- Sticky bottom nav -->
         <div class="fixed bottom-0 left-0 right-0 z-20 bg-white/90 backdrop-blur-sm border-t border-gray-100">
-            <div class="max-w-md mx-auto px-4 py-3 flex items-center gap-3">
+            <div class="max-w-md mx-auto px-4 py-3 flex items-center gap-2">
                 <button onclick="prevQuestion()" class="flex-1 py-3 px-4 bg-white/70 border border-gray-200 text-gray-500 rounded-xl text-sm font-medium disabled:opacity-40" ${currentQuestionIndex===0?'disabled':''}>← 上一题</button>
-                <span class="text-xs text-gray-400 shrink-0">已答${answered}</span>
+                <button onclick="toggleAiChat()" class="shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-lg active:scale-95 transition-all" title="AI 答疑" style="box-shadow:0 2px 12px rgba(139,92,246,0.35)">💬</button>
                 <button onclick="${currentQuestionIndex>=total-1?'showResult()':'nextQuestion()'}" class="flex-1 py-3 px-4 bg-red-500 text-white rounded-xl text-sm font-bold hover:bg-red-600 transition-all">${currentQuestionIndex>=total-1?'查看结果':'下一题 →'}</button>
             </div>
         </div>
 
-        <!-- AI 助手按钮 -->
-        <button onclick="toggleAiChat()" class="fixed bottom-24 right-4 z-40 w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-xl flex items-center justify-center text-xl active:scale-95 transition-all" title="AI 答疑" style="box-shadow:0 4px 20px rgba(139,92,246,0.4)">💬</button>
-
         <!-- AI 聊天面板 -->
-        <div id="ai-chat-panel" class="hidden-panel fixed bottom-36 right-2 z-40 w-[calc(100vw-1rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:55vh">
+        <div id="ai-chat-panel" class="hidden-panel fixed bottom-16 right-2 z-40 w-[calc(100vw-1rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:55vh">
             <div class="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
                 <span class="text-sm font-bold">🤖 AI 答疑</span>
                 <button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button>
