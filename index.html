@@ -404,6 +404,9 @@ function startPractice(opts = {}) {
         // 错题重做：错题答案清空，非错题保留
         const wrongSet = new Set(getWrongQuestions());
         questionList.forEach(q => { userAnswers[q.id] = wrongSet.has(q.id) ? null : (saved[q.id] || null); });
+    } else if (opts.favReview) {
+        // 收藏巩固：全部清空，重新做
+        questionList.forEach(q => { userAnswers[q.id] = null; });
     } else {
         questionList.forEach(q => { userAnswers[q.id] = saved[q.id] || null; });
     }
