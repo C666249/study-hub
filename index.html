@@ -24,6 +24,12 @@ body { overscroll-behavior-y: none; }
 /* AI 聊天面板 */
 #ai-chat-panel { transition: transform 0.3s ease, opacity 0.3s ease; }
 #ai-chat-panel.hidden-panel { transform: translateY(20px); opacity: 0; pointer-events: none; }
+/* Toast */
+.toast-box { max-height:0; overflow:hidden; transition:max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease; padding:0 12px; font-size:11px; text-align:center; opacity:0; }
+.toast-box.show { max-height:32px; padding:3px 12px; opacity:1; }
+.toast-info { background:#d1fae5; color:#065f46; }
+.toast-warn { background:#fef3c7; color:#92400e; }
+.toast-error { background:#fee2e2; color:#991b1b; }
 .ai-msg { animation: msgIn 0.2s ease-out; }
 @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .ai-typing::after { content: '|'; animation: blink 0.8s infinite; }
@@ -900,11 +906,8 @@ function renderQuiz() {
 
         <!-- AI 聊天面板 -->
         <div id="ai-chat-panel" class="hidden-panel fixed bottom-16 right-2 z-40 w-[calc(100vw-1rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:55vh">
-            <div class="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white">
-                <span class="text-sm font-bold">🤖 AI 答疑</span>
-                <button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button>
-            </div>
-            <div id="ai-chat-msgs" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-sm" style="min-height:80px;max-height:40vh">
+            <div class="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"><span class="text-sm font-bold">AI 答疑</span><div class="flex items-center gap-1"><button id="ai-provider-btn" onclick="switchAiProvider()" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/90">Agnes AI</button><button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button></div></div><div id="ai-toast" class="toast-box"></div>
+	            <div id="ai-chat-msgs" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-sm" style="min-height:80px;max-height:40vh">
                 <div class="text-gray-400 text-xs text-center py-2">基于当前题目和知识点，随时提问</div>
             </div>
             <div class="flex items-center gap-2 px-3 py-2 border-t border-gray-100">
@@ -1021,9 +1024,19 @@ function formatExplanation(expl) {
     }).join('');
 }
 // ── AI 答疑 ──
-const AI_API_KEY = 'sk-WES8VsOhWEkpWpWjK5dkn1nh4vi7Te9P5AduH456OAy5H7KI';
-const AI_ENDPOINT = 'https://apihub.agnes-ai.com/v1/chat/completions';
-const AI_MODEL = 'agnes-2.0-flash';
+const AI_PROVIDERS = {
+  agnes: { id:'agnes', label:'Agnes AI', endpoint:'https://apihub.agnes-ai.com/v1/chat/completions', model:'agnes-2.0-flash', apiKey:'sk-WES8VsOhWEkpWpWjK5dkn1nh4vi7Te9P5AduH456OAy5H7KI' },
+  deepseek: { id:'deepseek', label:'DeepSeek', endpoint:'https://api.deepseek.com/v1/chat/completions', model:'deepseek-chat', apiKey:'', needUserKey:true }
+};
+function getAiProvider() { const v=localStorage.getItem('studyhub_ai_provider'); return (v&&AI_PROVIDERS[v])?v:'agnes'; }
+function setAiProvider(p) { if(!AI_PROVIDERS[p])p='agnes'; localStorage.setItem('studyhub_ai_provider',p); }
+function getDeepseekKey() { return localStorage.getItem('studyhub_deepseek_key')||''; }
+function setDeepseekKey(k) { if(k) localStorage.setItem('studyhub_deepseek_key',k); else localStorage.removeItem('studyhub_deepseek_key'); }
+function getAiConfig() { const p=getAiProvider(); const c=AI_PROVIDERS[p]; return { provider:p, endpoint:c.endpoint, model:c.model, apiKey:p==='deepseek'?getDeepseekKey():c.apiKey }; }
+let toastTimer=null;
+function showToast(msg, type) { type=type||'info'; const t=document.getElementById('ai-toast'); if(!t)return; t.textContent=msg; t.className='toast-box toast-'+type+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show')},2000); }
+function switchAiProvider(){const cur=getAiProvider();const next=cur==='agnes'?'deepseek':'agnes';if(next==='deepseek'&&!getDeepseekKey()){const k=prompt('请输入 DeepSeek API Key（在 platform.deepseek.com 获取）：');if(!k||!k.trim()){showToast('未输入 Key，已取消切换','warn');return;}setDeepseekKey(k.trim());showToast('DeepSeek Key 已保存','info');}setAiProvider(next);refreshAiProviderBtn();const name=AI_PROVIDERS[next].label;showToast('已切换至 '+name,'info');}
+function refreshAiProviderBtn(){const btn=document.getElementById('ai-provider-btn');if(!btn)return;const cur=getAiProvider();const cfg=AI_PROVIDERS[cur];btn.textContent=cfg.label;btn.title='点击切换模型（当前：'+cfg.label+'）';}
 let aiChatOpen = false;
 let aiLoading = false;
 
@@ -1031,7 +1044,7 @@ function toggleAiChat() {
     aiChatOpen = !aiChatOpen;
     const panel = document.getElementById('ai-chat-panel');
     if (!panel) return;
-    if (aiChatOpen) { panel.classList.remove('hidden-panel'); }
+    if (aiChatOpen) { panel.classList.remove('hidden-panel'); refreshAiProviderBtn(); }
     else { panel.classList.add('hidden-panel'); }
 }
 
@@ -1062,11 +1075,11 @@ function sendAiMsg() {
     if (q.detail) ctx += '知识点：'+q.detail+'\n';
     ctx += '\n【科目】'+currentSubject+'\n【用户问题】'+text;
 
-    fetch(AI_ENDPOINT, {
+    const aiCfg=getAiConfig(); if(!aiCfg.apiKey){ showToast("请先设置 DeepSeek API Key","warn"); aiLoading=false; const le=document.getElementById("ai-loading"); if(le)le.remove(); return; }fetch(aiCfg.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+AI_API_KEY },
         body: JSON.stringify({
-            model: AI_MODEL,
+            model: aiCfg.model,
             messages: [
                 { role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块\n- 简单问题简洁答，复杂问题结构化答' },
                 { role: 'user', content: ctx }
