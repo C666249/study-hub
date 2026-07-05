@@ -373,6 +373,7 @@ function startPractice(opts = {}) {
     currentShuffleMode = opts.shuffle || false;
     currentWrongOnlyMode = opts.wrongOnly || false;
     currentFavoritesOnlyMode = opts.favOnly || false;
+    currentFavReviewMode = opts.favReview || false;
     currentQuestionIndex = 0;
     currentMultipleSelections = {};
 
@@ -465,10 +466,16 @@ function submitAnswer(qid, answer) {
     }
 
     const correct = isAnswerCorrect(answer, q.answer, q.type);
-    const wrongIds = getWrongQuestions();
-    if (correct) { const idx = wrongIds.indexOf(qid); if (idx >= 0) wrongIds.splice(idx, 1); }
-    else { if (!wrongIds.includes(qid)) wrongIds.push(qid); if (!sessionWrongIds.includes(qid)) sessionWrongIds.push(qid); }
-    saveWrongQuestions(wrongIds);
+    // 收藏巩固模式：不操作错题列表，答对不移除
+    if (!currentFavReviewMode) {
+        const wrongIds = getWrongQuestions();
+        if (correct) { const idx = wrongIds.indexOf(qid); if (idx >= 0) wrongIds.splice(idx, 1); }
+        else { if (!wrongIds.includes(qid)) wrongIds.push(qid); if (!sessionWrongIds.includes(qid)) sessionWrongIds.push(qid); }
+        saveWrongQuestions(wrongIds);
+    } else {
+        // 收藏巩固模式：只记录 session 错题（用于结果页「重做本轮错题」）
+        if (!correct && !sessionWrongIds.includes(qid)) sessionWrongIds.push(qid);
+    }
 
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
     saved[qid] = answer;
@@ -738,7 +745,8 @@ function renderHome() {
                     <span class="text-xs font-bold ${allFav>0?'text-emerald-500':'text-gray-300'}">${allFav} 题</span>
                 </div>
                 ${allFav > 0 ? `
-                <button onclick="startPractice({favOnly:true})" class="w-full py-2.5 bg-emerald-400 text-white rounded-xl text-sm font-medium hover:bg-emerald-500 transition-all">查看收藏</button>
+                <button onclick="startPractice({favOnly:true,favReview:true,shuffle:true})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">🔄 巩固重做</button>
+	                <button onclick="startPractice({favOnly:true})" class="w-full py-2 bg-emerald-100 text-emerald-600 rounded-xl text-xs font-medium hover:bg-emerald-200 transition-all mt-1">查看收藏</button>
                 ` : `<div class="text-xs text-gray-300 text-center py-2.5">点击⭐收藏题目</div>`}
             </div>
         </div>
