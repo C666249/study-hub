@@ -291,6 +291,7 @@ let currentHomework = 'all', currentType = 'all', currentTag = null;
 let currentShuffleMode = false, currentWrongOnlyMode = false, currentFavoritesOnlyMode = false;
 let isExamMode = false;
 let searchQuery = '';
+let sessionWrongIds = [];  // 本轮答题中的错题ID
 let currentMultipleSelections = {};
 let currentSubject = '马原';
 let collapsedSections = new Set();  // 折叠的节
@@ -349,6 +350,7 @@ async function switchSubject(subject) {
 // ============================================================
 function startPractice(opts = {}) {
     isExamMode = false;
+    sessionWrongIds = [];
     currentHomework = opts.hw || 'all';
     currentType = opts.type || 'all';
     currentTag = opts.tag || null;
@@ -403,6 +405,7 @@ function startPractice(opts = {}) {
 
 function startExam() {
     isExamMode = true;
+    sessionWrongIds = [];
     currentQuestionIndex = 0;
     currentMultipleSelections = {};
     questionList = shuffleArray([...ALL_QUESTIONS]);
@@ -448,7 +451,7 @@ function submitAnswer(qid, answer) {
     const correct = isAnswerCorrect(answer, q.answer, q.type);
     const wrongIds = getWrongQuestions();
     if (correct) { const idx = wrongIds.indexOf(qid); if (idx >= 0) wrongIds.splice(idx, 1); }
-    else { if (!wrongIds.includes(qid)) wrongIds.push(qid); }
+    else { if (!wrongIds.includes(qid)) wrongIds.push(qid); if (!sessionWrongIds.includes(qid)) sessionWrongIds.push(qid); }
     saveWrongQuestions(wrongIds);
 
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
@@ -910,8 +913,7 @@ function renderResult() {
     const total = questionList.length;
     const answered = getAnsweredCount();
     const correct = getCorrectCount();
-    const wrongIds = getWrongQuestions();
-    const wrongInList = questionList.filter(q => wrongIds.includes(q.id)).length;
+    const wrongInList = sessionWrongIds.length;
 
     return `
     <div class="max-w-md mx-auto px-4 py-6">
@@ -939,7 +941,7 @@ function renderResult() {
             <div class="text-center text-gray-400 text-sm mb-4">正确率：${answered>0?Math.round(correct/answered*100):0}%</div>
 
             ${wrongInList>0
-                ? `<button onclick="startPractice({wrongOnly:true})" class="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-all mb-3">🔄 重做本轮错题</button>`
+                ? `<button onclick="startPractice({searchIds:'${sessionWrongIds.join(',')}',resetWrong:true})" class="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-all mb-3">🔄 重做本轮错题</button>`
                 : `<div class="text-center text-green-500 font-bold text-sm mb-3">🎉 太棒了！本轮全部正确！</div>`}
 
             <button onclick="goHome()" class="w-full py-3 bg-red-500 text-white rounded-xl font-bold text-sm hover:bg-red-600 transition-all">返回首页</button>
@@ -1056,7 +1058,7 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: AI_MODEL,
             messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。回答控制在200字以内，直击要点。' },
+                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。回答控制在200字以内，直击要点。\n\n注意：不要使用任何markdown格式（如**粗体**、*斜体*、#标题、-列表等），只用纯文本，关键词用「」突出。' },
                 { role: 'user', content: ctx }
             ],
             max_tokens: 400,
