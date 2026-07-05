@@ -669,7 +669,7 @@ function renderHome() {
                                 <div id="hw_${gkSafe}_${i}_d" class="hidden mt-3 pt-3 border-t border-gray-100 space-y-1.5">
                                     <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:false})" class="w-full py-2.5 bg-emerald-500 text-white rounded-xl text-sm font-medium hover:bg-emerald-600 transition-all">全部刷题</button>
                                     <button onclick="event.stopPropagation();startPractice({hw:'${hw}',shuffle:true})" class="w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">随机挑战</button>
-                                    <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
+                                    <button onclick="event.stopPropagation();startPractice({hw:'${hw}',wrongOnly:true,resetWrong:true})" class="w-full py-2.5 bg-rose-50 text-rose-500 rounded-xl text-sm font-medium hover:bg-rose-100 transition-all">错题重做</button>
                                 </div>` : ''}
                             </div>`;
                         }).join('')}
@@ -1058,7 +1058,7 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: AI_MODEL,
             messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据提供的题目和知识点信息，用简洁清晰的中文回答用户的问题。回答控制在200字以内，直击要点。\n\n注意：不要使用任何markdown格式（如**粗体**、*斜体*、#标题、-列表等），只用纯文本，关键词用「」突出。' },
+                { role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用纯文本中文回答。\n\n格式：\n- 按意思分段，段间空一行\n- 关键词用「」标出\n- 引用原文用""\n- 不用任何markdown（**、*、#、- 等）\n- 200字以内，直击要点' },
                 { role: 'user', content: ctx }
             ],
             max_tokens: 400,
