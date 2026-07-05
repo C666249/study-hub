@@ -1060,8 +1060,7 @@ function sendAiMsg() {
     // 显示用户消息
     msgs.innerHTML += '<div class=\"ai-msg text-right\"><span class=\"inline-block bg-purple-100 text-purple-800 rounded-xl px-3 py-1.5 text-xs max-w-[85%] text-left\">'+escHtml(text)+'</span></div>';
     // 显示加载中
-    var replyId = 'ai-reply-'+Date.now();
-	    msgs.innerHTML += '<div id="'+replyId+'" class="ai-msg"><div class="inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%] ai-reply"><span class="ai-typing"></span></div></div>';
+    msgs.innerHTML += '<div id=\"ai-loading\" class=\"ai-msg text-gray-400 text-xs\">思考中<span class=\"ai-typing\"></span></div>';
     msgs.scrollTop = msgs.scrollHeight;
 
     // 构建上下文
@@ -1086,47 +1085,23 @@ function sendAiMsg() {
                 { role: 'user', content: ctx }
             ],
             max_tokens: 400,
-            temperature: 0.7,
-	            stream: true
+            temperature: 0.7
         })
-    }).then(async r => {
-	        if (!r.ok) { aiLoading=false; var be=document.getElementById(replyId); if(be)be.querySelector('.ai-reply').innerHTML='<span class="text-red-400">HTTP '+r.status+'</span>'; return; }
-	        var reader = r.body.getReader();
-	        var decoder = new TextDecoder();
-	        var fullText = '';
-	        var bubble = document.getElementById(replyId);
-	        var inner = bubble ? bubble.querySelector('.ai-reply') : null;
-
-	        while (true) {
-	            var dv = await reader.read();
-	            if (dv.done) break;
-	            var chunk = decoder.decode(dv.value, {stream: true});
-	            var lines = chunk.split('\n');
-	            for (var i = 0; i < lines.length; i++) {
-	                var line = lines[i];
-	                if (line.indexOf('data: ') !== 0) continue;
-	                var data = line.slice(6);
-	                if (data === '[DONE]') continue;
-	                try {
-	                    var json = JSON.parse(data);
-	                    var delta = json.choices && json.choices[0] && json.choices[0].delta;
-	                    if (!delta) continue;
-	                    var token = delta.content || '';
-	                    if (!token) continue;
-	                    fullText += token;
-	                    if (inner) inner.textContent = fullText;
-	                    msgs.scrollTop = msgs.scrollHeight;
-	                } catch(e) {}
-	            }
-	        }
-
-	        if (inner && fullText) inner.innerHTML = marked.parse(fullText);
-	        aiLoading = false;
-	    }).catch(e => {
-	        aiLoading = false;
-	        var bubble2 = document.getElementById(replyId);
-	        if (bubble2) bubble2.querySelector('.ai-reply').innerHTML = '<span class="text-red-400">网络错误，请重试</span>';
-	    });
+    }).then(r => r.json()).then(data => {
+        aiLoading = false;
+        const loadingEl = document.getElementById('ai-loading');
+        if (loadingEl) loadingEl.remove();
+        const reply = data.choices && data.choices[0] ? data.choices[0].message.content : '抱歉，AI 暂时无法回答。';
+        const replyHtml = marked.parse(reply);
+        msgs.innerHTML += '<div class=\"ai-msg\"><div class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%] ai-reply\">'+replyHtml+'</div></div>';
+        msgs.scrollTop = msgs.scrollHeight;
+    }).catch(e => {
+        aiLoading = false;
+        const loadingEl = document.getElementById('ai-loading');
+        if (loadingEl) loadingEl.remove();
+        msgs.innerHTML += '<div class=\"ai-msg text-red-400 text-xs\">网络错误，请重试</div>';
+    });
+}
 
 // ── 题号导航弹窗 ──
 let navPressTimer = null;
