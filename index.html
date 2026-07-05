@@ -917,7 +917,8 @@ function renderQuiz() {
 
         <!-- AI 聊天面板 -->
         <div id="ai-chat-panel" class="hidden-panel fixed bottom-16 right-2 z-40 w-[calc(100vw-1rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:55vh">
-            <div class="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"><span class="text-sm font-bold">AI 答疑</span><div class="flex items-center gap-1"><button id="ai-provider-btn" onclick="switchAiProvider()" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/90">Agnes AI</button><button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button></div></div><div id="ai-toast" class="toast-box"></div>
+            <div class="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"><span class="text-sm font-bold">AI 答疑</span><div class="flex items-center gap-1"><button id="ai-provider-btn" onclick="switchAiProvider()" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/90">Agnes AI</button><button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button></div></div><div class="flex items-center gap-1 px-3 py-1.5 border-b border-gray-100 bg-gray-50/50"><span class="text-[10px] text-gray-400 mr-1">模式</span><button id="tk-400" onclick="setAiTokens(400);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border transition-all">⚡ 快速</button><button id="tk-600" onclick="setAiTokens(600);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border transition-all">📖 普通</button><button id="tk-1000" onclick="setAiTokens(1000);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border transition-all">🔬 深度</button></div>
+	            <div id="ai-toast" class="toast-box"></div>
 	            <div id="ai-chat-msgs" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-sm" style="min-height:80px;max-height:40vh">
                 <div class="text-gray-400 text-xs text-center py-2">基于当前题目和知识点，随时提问</div>
             </div>
@@ -1044,10 +1045,14 @@ function setAiProvider(p) { if(!AI_PROVIDERS[p])p='agnes'; localStorage.setItem(
 function getDeepseekKey() { return localStorage.getItem('studyhub_deepseek_key')||''; }
 function setDeepseekKey(k) { if(k) localStorage.setItem('studyhub_deepseek_key',k); else localStorage.removeItem('studyhub_deepseek_key'); }
 function getAiConfig() { const p=getAiProvider(); const c=AI_PROVIDERS[p]; return { provider:p, endpoint:c.endpoint, model:c.model, apiKey:p==='deepseek'?getDeepseekKey():c.apiKey }; }
+const AI_TOKEN_LEVELS = [{v:400,label:'⚡ 快速'},{v:600,label:'📖 普通'},{v:1000,label:'🔬 深度'}];
+function getAiTokens() { var v=parseInt(localStorage.getItem('studyhub_ai_tokens')); return v===400||v===600||v===1000?v:600; }
+function setAiTokens(v) { localStorage.setItem('studyhub_ai_tokens',v+''); }
 let toastTimer=null;
 function showToast(msg, type) { type=type||'info'; const t=document.getElementById('ai-toast'); if(!t)return; t.textContent=msg; t.className='toast-box toast-'+type+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show')},2000); }
-function switchAiProvider(){const cur=getAiProvider();const next=cur==='agnes'?'deepseek':'agnes';if(next==='deepseek'&&!getDeepseekKey()){const k=prompt('请输入 DeepSeek API Key（在 platform.deepseek.com 获取）：');if(!k||!k.trim()){showToast('未输入 Key，已取消切换','warn');return;}setDeepseekKey(k.trim());showToast('DeepSeek Key 已保存','info');}setAiProvider(next);refreshAiProviderBtn();const name=AI_PROVIDERS[next].label;showToast('已切换至 '+name,'info');}
+function switchAiProvider(){const cur=getAiProvider();const next=cur==='agnes'?'deepseek':'agnes';if(next==='deepseek'&&!getDeepseekKey()){const k=prompt('请输入 DeepSeek API Key（在 platform.deepseek.com 获取）：');if(!k||!k.trim()){showToast('未输入 Key，已取消切换','warn');return;}setDeepseekKey(k.trim());showToast('DeepSeek Key 已保存','info');}setAiProvider(next);refreshAiProviderBtn();refreshTokenBtns();const name=AI_PROVIDERS[next].label;showToast('已切换至 '+name,'info');}
 function refreshAiProviderBtn(){const btn=document.getElementById('ai-provider-btn');if(!btn)return;const cur=getAiProvider();const cfg=AI_PROVIDERS[cur];btn.textContent=cfg.label;btn.title='点击切换模型（当前：'+cfg.label+'）';}
+function refreshTokenBtns(){var tk=getAiTokens();['tk-400','tk-600','tk-1000'].forEach(function(id){var b=document.getElementById(id);if(!b)return;if(parseInt(id.slice(3))===tk){b.className='text-[10px] px-2 py-0.5 rounded-full border transition-all bg-purple-500 text-white border-purple-500';}else{b.className='text-[10px] px-2 py-0.5 rounded-full border transition-all bg-white text-gray-500 border-gray-200 hover:border-purple-300';}});}
 let aiChatOpen = false;
 let aiLoading = false;
 
@@ -1055,7 +1060,7 @@ function toggleAiChat() {
     aiChatOpen = !aiChatOpen;
     const panel = document.getElementById('ai-chat-panel');
     if (!panel) return;
-    if (aiChatOpen) { panel.classList.remove('hidden-panel'); refreshAiProviderBtn(); }
+    if (aiChatOpen) { panel.classList.remove('hidden-panel'); refreshAiProviderBtn();refreshTokenBtns(); }
     else { panel.classList.add('hidden-panel'); }
 }
 
@@ -1106,7 +1111,7 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: aiCfg.model,
             messages: aiChatHistory.slice(),
-            max_tokens: 1000,
+            max_tokens: getAiTokens(),
             temperature: 0.7,
             stream: true
         })
