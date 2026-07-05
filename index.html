@@ -1077,7 +1077,7 @@ function sendAiMsg() {
 
     const aiCfg=getAiConfig(); if(!aiCfg.apiKey){ showToast("请先设置 DeepSeek API Key","warn"); aiLoading=false; const le=document.getElementById("ai-loading"); if(le)le.remove(); return; }fetch(aiCfg.endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+AI_API_KEY },
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+aiCfg.apiKey },
         body: JSON.stringify({
             model: aiCfg.model,
             messages: [
