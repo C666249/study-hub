@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>学习系统</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <style>
 * { -webkit-tap-highlight-color: transparent; }
 #qnav-overlay * { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
@@ -27,6 +28,15 @@ body { overscroll-behavior-y: none; }
 @keyframes msgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 .ai-typing::after { content: '|'; animation: blink 0.8s infinite; }
 @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+/* AI 回复 markdown 渲染样式 */
+.ai-msg .ai-reply p { margin: 0.25em 0; }
+.ai-msg .ai-reply ul, .ai-msg .ai-reply ol { margin: 0.25em 0; padding-left: 1.2em; }
+.ai-msg .ai-reply li { margin: 0.15em 0; }
+.ai-msg .ai-reply code { background: rgba(0,0,0,0.06); padding: 1px 4px; border-radius: 3px; font-size: 0.9em; }
+.ai-msg .ai-reply pre { background: rgba(0,0,0,0.04); padding: 6px 8px; border-radius: 6px; overflow-x: auto; margin: 0.3em 0; }
+.ai-msg .ai-reply pre code { background: none; padding: 0; }
+.ai-msg .ai-reply strong { color: #4338ca; }
+.ai-msg .ai-reply blockquote { border-left: 2px solid #c4b5fd; padding-left: 8px; margin: 0.3em 0; color: #6b7280; }
 .progress-bar { transition: width 0.35s ease; }
 .fade-in { animation: fadeIn 0.3s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
@@ -1058,7 +1068,7 @@ function sendAiMsg() {
         body: JSON.stringify({
             model: AI_MODEL,
             messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用纯文本中文回答。\n\n格式：\n- 按意思分段，段间空一行\n- 关键词用「」标出\n- 引用原文用""\n- 不用任何markdown（**、*、#、- 等）\n- 200字以内，直击要点' },
+                { role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块\n- 简单问题简洁答，复杂问题结构化答' },
                 { role: 'user', content: ctx }
             ],
             max_tokens: 400,
@@ -1069,8 +1079,8 @@ function sendAiMsg() {
         const loadingEl = document.getElementById('ai-loading');
         if (loadingEl) loadingEl.remove();
         const reply = data.choices && data.choices[0] ? data.choices[0].message.content : '抱歉，AI 暂时无法回答。';
-        const replyHtml = escHtml(reply).replace(/\n/g, '<br>');
-        msgs.innerHTML += '<div class=\"ai-msg\"><span class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%]\" style=\"white-space:pre-wrap\">'+replyHtml+'</span></div>';
+        const replyHtml = marked.parse(reply);
+        msgs.innerHTML += '<div class=\"ai-msg\"><div class=\"inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%] ai-reply\">'+replyHtml+'</div></div>';
         msgs.scrollTop = msgs.scrollHeight;
     }).catch(e => {
         aiLoading = false;
