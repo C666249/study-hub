@@ -1114,7 +1114,7 @@ function sendAiMsg() {
 	                    var token = delta.content || '';
 	                    if (!token) continue;
 	                    fullText += token;
-	                    if (inner) inner.textContent = fullText;
+	                    if (inner) inner.textContent += token;
 	                    msgs.scrollTop = msgs.scrollHeight;
 	                } catch(e) {}
 	            }
