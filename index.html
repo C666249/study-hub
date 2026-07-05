@@ -1048,6 +1048,8 @@ function toggleAiChat() {
     else { panel.classList.add('hidden-panel'); }
 }
 
+var aiChatHistory = [];
+var aiChatQuestionId = -1;
 function sendAiMsg() {
     const input = document.getElementById('ai-chat-input');
     const msgs = document.getElementById('ai-chat-msgs');
@@ -1064,30 +1066,38 @@ function sendAiMsg() {
 	    msgs.innerHTML += '<div id="'+replyId+'" class="ai-msg"><div class="inline-block bg-gray-100 text-gray-700 rounded-xl px-3 py-1.5 text-xs max-w-[85%] ai-reply"><span class="ai-typing"></span></div></div>';
     msgs.scrollTop = msgs.scrollHeight;
 
-    // 构建上下文
+    // 多轮对话上下文
     const q = questionList[currentQuestionIndex];
-    let ctx = '【当前题目】\n' + (q.question||'') + '\n';
-    if (q.options) {
-        ctx += '选项：\n';
-        for (const [k,v] of Object.entries(q.options)) ctx += k+'. '+v+'\n';
+    const qId = q.id || (currentSubject+'_'+currentQuestionIndex);
+    // 切题或首次 → 重建对话历史
+    if (aiChatQuestionId !== qId) {
+        aiChatQuestionId = qId;
+        aiChatHistory = [];
+        // 构建题干上下文（只发一次）
+        var qCtx = '【当前题目】\n' + (q.question||'') + '\n';
+        if (q.options) {
+            qCtx += '选项：\n';
+            for (const [k,v] of Object.entries(q.options)) qCtx += k+'. '+v+'\n';
+        }
+        if (q.answer) qCtx += '正确答案：'+q.answer+'\n';
+        if (q.explanation) qCtx += '解析：'+q.explanation.substring(0, 300)+'\n';
+        if (q.detail) qCtx += '知识点：'+q.detail+'\n';
+        qCtx += '\n【科目】'+currentSubject;
+        aiChatHistory.push({ role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块\n- 简单问题简洁答，复杂问题结构化答' });
+        aiChatHistory.push({ role: 'user', content: qCtx });
     }
-    if (q.answer) ctx += '正确答案：'+q.answer+'\n';
-    if (q.explanation) ctx += '解析：'+q.explanation.substring(0, 300)+'\n';
-    if (q.detail) ctx += '知识点：'+q.detail+'\n';
-    ctx += '\n【科目】'+currentSubject+'\n【用户问题】'+text;
+    // 加入当前用户提问
+    aiChatHistory.push({ role: 'user', content: text });
 
     const aiCfg=getAiConfig(); if(!aiCfg.apiKey){ showToast("请先设置 DeepSeek API Key","warn"); aiLoading=false; const le=document.getElementById("ai-loading"); if(le)le.remove(); return; }fetch(aiCfg.endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer '+aiCfg.apiKey },
         body: JSON.stringify({
             model: aiCfg.model,
-            messages: [
-                { role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块\n- 简单问题简洁答，复杂问题结构化答' },
-                { role: 'user', content: ctx }
-            ],
-            max_tokens: 400,
+            messages: aiChatHistory.slice(),
+            max_tokens: 1000,
             temperature: 0.7,
-	            stream: true
+            stream: true
         })
     }).then(async r => {
 	        if (!r.ok) { aiLoading=false; var be=document.getElementById(replyId); if(be)be.querySelector('.ai-reply').innerHTML='<span class="text-red-400">HTTP '+r.status+'</span>'; return; }
@@ -1114,13 +1124,18 @@ function sendAiMsg() {
 	                    var token = delta.content || '';
 	                    if (!token) continue;
 	                    fullText += token;
-	                    if (inner) inner.textContent += token;
+	                    // 每 20 字或换行时实时渲染 markdown
+                    var mdNow = fullText.length % 20 === 0 || token.indexOf('\n') >= 0;
+                    if (inner) {
+                        if (mdNow) inner.innerHTML = marked.parse(fullText);
+                        else inner.textContent += token;
+                    }
 	                    msgs.scrollTop = msgs.scrollHeight;
 	                } catch(e) {}
 	            }
 	        }
 
-	        if (inner && fullText) inner.innerHTML = marked.parse(fullText);
+	        if (inner && fullText) { inner.innerHTML = marked.parse(fullText); aiChatHistory.push({ role: 'assistant', content: fullText }); }
 	        aiLoading = false;
 	    }).catch(e => {
 	        aiLoading = false;
