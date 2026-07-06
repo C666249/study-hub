@@ -1067,6 +1067,22 @@ function toggleAiChat() {
     else { panel.classList.add('hidden-panel'); }
 }
 
+// LaTeX $...$ → Unicode 数学符号转换
+function fixLatex(t) {
+    var map = {
+    '\\rightarrow': '→', '\\leftarrow': '←', '\\Rightarrow': '⇒',
+    '\\leftrightarrow': '↔', '\\uparrow': '↑', '\\downarrow': '↓',
+    '\\neq': '≠', '\\leq': '≤', '\\geq': '≥', '\\approx': '≈',
+    '\\times': '×', '\\div': '÷', '\\pm': '±', '\\infty': '∞',
+    '\\sum': '∑', '\\prod': '∏', '\\int': '∫',
+    '\\alpha': 'α', '\\beta': 'β', '\\gamma': 'γ', '\\delta': 'δ',
+    '\\pi': 'π', '\\theta': 'θ', '\\lambda': 'λ', '\\mu': 'μ', '\\sigma': 'σ'
+};
+    return t.replace(/\$([^\$]+)\$/g, function(m, inner) {
+        var s = inner.trim();
+        return map[s] || ('`' + s + '`');
+    });
+}
 var aiChatHistory = [];
 var aiChatQuestionId = -1;
 function sendAiMsg() {
@@ -1148,17 +1164,13 @@ function sendAiMsg() {
 	                    if (!token) continue;
 	                    fullText += token;
 	                    // 每 20 字或换行时实时渲染 markdown
-                    var mdNow = fullText.length % 20 === 0 || token.indexOf('\n') >= 0;
-                    if (inner) {
-                        if (mdNow) inner.innerHTML = marked.parse(fullText);
-                        else inner.textContent += token;
-                    }
-	                    msgs.scrollTop = msgs.scrollHeight;
+                    if (inner) inner.textContent += token;
+                    msgs.scrollTop = msgs.scrollHeight;
 	                } catch(e) {}
 	            }
 	        }
 
-	        if (inner && fullText) { inner.innerHTML = marked.parse(fullText); aiChatHistory.push({ role: 'assistant', content: fullText }); saveAiHistory(currentSubject, text, aiChatHistory.slice(), aiCfg.provider); }
+	        if (inner && fullText) { var txt = fixLatex(fullText); inner.innerHTML = marked.parse(txt); aiChatHistory.push({ role: 'assistant', content: fullText }); saveAiHistory(currentSubject, text, aiChatHistory.slice(), aiCfg.provider); }
 	        aiLoading = false;
 	    }).catch(e => {
 	        aiLoading = false;
