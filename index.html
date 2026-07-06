@@ -150,6 +150,8 @@ body { overscroll-behavior-y: none; }
 .home-dark .text-gray-100 { color: #f1f5f9; }
 </style>
 <script src="src/ai-history.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>mermaid.initialize({startOnLoad:false,theme:"neutral"});</script>
 </head>
 <body class="min-h-dvh" style="background: linear-gradient(180deg, #fef2f2 0%, #fff7ed 50%, #fffbeb 100%);">
 <div id="app"></div>
@@ -1163,14 +1165,19 @@ function sendAiMsg() {
 	                    var token = delta.content || '';
 	                    if (!token) continue;
 	                    fullText += token;
-	                    // 每 20 字或换行时实时渲染 markdown
-                    if (inner) inner.textContent += token;
-                    msgs.scrollTop = msgs.scrollHeight;
+                    // 段落结束（空行）或满100字 → 渲染 markdown
+                    var shouldRender = fullText.length % 100 === 0 || fullText.slice(-2) === '\n\n';
+                    if (inner) {
+                        if (shouldRender) inner.innerHTML = marked.parse(fixLatex ? fixLatex(fullText) : fullText);
+                        else inner.textContent += token;
+                    var atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight - 30; if (atBottom) msgs.scrollTop = msgs.scrollHeight;
+                    }
+                    
 	                } catch(e) {}
 	            }
 	        }
 
-	        if (inner && fullText) { var txt = fixLatex(fullText); inner.innerHTML = marked.parse(txt); aiChatHistory.push({ role: 'assistant', content: fullText }); saveAiHistory(currentSubject, text, aiChatHistory.slice(), aiCfg.provider); }
+	        if (inner && fullText) { var txt = fixLatex(fullText); inner.innerHTML = marked.parse(txt); renderMermaid(inner); aiChatHistory.push({ role: 'assistant', content: fullText }); saveAiHistory(currentSubject, text, aiChatHistory.slice(), aiCfg.provider); }
 	        aiLoading = false;
 	    }).catch(e => {
 	        aiLoading = false;
