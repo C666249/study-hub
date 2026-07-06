@@ -859,7 +859,7 @@ function renderQuiz() {
         answerSection = `
         <div class="p-4 bg-orange-50 rounded-xl border border-orange-200">
             <div class="font-bold text-orange-700 text-sm mb-2">📝 参考答案：</div>
-            <div class="text-orange-800 text-sm leading-relaxed">${escHtml(q.answer)}</div>
+            <div class="text-orange-800 text-sm leading-relaxed">${escHtml(q.answer||q.explanation||'暂无参考答案')}</div>
         </div>
         ${!isAns ? `<button onclick="submitAnswer('${q.id}','已复习')" class="mt-3 w-full py-3 bg-orange-400 text-white rounded-xl font-medium text-sm">标记为已复习</button>` : `<button onclick="resetAnswer('${q.id}')" class="mt-3 w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm">重新复习</button>`}`;
     }
