@@ -1105,6 +1105,10 @@ function sendAiMsg() {
         aiChatHistory.push({ role: 'system', content: getAiSystemPrompt() });
         aiChatHistory.push({ role: 'user', content: qCtx });
     }
+    // 确保系统提示词反映当前模式（切换模式后实时生效）
+    if (aiChatHistory.length > 0 && aiChatHistory[0].role === 'system') {
+        aiChatHistory[0].content = getAiSystemPrompt();
+    }
     // 加入当前用户提问
     aiChatHistory.push({ role: 'user', content: text });
 
