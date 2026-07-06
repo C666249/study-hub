@@ -151,7 +151,7 @@ body { overscroll-behavior-y: none; }
 </style>
 <script src="src/ai-history.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-<script>mermaid.initialize({startOnLoad:false,theme:"neutral"});</script>
+<script>mermaid.initialize({startOnLoad:false,theme:"neutral",securityLevel:"loose"});</script>
 </head>
 <body class="min-h-dvh" style="background: linear-gradient(180deg, #fef2f2 0%, #fff7ed 50%, #fffbeb 100%);">
 <div id="app"></div>
@@ -1092,8 +1092,14 @@ function renderMermaid(el) {
     for (var i = 0; i < codes.length; i++) {
         (function(pre, code) {
             var id = 'mermaid-' + Date.now() + '-' + i;
-            pre.innerHTML = '<div class="mermaid" id="' + id + '">' + code.textContent + '</div>';
-            try { mermaid.run({ nodes: [document.getElementById(id)] }); } catch(e) {}
+            var div = document.createElement('div');
+            div.className = 'mermaid';
+            div.id = id;
+            div.textContent = code.textContent;
+            pre.parentNode.replaceChild(div, pre);
+            mermaid.run({ nodes: [div] }).catch(function() {
+                div.innerHTML = '<pre><code class=\"language-mermaid\">' + code.textContent + '</code></pre>';
+            });
         })(codes[i].parentElement, codes[i]);
     }
 }
