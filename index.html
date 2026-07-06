@@ -918,7 +918,7 @@ function renderQuiz() {
 
         <!-- AI 聊天面板 -->
         <div id="ai-chat-panel" class="hidden-panel fixed bottom-16 right-2 z-40 w-[calc(100vw-1rem)] max-w-sm bg-white rounded-2xl shadow-2xl border border-gray-200 flex flex-col overflow-hidden" style="max-height:55vh">
-            <div class="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"><span class="text-sm font-bold">AI 答疑</span><div class="flex items-center gap-1"><button id="ai-hist-btn" onclick="toggleAiHistory()" class="text-white/80 hover:text-white text-sm leading-none mr-0.5" title="对话历史">📜</button><button id="ai-provider-btn" onclick="switchAiProvider()" class="text-[11px] px-2 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/90">Agnes AI</button><button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button></div></div><div class="flex items-center gap-1 px-3 py-1.5 border-b border-gray-100 bg-gray-50/50"><span class="text-[10px] text-gray-400 mr-1">模式</span><button id="tk-400" onclick="setAiTokens(400);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 bg-white text-gray-500 transition-all hover:border-purple-300">⚡ 快速</button><button id="tk-600" onclick="setAiTokens(600);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border border-purple-500 bg-purple-500 text-white transition-all">📖 普通</button><button id="tk-1000" onclick="setAiTokens(1000);refreshTokenBtns()" class="text-[10px] px-2 py-0.5 rounded-full border border-gray-200 bg-white text-gray-500 transition-all hover:border-purple-300">🔬 深度</button></div>
+            <div class="flex items-center justify-between px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white"><span class="text-sm font-bold">AI 答疑</span><div class="flex items-center gap-1"><button id="tk-400" onclick="setAiTokens(400);refreshTokenBtns()" class="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/80" title="快速">⚡</button><button id="tk-600" onclick="setAiTokens(600);refreshTokenBtns()" class="text-[10px] px-1.5 py-0.5 rounded-full bg-white/30 text-white transition-all" title="普通">📖</button><button id="tk-1000" onclick="setAiTokens(1000);refreshTokenBtns()" class="text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/80" title="深度">🔬</button><button id="ai-hist-btn" onclick="toggleAiHistory()" class="text-white/80 hover:text-white text-sm leading-none mx-0.5" title="对话历史">📜</button><button id="ai-provider-btn" onclick="switchAiProvider()" class="text-[11px] px-1.5 py-0.5 rounded-full bg-white/20 hover:bg-white/30 transition-all text-white/90">Agnes AI</button><button onclick="toggleAiChat()" class="text-white/80 hover:text-white text-lg leading-none">&times;</button></div></div>
 	            <div id="ai-toast" class="toast-box"></div>
 	            <div id="ai-history-view" class="flex-1 overflow-y-auto px-3 py-2 space-y-1 text-sm hidden"><div class="text-gray-400 text-xs text-center py-2">对话历史（最近10条）</div></div>
 	            <div id="ai-chat-msgs" class="flex-1 overflow-y-auto px-3 py-2 space-y-2 text-sm" style="min-height:80px;max-height:40vh">
@@ -1046,15 +1046,16 @@ function getAiProvider() { const v=localStorage.getItem('studyhub_ai_provider');
 function setAiProvider(p) { if(!AI_PROVIDERS[p])p='agnes'; localStorage.setItem('studyhub_ai_provider',p); }
 function getDeepseekKey() { return localStorage.getItem('studyhub_deepseek_key')||''; }
 function setDeepseekKey(k) { if(k) localStorage.setItem('studyhub_deepseek_key',k); else localStorage.removeItem('studyhub_deepseek_key'); }
+function getAiSystemPrompt(){ var tk=getAiTokens(); var base='你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块'; if(tk===400) return base+'\n\n**当前为快速模式：请简洁回答，控制在3句话以内，直击要点。**'; if(tk===1000) return base+'\n\n**当前为深度模式：可以展开详细分析，逐项推理，引用原文或法条。**'; return base+'\n\n简单问题简洁答，复杂问题结构化答。'; }
 function getAiConfig() { const p=getAiProvider(); const c=AI_PROVIDERS[p]; return { provider:p, endpoint:c.endpoint, model:c.model, apiKey:p==='deepseek'?getDeepseekKey():c.apiKey }; }
 const AI_TOKEN_LEVELS = [{v:400,label:'⚡ 快速'},{v:600,label:'📖 普通'},{v:1000,label:'🔬 深度'}];
 function getAiTokens() { var v=parseInt(localStorage.getItem('studyhub_ai_tokens')); return v===400||v===600||v===1000?v:600; }
-function setAiTokens(v) { localStorage.setItem('studyhub_ai_tokens',v+''); }
+function setAiTokens(v) { localStorage.setItem('studyhub_ai_tokens',v+''); var labels={400:'⚡ 快速模式',600:'📖 普通模式',1000:'🔬 深度模式'}; showToast('已切换至 '+labels[v],'info'); }
 let toastTimer=null;
 function showToast(msg, type) { type=type||'info'; const t=document.getElementById('ai-toast'); if(!t)return; t.textContent=msg; t.className='toast-box toast-'+type+' show'; clearTimeout(toastTimer); toastTimer=setTimeout(function(){t.classList.remove('show')},2000); }
 function switchAiProvider(){const cur=getAiProvider();const next=cur==='agnes'?'deepseek':'agnes';if(next==='deepseek'&&!getDeepseekKey()){const k=prompt('请输入 DeepSeek API Key（在 platform.deepseek.com 获取）：');if(!k||!k.trim()){showToast('未输入 Key，已取消切换','warn');return;}setDeepseekKey(k.trim());showToast('DeepSeek Key 已保存','info');}setAiProvider(next);refreshAiProviderBtn();refreshTokenBtns();const name=AI_PROVIDERS[next].label;showToast('已切换至 '+name,'info');}
 function refreshAiProviderBtn(){const btn=document.getElementById('ai-provider-btn');if(!btn)return;const cur=getAiProvider();const cfg=AI_PROVIDERS[cur];btn.textContent=cfg.label;btn.title='点击切换模型（当前：'+cfg.label+'）';}
-function refreshTokenBtns(){var tk=getAiTokens();['tk-400','tk-600','tk-1000'].forEach(function(id){var b=document.getElementById(id);if(!b)return;if(parseInt(id.slice(3))===tk){b.className='text-[10px] px-2 py-0.5 rounded-full border transition-all border-purple-500 bg-purple-500 text-white';}else{b.className='text-[10px] px-2 py-0.5 rounded-full border transition-all border-gray-200 bg-white text-gray-500 hover:border-purple-300';}});}
+function refreshTokenBtns(){var tk=getAiTokens();['tk-400','tk-600','tk-1000'].forEach(function(id){var b=document.getElementById(id);if(!b)return;if(parseInt(id.slice(3))===tk){b.className='text-[10px] px-1.5 py-0.5 rounded-full bg-white/30 text-white transition-all';}else{b.className='text-[10px] px-1.5 py-0.5 rounded-full bg-white/20 hover:bg-white/30 text-white/80 transition-all';}});}
 let aiChatOpen = false;
 let aiLoading = false;
 
@@ -1101,7 +1102,7 @@ function sendAiMsg() {
         if (q.explanation) qCtx += '解析：'+q.explanation.substring(0, 300)+'\n';
         if (q.detail) qCtx += '知识点：'+q.detail+'\n';
         qCtx += '\n【科目】'+currentSubject;
-        aiChatHistory.push({ role: 'system', content: '你是一个学习答疑助手。根据题目和知识点信息，用中文回答。\n\n使用 markdown 让输出清晰：\n- **重点概念**用粗体\n- 分点用 - 列表\n- 关键词用 `代码块` 突出\n- 引用原文用 > 引用块\n- 简单问题简洁答，复杂问题结构化答' });
+        aiChatHistory.push({ role: 'system', content: getAiSystemPrompt() });
         aiChatHistory.push({ role: 'user', content: qCtx });
     }
     // 加入当前用户提问
