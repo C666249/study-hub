@@ -1168,7 +1168,7 @@ function sendAiMsg() {
                     // 段落结束（空行）或满100字 → 渲染 markdown
                     var shouldRender = fullText.length % 100 === 0 || fullText.slice(-2) === '\n\n';
                     if (inner) {
-                        if (shouldRender) inner.innerHTML = marked.parse(fixLatex ? fixLatex(fullText) : fullText);
+                        if (shouldRender) { try { inner.innerHTML = marked.parse(fixLatex ? fixLatex(fullText) : fullText); } catch(e) {} }
                         else inner.textContent += token;
                     var atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight - 30; if (atBottom) msgs.scrollTop = msgs.scrollHeight;
                     }
@@ -1182,7 +1182,7 @@ function sendAiMsg() {
 	    }).catch(e => {
 	        aiLoading = false;
 	        var bubble2 = document.getElementById(replyId);
-	        if (bubble2) bubble2.querySelector('.ai-reply').innerHTML = '<span class="text-red-400">网络错误，请重试</span>';
+	        if (bubble2) var cur2 = bubble2.querySelector('.ai-reply').innerHTML || ''; bubble2.querySelector('.ai-reply').innerHTML = cur2 + '<br><span class="text-red-400">⚠ 连接中断：' + (e.message || 'unknown') + '</span>';
 	    });
 
 }
