@@ -1180,7 +1180,6 @@ function sendAiMsg() {
                     // 段落结束（空行）或满100字 → 渲染 markdown
                     if (inner) inner.textContent += token;
                     var atBottom = msgs.scrollTop + msgs.clientHeight >= msgs.scrollHeight - 30; if (atBottom) msgs.scrollTop = msgs.scrollHeight;
-                    }
                     
 	                } catch(e) {}
 	            }
