@@ -146,7 +146,10 @@ def _build(qtype: str, raw_q: str, raw_expl: str, raw_buf: str, raw_detail: str,
     dt = (raw_detail or '').replace('详细解释', '').replace('详细解析', '').replace('详解', '').strip()
 
     # 答案
-    if qtype == 'judge':
+    if qtype == 'short':
+        # 简答题的逐项分析即为参考答案
+        answer = expl.strip()
+    elif qtype == 'judge':
         # 真题格式：选项中 "A. 正确" / "B. 错误" → 从解析中提取正确答案的字母，映射为对/错
         letter = explain_to_answer(expl, options) if options else ''
         answer = '对' if letter == 'A' else ('错' if letter == 'B' else '')
