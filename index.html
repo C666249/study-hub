@@ -1096,17 +1096,39 @@ function renderMermaid(el) {
             var btn = document.createElement('button');
             btn.className = 'mermaid-render-btn text-xs text-purple-500 border border-purple-300 rounded-lg px-2 py-0.5 mt-1 hover:bg-purple-50 transition-all';
             btn.textContent = '▶ 生成图表';
+            btn._showingChart = false;
+            btn._codeText = code.textContent;
+            btn._pre = pre;
+            btn._chartDiv = null;
+
             btn.onclick = function() {
-                var id = 'mermaid-' + Date.now();
-                var div = document.createElement('div');
-                div.className = 'mermaid';
-                div.id = id;
-                div.textContent = code.textContent;
-                pre.parentNode.replaceChild(div, pre);
-                btn.remove();
-                mermaid.run({ nodes: [div] }).catch(function() {
-                    div.innerHTML = '<pre><code class=\"language-mermaid\">' + code.textContent + '</code></pre><span class=\"text-xs text-gray-400\">⚠ 图表语法有误，已保留原始代码</span>';
-                });
+                if (this._showingChart) {
+                    // Switch back to code
+                    if (this._chartDiv && this._chartDiv.parentNode) {
+                        this._chartDiv.parentNode.replaceChild(this._pre, this._chartDiv);
+                    }
+                    this._chartDiv = null;
+                    this._showingChart = false;
+                    this.textContent = '▶ 生成图表';
+                } else {
+                    // Render chart
+                    var id = 'mermaid-' + Date.now();
+                    var div = document.createElement('div');
+                    div.className = 'mermaid';
+                    div.id = id;
+                    div.textContent = this._codeText;
+                    this._pre.parentNode.replaceChild(div, this._pre);
+                    this._chartDiv = div;
+                    this._showingChart = true;
+                    this.textContent = '📋 查看代码';
+                    var self = this;
+                    mermaid.run({ nodes: [div] }).catch(function() {
+                        div.innerHTML = '<pre><code class=\"language-mermaid\">' + self._codeText + '</code></pre><span class=\"text-xs text-gray-400\">⚠ 图表语法有误，已保留原始代码</span>';
+                        self._chartDiv = null;
+                        self._showingChart = false;
+                        self.textContent = '▶ 生成图表';
+                    });
+                }
             };
             pre.parentNode.insertBefore(btn, pre.nextSibling);
         })(codes[i].parentElement, codes[i]);

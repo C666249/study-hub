@@ -101,4 +101,12 @@ function restoreAiHistory(id) {
     }
   });
   msgs.scrollTop = msgs.scrollHeight;
+
+  // Restore mermaid buttons for any saved chart code blocks
+  setTimeout(function() {
+    var replies = msgs.querySelectorAll('.ai-reply');
+    for (var i = 0; i < replies.length; i++) {
+      if (typeof renderMermaid === 'function') renderMermaid(replies[i]);
+    }
+  }, 200);
 }
