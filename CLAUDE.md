@@ -47,10 +47,11 @@ study-hub/
 
 ## 题库转换
 
-`tools/convert.py` — python-docx 插件式转换器，支持 3 种格式自动检测。
+`tools/convert.py` — python-docx 插件式转换器，支持 5 种格式自动检测。
 - 双击 `D:\桌面的\题库转换.lnk` 启动
+- 📖 **操作手册（加科目/改题库/标签系统/插件体系）**：见 [docs/operations-guide.md](docs/operations-guide.md)
 - 格式规范见 [docs/docx-format-guide.md](docs/docx-format-guide.md)
-- 加新科目见 [docs/add-subject.md](docs/add-subject.md)
+- 加新科目流程见 [docs/add-subject.md](docs/add-subject.md)
 
 ## 配色
 
