@@ -16,9 +16,11 @@ from plugins.review import detect as review_detect, extract as review_extract
 from plugins.xuexitong import detect as xxt_detect, extract as xxt_extract
 from plugins.numbered import detect as num_detect, extract as num_extract
 from plugins.exam import detect as exam_detect, extract as exam_extract
+from plugins.xingce import detect as xingce_detect, extract as xingce_extract
 
-# 插件注册表 — 加新格式只改这里（真题卷优先，避免被复习题误匹配）
+# 插件注册表 — 加新格式只改这里（行测优先于真题卷，避免数字．题号被误匹配）
 PLUGINS = [
+    ('行测模拟题（数字全角点+简略解析）', xingce_detect, xingce_extract),
     ('真题卷（简体标记+序号）', exam_detect, exam_extract),
     ('复习题（bold标记）', review_detect, review_extract),
     ('学习通（独立段落）', xxt_detect, xxt_extract),
