@@ -148,6 +148,20 @@ body { overscroll-behavior-y: none; }
 .home-dark .border-fuchsia-200 { border-color: rgba(217,70,239,0.15); }
 .home-dark .text-gray-200 { color: #e2e8f0; }
 .home-dark .text-gray-100 { color: #f1f5f9; }
+/* 题目富媒体内容 */
+.content-blocks { display: grid; gap: 12px; min-width: 0; }
+.content-blocks-compact { gap: 8px; }
+.content-text { white-space: normal; overflow-wrap: anywhere; }
+.content-image { margin: 0; display: grid; gap: 6px; justify-items: center; min-width: 0; }
+.content-image-open { display: block; width: 100%; padding: 0; border: 0; border-radius: 12px; background: #fff; cursor: zoom-in; overflow: hidden; }
+.content-image img { display: block; width: auto; max-width: 100%; max-height: 480px; margin: 0 auto; object-fit: contain; border-radius: 12px; background: #fff; }
+.content-blocks-compact .content-image img { max-height: 220px; }
+.content-image figcaption { color: #9ca3af; font-size: 12px; line-height: 1.5; text-align: center; }
+.content-image-error { width: 100%; padding: 12px; border: 1px dashed #fca5a5; border-radius: 10px; color: #b91c1c; background: #fef2f2; font-size: 12px; text-align: center; }
+.option-image-zoom { position: absolute; right: 8px; bottom: 8px; z-index: 2; width: 32px; height: 32px; border: 1px solid rgba(148,163,184,.35); border-radius: 999px; color: #475569; background: rgba(255,255,255,.92); box-shadow: 0 2px 8px rgba(15,23,42,.12); }
+.image-viewer { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom)); background: rgba(3,7,18,.92); backdrop-filter: blur(8px); }
+.image-viewer img { display: block; max-width: 100%; max-height: 88dvh; object-fit: contain; border-radius: 12px; background: #fff; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.image-viewer-close { position: absolute; top: max(14px, env(safe-area-inset-top)); right: 14px; width: 40px; height: 40px; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; color: #fff; background: rgba(15,23,42,.8); font-size: 24px; line-height: 1; }
 </style>
 <script src="src/ai-history.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
@@ -221,11 +235,102 @@ function isAnswerCorrect(userAnswer, correctAnswer, type) {
     if (type === 'multiple') return userAnswer.split('').sort().join('') === correctAnswer.split('').sort().join('');
     return userAnswer === correctAnswer;
 }
+function escapeContentHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function sanitizeMediaSrc(value) {
+    if (typeof value !== 'string') return '';
+    const src = value.trim().replace(/\\/g, '/');
+    if (!src.startsWith('data/media/')) return '';
+    if (src.includes('..') || src.includes('?') || src.includes('#')) return '';
+    if (!/\.(?:png|jpe?g|webp|gif|svg|avif)$/i.test(src)) return '';
+    return src;
+}
+function blockSearchText(blocks) {
+    if (!Array.isArray(blocks)) return '';
+    return blocks.map(block => {
+        if (!block || typeof block !== 'object') return '';
+        if (block.type === 'text') return block.text || '';
+        if (block.type === 'image') return [block.alt || '', block.caption || ''].join(' ');
+        return '';
+    }).join(' ');
+}
+function getQuestionSearchText(item) {
+    const optionText = Object.values(item.options || {}).filter(value => typeof value === 'string');
+    const optionContentText = Object.values(item.optionContent || {}).map(blockSearchText);
+    return [
+        item.question || '', blockSearchText(item.questionContent),
+        ...optionText, ...optionContentText,
+        item.explanation || '', blockSearchText(item.explanationContent),
+        item.detail || '', blockSearchText(item.detailContent),
+        ...(item.tags || [])
+    ].join(' ');
+}
+function renderContentBlocks(blocks, fallbackText = '', options = {}) {
+    const content = Array.isArray(blocks) && blocks.length ? blocks : [{type:'text', text:fallbackText}];
+    const interactiveImages = options.interactiveImages !== false;
+    const compactClass = options.compact ? ' content-blocks-compact' : '';
+    return `<div class="content-blocks${compactClass}">` + content.map(block => {
+        if (!block || typeof block !== 'object') return '';
+        if (block.type === 'text') return `<div class="content-text">${escapeContentHtml(block.text || '').replace(/\r?\n/g,'<br>')}</div>`;
+        if (block.type !== 'image') return '';
+        const src = sanitizeMediaSrc(block.src);
+        if (!src) return '<div class="content-image-error" role="status">⚠ 图片路径无效</div>';
+        const alt = escapeContentHtml(block.alt || '题目图片');
+        const caption = block.caption ? `<figcaption>${escapeContentHtml(block.caption)}</figcaption>` : '';
+        const image = `<img src="${escapeContentHtml(src)}" alt="${alt}" loading="lazy" decoding="async" onerror="handleMediaError(this)">`;
+        const body = interactiveImages
+            ? `<button type="button" class="content-image-open" onclick="openImageViewer(this.querySelector('img'))" aria-label="放大查看${alt}">${image}</button>`
+            : image;
+        return `<figure class="content-image">${body}${caption}</figure>`;
+    }).join('') + '</div>';
+}
+function handleMediaError(img) {
+    const figure = img && img.closest ? img.closest('.content-image') : null;
+    if (!figure || figure.querySelector('.content-image-error')) return;
+    const opener = img.closest('.content-image-open');
+    if (opener) opener.hidden = true; else img.hidden = true;
+    const error = document.createElement('div');
+    error.className = 'content-image-error';
+    error.setAttribute('role', 'status');
+    error.textContent = '⚠ 图片加载失败';
+    figure.prepend(error);
+}
+function closeImageViewer() {
+    const viewer = document.getElementById('image-viewer');
+    if (viewer) viewer.remove();
+}
+function openImageViewer(sourceImage) {
+    if (!sourceImage || !sourceImage.currentSrc) return;
+    closeImageViewer();
+    const viewer = document.createElement('div');
+    viewer.id = 'image-viewer';
+    viewer.className = 'image-viewer';
+    viewer.setAttribute('role', 'dialog');
+    viewer.setAttribute('aria-modal', 'true');
+    viewer.setAttribute('aria-label', sourceImage.alt || '查看题目图片');
+    viewer.addEventListener('click', event => { if (event.target === viewer) closeImageViewer(); });
+    const image = document.createElement('img');
+    image.src = sourceImage.currentSrc;
+    image.alt = sourceImage.alt || '题目图片';
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'image-viewer-close';
+    close.setAttribute('aria-label', '关闭图片');
+    close.textContent = '×';
+    close.addEventListener('click', closeImageViewer);
+    viewer.append(image, close);
+    document.body.appendChild(viewer);
+    close.focus();
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeImageViewer(); });
 function searchQuestions(query, questions) {
     if (!query || !query.trim()) return [...questions];
     const q = query.trim().toLowerCase();
     return questions.filter(item => {
-        const text = [item.question||'', ...Object.values(item.options||{}), item.explanation||'', ...(item.tags||[])].join(' ').toLowerCase();
+        const text = getQuestionSearchText(item).toLowerCase();
         return text.includes(q);
     });
 }
@@ -811,6 +916,20 @@ function renderQuiz() {
     const typeLabels = {judge:'判断',single:'单选',multiple:'多选',short:'简答'};
     const typeColors = {judge:{bg:'bg-purple-50',text:'text-purple-600'},single:{bg:'bg-blue-50',text:'text-blue-600'},multiple:{bg:'bg-green-50',text:'text-green-600'},short:{bg:'bg-orange-50',text:'text-orange-600'}};
     const tc = typeColors[q.type] || typeColors.single;
+    const questionBody = renderContentBlocks(q.questionContent, q.question || '');
+    const hasExplanation = !!q.explanation || (Array.isArray(q.explanationContent) && q.explanationContent.length > 0);
+    const hasDetail = !!q.detail || (Array.isArray(q.detailContent) && q.detailContent.length > 0);
+    const explanationBody = Array.isArray(q.explanationContent) && q.explanationContent.length > 0
+        ? renderContentBlocks(q.explanationContent, q.explanation || '')
+        : formatExplanation(q.explanation || '');
+    const detailBody = renderContentBlocks(q.detailContent, q.detail || q.explanation || '');
+    const optionBody = (key, legacyText) => renderContentBlocks(
+        q.optionContent && q.optionContent[key],
+        typeof legacyText === 'string' ? legacyText : '',
+        { interactiveImages: false, compact: true }
+    );
+    const optionHasImage = key => Array.isArray(q.optionContent && q.optionContent[key]) &&
+        q.optionContent[key].some(block => block && block.type === 'image' && sanitizeMediaSrc(block.src));
 
     let answerSection = '';
     if (q.type === 'judge') {
@@ -837,7 +956,7 @@ function renderQuiz() {
                     else if (k === ua && !isCorrect) cls = 'border-red-500 bg-red-50 text-red-700';
                     else cls = 'border-gray-200 text-gray-300';
                 }
-                return `<button onclick="submitAnswer('${q.id}','${k}')" class="option-btn w-full text-left p-3.5 rounded-xl border-2 transition-all ${cls}"><span class="font-bold mr-2">${k}.</span>${escHtml(v)}</button>`;
+                return `<div class="relative"><button onclick="submitAnswer('${q.id}','${k}')" class="option-btn w-full text-left p-3.5 rounded-xl border-2 transition-all ${cls}"><div class="flex items-start gap-2"><span class="font-bold shrink-0">${k}.</span><div class="flex-1 min-w-0">${optionBody(k,v)}</div></div></button>${optionHasImage(k)?'<button type="button" class="option-image-zoom" onclick="event.stopPropagation();openImageViewer(this.parentElement.querySelector(\'.content-image img\'))" aria-label="放大查看选项'+k+'">⌕</button>':''}</div>`;
             }).join('')}
         </div>`;
     } else if (q.type === 'multiple') {
@@ -853,7 +972,7 @@ function renderQuiz() {
                 } else {
                     cls = sel ? 'border-green-500 bg-green-50 text-green-700' : 'border-gray-200 hover:border-green-400 hover:bg-green-50';
                 }
-                return `<button onclick="toggleMultipleOption('${q.id}','${k}')" class="option-btn w-full text-left p-3.5 rounded-xl border-2 transition-all ${cls}" ${isAns?'disabled':''}><span class="font-bold mr-2">${k}.</span>${escHtml(v)}<span class="float-right">${sel?'✓':''}</span></button>`;
+                return `<div class="relative"><button onclick="toggleMultipleOption('${q.id}','${k}')" class="option-btn w-full text-left p-3.5 rounded-xl border-2 transition-all ${cls}" ${isAns?'disabled':''}><div class="flex items-start gap-2"><span class="font-bold shrink-0">${k}.</span><div class="flex-1 min-w-0">${optionBody(k,v)}</div><span class="shrink-0">${sel?'✓':''}</span></div></button>${optionHasImage(k)?'<button type="button" class="option-image-zoom" onclick="event.stopPropagation();openImageViewer(this.parentElement.querySelector(\'.content-image img\'))" aria-label="放大查看选项'+k+'">⌕</button>':''}</div>`;
             }).join('')}
         </div>
         ${!isAns ? `<button onclick="confirmMultipleAnswer('${q.id}')" class="w-full py-3 bg-green-500 text-white rounded-xl font-bold text-sm hover:bg-green-600 transition-all">确认答案</button>` : `<button onclick="resetAnswer('${q.id}')" class="w-full py-2.5 bg-blue-500 text-white rounded-xl text-sm font-medium hover:bg-blue-600 transition-all">重新答题</button>`}`;
@@ -893,15 +1012,15 @@ function renderQuiz() {
                     ${(q.tags||[]).map(t => '<span class="px-2 py-0.5 bg-red-50 text-red-400 rounded-full text-xs">'+t+'</span>').join('')}
                 </div>
 
-                <div class="text-base text-gray-800 leading-relaxed mb-5">${q.question}</div>
+                <div class="text-base text-gray-800 leading-relaxed mb-5">${questionBody}</div>
                 ${answerSection}
 
                 ${isAns && q.type !== 'short' ? `
                 <div class="mt-5 p-4 rounded-xl ${isCorrect?'bg-green-50 border border-green-200':'bg-red-50 border border-red-200'}">
                     <div class="font-bold text-sm ${isCorrect?'text-green-700':'text-red-700'} mb-1">${isCorrect?'✅ 回答正确！':'❌ 回答错误'}</div>
                     <div class="text-xs ${isCorrect?'text-green-600':'text-red-600'} mb-2">正确答案：${escHtml(String(q.answer).replace(/\d+分\s*$/,''))}</div>
-                    ${q.detail && q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+formatExplanation(q.explanation)+'</div></div>' : ''}
-                    ${q.detail && q.detail.length > 0 ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.detail)+'</div>' : (q.explanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+escHtml(q.explanation)+'</div>' : '')}
+                    ${hasDetail && hasExplanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-500 leading-relaxed"><span class="font-bold text-gray-500">📝 逐项分析：</span><div class="mt-1">'+explanationBody+'</div></div>' : ''}
+                    ${hasDetail ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+detailBody+'</div>' : (hasExplanation ? '<div class="mt-2 pt-2 border-t border-gray-200/50 text-xs text-gray-600 leading-relaxed"><span class="font-bold">📖 解析：</span>'+explanationBody+'</div>' : '')}
                     <button onclick="toggleFavorite('${q.id}')" class="mt-3 text-xs font-medium ${isFav?'text-amber-500':'text-gray-400'} hover:text-amber-500 transition-all">
                         ${isFav ? '⭐ 已收藏' : '☆ 收藏此题'}
                     </button>

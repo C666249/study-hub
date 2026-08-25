@@ -5,7 +5,7 @@
 - `applicationId`: `io.github.c666249.studyhub`
 - `namespace`: `io.github.c666249.studyhub`
 - 启动 Activity: `io.github.c666249.studyhub.MainActivity`
-- 当前版本: `1.0.0` (`versionCode 1`)
+- 当前版本: `1.0.1` (`versionCode 2`)
 
 这个 application ID 是 Study Hub 的永久身份。后续版本不得改回
 `com.studyhub.app`，也不得复用其他模板项目的 application ID，否则 Android
@@ -21,6 +21,9 @@ https://c666249.github.io/study-hub/
 
 因此 GitHub Pages 部署完成后，题库、科目和页面更新会在 App 下次加载页面时
 生效。网页的 `localStorage` 保存在这个 application ID 自己的 Android 数据目录中。
+
+App 使用沉浸式全屏：状态栏和导航栏默认隐藏；用户从屏幕边缘滑动时，系统栏会
+临时出现，随后由 Android 自动隐藏。
 
 外部站点链接交给系统浏览器；Study Hub 自身链接留在 App 内。主页面无法连接时
 显示内置的 `offline.html`，但当前版本不提供完整离线题库。

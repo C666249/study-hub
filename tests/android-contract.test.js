@@ -48,3 +48,14 @@ test('Android app has an offline fallback and browser back navigation', () => {
   assert.match(activity, /webView\.canGoBack\(\)/);
   assert.ok(fs.existsSync(path.join(androidRoot, 'app/src/main/assets/offline.html')));
 });
+
+test('Android app hides system bars with transient swipe reveal', () => {
+  const activity = read(
+    'app/src/main/java/io/github/c666249/studyhub/MainActivity.kt'
+  );
+  const styles = read('app/src/main/res/values/styles.xml');
+  assert.match(activity, /BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE/);
+  assert.match(activity, /SYSTEM_UI_FLAG_IMMERSIVE_STICKY/);
+  assert.match(activity, /WindowInsets\.Type\.systemBars\(\)/);
+  assert.match(styles, /android:windowFullscreen">true/);
+});
