@@ -8,3 +8,10 @@ parse_doc_questions.js
 .netlify
 __pycache__/
 __pycache__/
+
+# Android local/build artifacts
+android/.gradle/
+android/.kotlin/
+android/**/build/
+android/local.properties
+dist/*.apk
