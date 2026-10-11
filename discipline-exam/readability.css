@@ -390,3 +390,109 @@ body.quiz-immersive .toast{z-index:250;bottom:24px}
 @media(prefers-reduced-motion:reduce){.answer-sheet,.answer-backdrop{animation:none!important}}
 
 body.answer-sheet-open{overflow:hidden}
+
+/* V1.4 · Fluid answer continuity / Apple Fluid + FMV.
+   Maintain the same card and option DOM; reveal the note by growing the parent. */
+body.quiz-immersive .question-card{view-transition-name:quiz-card;contain:layout}
+body.quiz-immersive .question-answers .option{
+ transition:background-color 320ms cubic-bezier(.18,.84,.24,1),
+ border-color 320ms cubic-bezier(.18,.84,.24,1),color 260ms ease,
+ box-shadow 260ms ease,transform 110ms ease;
+ -webkit-tap-highlight-color:transparent
+}
+body.quiz-immersive .question-answers .option:active:not(:disabled){transform:scale(.985)}
+body.quiz-immersive .question-answers .option.right,
+body.quiz-immersive .question-answers .option.wrong{
+ animation:option-confirm 360ms cubic-bezier(.18,.88,.2,1.08) both;opacity:1
+}
+@keyframes option-confirm{0%{transform:scale(.985)}55%{transform:scale(1.009)}100%{transform:scale(1)}}
+body.quiz-immersive .question-answers .option.dim{opacity:.7}
+body.quiz-immersive .question-footer .btn-primary{
+ background:linear-gradient(110deg,#415bd4,#6375e9);color:#fff;
+ border:1px solid transparent;box-shadow:0 11px 22px -13px #435cd3
+}
+body.quiz-immersive .inline-feedback{
+ display:grid;grid-template-rows:0fr;opacity:0;visibility:hidden;
+ transition:grid-template-rows 420ms cubic-bezier(.18,.84,.24,1),
+ opacity 230ms ease,visibility 0s linear 420ms
+}
+body.quiz-immersive .inline-feedback.revealed{
+ grid-template-rows:1fr;opacity:1;visibility:visible;
+ transition:grid-template-rows 420ms cubic-bezier(.18,.84,.24,1),
+ opacity 230ms ease 65ms,visibility 0s
+}
+body.quiz-immersive .inline-feedback-inner{
+ min-height:0;overflow:hidden;display:flex;flex-direction:column;gap:10px
+}
+body.quiz-immersive .inline-result{
+ display:flex;align-items:center;gap:7px;flex-wrap:wrap;
+ margin-top:17px;padding:11px 13px 8px;border-top:1px solid #e4eafa;
+ color:#19825e;font-size:13px;font-weight:770
+}
+body.quiz-immersive .inline-result.is-wrong{color:#b35649}
+body.quiz-immersive .inline-result-icon{
+ display:inline-grid;place-items:center;width:23px;height:23px;
+ border-radius:50%;background:#e2f8ed;color:#178663;flex-shrink:0
+}
+body.quiz-immersive .inline-result.is-wrong .inline-result-icon{
+ background:#ffeae5;color:#c05448
+}
+body.quiz-immersive .inline-result-icon .icon{
+ width:14px;height:14px;stroke-width:2.8
+}
+body.quiz-immersive .inline-result-answer{
+ margin-left:auto;line-height:1.6;color:#68778f;font-size:12px;font-weight:570
+}
+body.quiz-immersive .inline-result-answer strong{
+ color:#1e355c;font-size:13px;font-weight:790
+}
+body.quiz-immersive .origin-footnote{
+ padding:4px 13px 12px 37px;color:#7d899e
+}
+body.quiz-immersive .origin-label{
+ display:block;color:#687ea3;letter-spacing:.018em;
+ font-size:11px;font-weight:710;margin-bottom:5px
+}
+body.quiz-immersive .origin-footnote p{
+ font-size:12.5px;font-weight:470;line-height:1.75;margin:0;
+ color:#67758c;white-space:pre-wrap;overflow-wrap:anywhere
+}
+body.quiz-immersive .question-footer{margin-top:17px}
+body.quiz-immersive .quiz-progress span{
+ transition:width 520ms cubic-bezier(.18,.84,.24,1)
+}
+::view-transition-old(root),::view-transition-new(root){animation:none}
+::view-transition-old(quiz-card){
+ animation:quiz-old-out 190ms cubic-bezier(.18,.84,.24,1) both
+}
+::view-transition-new(quiz-card){
+ animation:quiz-new-in 350ms cubic-bezier(.18,.84,.24,1) both
+}
+@keyframes quiz-old-out{
+ to{opacity:0;transform:translateY(-10px) scale(.995)}
+}
+@keyframes quiz-new-in{
+ from{opacity:.22;transform:translateY(15px) scale(.991)}
+ to{opacity:1;transform:translateY(0) scale(1)}
+}
+body.quiz-immersive .question-card.question-card-enter{
+ animation:quiz-new-in 350ms cubic-bezier(.18,.84,.24,1) both
+}
+@media(max-width:760px){
+ body.quiz-immersive .inline-result{padding-left:6px;padding-right:6px}
+ body.quiz-immersive .origin-footnote{padding:3px 6px 8px 28px}
+ body.quiz-immersive .inline-result-answer{font-size:12px}
+ body.quiz-immersive .origin-footnote p{font-size:12px;line-height:1.72}
+}
+@media(prefers-reduced-motion:reduce){
+ body.quiz-immersive .question-answers .option,
+ body.quiz-immersive .inline-feedback,
+ body.quiz-immersive .inline-feedback.revealed,
+ body.quiz-immersive .quiz-progress span{
+  transition:none!important;animation:none!important
+ }
+ ::view-transition-old(root),::view-transition-new(root),
+ ::view-transition-old(quiz-card),::view-transition-new(quiz-card){
+  animation:none!important
+ }
+}
