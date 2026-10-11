@@ -179,7 +179,7 @@ if(feedback){
 const pct=Math.round((s.index+1)/s.questions.length*100);
 const bar=$('.exam-progress span')||$('.quiz-progress span');if(bar)bar.style.width=pct+'%';
 }
-function changeFavorite(qid){const i=progress.saved.indexOf(qid);const saved=i<0;if(i>=0){progress.saved.splice(i,1);toast('已取消收藏');}else{progress.saved.unshift(qid);toast('已加入收藏夹 ⭐');}saveProgress();if(state.view==='quiz'){const b=document.querySelector('.favorite-icon-btn');if(b){b.classList.toggle('saved',saved);b.setAttribute('aria-label',saved?'取消收藏':'收藏本题');b.title=saved?'取消收藏':'收藏本题';}return;}let y=window.scrollY;render();window.scrollTo({top:y,behavior:'instant');}
+function changeFavorite(qid){const i=progress.saved.indexOf(qid);const saved=i<0;if(i>=0){progress.saved.splice(i,1);toast('已取消收藏');}else{progress.saved.unshift(qid);toast('已加入收藏夹 ⭐');}saveProgress();if(state.view==='quiz'){const b=document.querySelector('.favorite-icon-btn');if(b){b.classList.toggle('saved',saved);b.setAttribute('aria-label',saved?'取消收藏':'收藏本题');b.title=saved?'取消收藏':'收藏本题';}return;}let y=window.scrollY;render();window.scrollTo({top:y,behavior:'instant'});}
 function moveQuestion(step){
  const session=state.session;if(!session)return;
  const nextIndex=Math.max(0,Math.min(session.questions.length,session.index+step));
