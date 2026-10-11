@@ -70,7 +70,7 @@ function emptyProgress(){return {version:1,answers:{},wrong:[],saved:[]};}
 function readProgress(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY));if(x&&typeof x==='object'&&x.answers&&Array.isArray(x.wrong)&&Array.isArray(x.saved))return x;}catch(_e){}return emptyProgress();}
 let progress=readProgress();
 const saveProgress=()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));}catch(_e){toast('浏览器无法保存学习记录，请检查隐私模式或存储空间');}};
-let state={view:'home',session:null,studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:'random',settingsOpen:false,answerSheetOpen:false};
+let state={view:'home',session:null,studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:'random',settingsOpen:false};
 let toastTimer;
 function toast(msg){let el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
 function stats(){let attempted=Object.keys(progress.answers).filter(k=>questionIndex.has(k)).length;let count=0,right=0;for(let rec of Object.values(progress.answers)){if(!rec||typeof rec!=='object')continue;count+=Number(rec.count)||0;right+=Number(rec.correct)||0;}return {attempted,count,right,accuracy:count?Math.round(right/count*100):0,wrong:progress.wrong.filter(k=>questionIndex.has(k)).length,saved:progress.saved.filter(k=>questionIndex.has(k)).length};}
@@ -80,9 +80,9 @@ function updateNav(){let a=stats();const html=(mobile=false)=>navItems.map(v=>{
  return `<button type="button" class="${mobile?'bottom-link':'side-link'} ${state.view===v.id?'active':''}" data-action="goto" data-view="${v.id}" aria-current="${state.view===v.id?'page':'false'}">${ico(v.icon)}<span>${mobile?({home:'首页',quiz:'刷题',wrong:'错题',favorites:'收藏',study:'原文'}[v.id]):v.label}</span>${count>0&&!mobile?`<small class="nav-count">${count}</small>`:''}</button>`;
  }).join('');$('#side-nav').innerHTML=html();$('#bottom-nav').innerHTML=html(true);$('#crumb-title').textContent=pageTitles[state.view];document.title=`${pageTitles[state.view]} · 督察备考`;
 }
-function navigate(view){if(!pageTitles[view])view='home';state.view=view;state.settingsOpen=false;state.answerSheetOpen=false;if(view==='quiz'&&!state.session)begin('all','random');else render();window.scrollTo({top:0,behavior:'instant'});}
+function navigate(view){if(!pageTitles[view])view='home';state.view=view;state.settingsOpen=false;if(view==='quiz'&&!state.session)begin('all','random');else render();window.scrollTo({top:0,behavior:'instant'});}
 function setHash(view){if(location.hash!==`#${view}`)history.replaceState(null,'',`#${view}`);}
-function syncViewState(){const immersive=state.view==='quiz';document.body.dataset.view=state.view;document.body.classList.toggle('quiz-immersive',immersive);document.body.classList.toggle('answer-sheet-open',immersive&&state.answerSheetOpen);}
+function syncViewState(){const immersive=state.view==='quiz';document.body.dataset.view=state.view;document.body.classList.toggle('quiz-immersive',immersive);}
 function render(){updateNav();setHash(state.view);syncViewState();let main=$('#main');
  if(state.view==='home')main.innerHTML=renderHome();
  if(state.view==='quiz')main.innerHTML=renderQuiz();
@@ -111,17 +111,16 @@ function shuffled(a){let arr=[...a];for(let i=arr.length-1;i>0;i--){let j=Math.f
 function begin(scope='all',order='random',poolType='all',ids){
  const q=ids?ids.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='wrong'?progress.wrong.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='saved'?progress.saved.map(id=>questionIndex.get(id)).filter(Boolean):scopePool(scope);
  const collection=order==='random'?shuffled(q):q;
- state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;state.answerSheetOpen=false;state.view='quiz';render();window.scrollTo({top:0,behavior:'instant'});
+ state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;state.view='quiz';render();window.scrollTo({top:0,behavior:'instant'});
 }
 function startFocused(id){begin('all','sequential','single',[id]);}
 function highlightExcerpt(text){
  return escapeHTML(text).replace(/情节轻微、危害不大|根据后果和认错情况扣\s*2\s*或\s*3\s*分|熄灯半小时(?:之内|之后)|30\s*分钟及以上|每课时|不得高于\s*4cm|眼疾除外/g,
   match=>`<mark class="rule-mark">${match}</mark>`);
 }
-function answerSheet(q,rec){
- const isCorrect=rec.correct;
- const nextLabel=state.session.index>=state.session.questions.length-1?'完成本轮':'下一题';
- return `<div class="sheet-layer" data-sheet="answer"><button class="answer-backdrop" type="button" data-action="close-answer" aria-label="关闭解析并返回题目"></button><section class="answer-sheet ${isCorrect?'is-right':'is-wrong'}" role="dialog" aria-modal="true" aria-labelledby="sheet-title" tabindex="-1"><div class="sheet-handle"></div><div class="sheet-top"><span class="sheet-caption">ANSWER REVIEW · 考点解析</span><button type="button" class="sheet-close" data-action="close-answer" aria-label="关闭解析">${ico('x')}</button></div><div class="sheet-status-icon">${ico(isCorrect?'check':'x')}</div><h2 id="sheet-title">${isCorrect?'答对了，继续保持':'这道题值得再记一遍'}</h2><p class="sheet-lead">${isCorrect?'判断准确，下面是对应的标准原文。':'已经加入错题本，下次还能专门巩固。'}</p><div class="sheet-answer"><span>正确答案</span><strong>${escapeHTML(q.answer)}</strong></div><div class="sheet-source"><div class="sheet-source-head">${ico('book')} <span>原文依据</span></div><div class="sheet-origin">${escapeHTML(q.origin)}</div>${q.type==='score'?`<div class="sheet-score">评分标准 · <strong>${escapeHTML(q.answer)}</strong></div>`:''}<small>${escapeHTML(q.reference)}</small></div><div class="sheet-actions"><button type="button" class="btn btn-primary sheet-primary" data-action="next">${nextLabel} ${ico('arrow')}</button><button type="button" class="btn sheet-secondary" data-action="close-answer">返回题目</button></div></section></div>`;
+function inlineFeedback(q,rec){
+ return '<div class="inline-result '+(rec.correct?'is-right':'is-wrong')+'"><span class="inline-result-icon">'+ico(rec.correct?'check':'x')+'</span><span>'+(rec.correct?'回答正确':'回答错误')+'</span><span class="inline-result-answer">正确答案：<strong>'+escapeHTML(q.answer)+'</strong></span></div>'
+  +'<div class="origin-footnote"><span class="origin-label">原文注释 · '+escapeHTML(q.reference)+'</span><p>'+escapeHTML(q.origin)+'</p></div>';
 }
 function questionView(q,rec){return `<div class="question-header"><div class="question-tags"><span class="tag">${escapeHTML(q.chapter)}</span><span class="tag light">${escapeHTML(q.section)}</span></div><button type="button" class="favorite-icon-btn ${progress.saved.includes(q.id)?'saved':''}" data-action="favorite" data-qid="${q.id}" aria-label="${progress.saved.includes(q.id)?'取消收藏':'收藏本题'}" title="收藏本题">${ico('star')}</button></div>
 <div class="question-type"><span class="type-dot"></span>${q.type==='score'?'扣分标准 · 单选题':q.type==='detail'?'细节辨析 · 单选题':'备注理解 · 单选题'}</div><h2 class="question-title">${escapeHTML(q.title)}</h2>${q.type==='score'?`<div class="question-excerpt ${q.ruleId==='behavior-75'?'featured-rule':''}"><div class="rule-label">${ico('book')} <span>本题考查条款</span></div><div class="rule-content">${highlightExcerpt(q.excerpt)}</div></div>`:``}
@@ -131,7 +130,7 @@ function questionView(q,rec){return `<div class="question-header"><div class="qu
  const marker=rec&&correct?ico('check'):rec&&chosen?ico('x'):'';
  return `<button type="button" class="option ${classes}" data-action="answer" data-opt="${i}" ${rec?'disabled':''}><span class="option-letter">${String.fromCharCode(65+i)}</span><span class="option-text">${escapeHTML(choice)}</span>${marker}</button>`;
  }).join('')}</div>
-${rec?`<div class="answer-inline ${rec.correct?'is-right':'is-wrong'}" role="status"><span class="answer-inline-status">${ico(rec.correct?'check':'x')} ${rec.correct?'回答正确':'回答错误'}</span><span class="answer-inline-correct">正确答案：<b>${escapeHTML(q.answer)}</b></span><button type="button" data-action="review-answer">查看原文解析 ${ico('arrow')}</button></div>`:''}`;}
+<div class="inline-feedback ${rec?'revealed':''}" id="inline-feedback" role="status" aria-live="polite" aria-atomic="true"><div class="inline-feedback-inner">${rec?inlineFeedback(q,rec):''}</div></div>`;}
 function renderQuiz(){const s=state.session;if(!s)return '';const qid=s.questions[s.index];const q=questionIndex.get(qid);
 if(!q){return `<div class="page-enter"><div class="quiz-end"><div class="end-emoji">${s.questions.length?'🎉':'📭'}</div><h2>${s.questions.length?'本轮练习完成！':'这里还没有题目'}</h2><p>${s.questions.length?'本轮题目已全部练习。答错的题会保留在错题本，重做正确后自动移出。':s.poolType==='wrong'?'暂时没有错题。先做几道题，再回来巩固吧。':s.poolType==='saved'?'还没有收藏题目，刷题时点击星标即可收藏。':'换一个知识模块试试。'}</p><div class="end-stats"><div><strong>${s.questions.length}</strong><span>本轮题量</span></div><div><strong>${Object.values(s.answers).filter(v=>v.correct).length}</strong><span>答对题数</span></div></div><div class="action-row" style="justify-content:center"><button class="btn btn-primary" data-action="start" data-scope="all" data-order="random">再刷一轮 ${ico('arrow')}</button><button class="btn btn-outline" data-action="goto" data-view="home">返回总览</button></div></div></div>`;}
 const rec=s.answers[qid];const pct=Math.round((s.index+(rec?1:0))/s.questions.length*100);
@@ -140,7 +139,7 @@ return `<div class="question-surface page-enter">
 <div class="immersive-progress-heading"><div class="immersive-progress-copy"><span class="session-badge">${s.poolType==='wrong'?'错题强化':s.poolType==='saved'?'收藏复习':s.poolType==='single'?'单题巩固':'督察备考'}</span><span class="session-note">${s.order==='random'?'随机练习':'顺序练习'}</span></div><div class="progress-numbers"><strong>${String(s.index+1).padStart(2,'0')}</strong><span>/ ${String(s.questions.length).padStart(2,'0')}</span></div></div>
 <div class="quiz-progress"><span style="width:${pct}%"></span></div>
 <div class="quiz-settings ${state.settingsOpen?'open':''}" ${state.settingsOpen?'':'hidden'}><label for="quiz-select">练习章节</label><div class="action-row"><select class="filter-box" id="quiz-select" aria-label="选择刷题章节">${chapters.map(x=>`<option value="${x.id}" ${x.id===state.quizScope?'selected':''}>${x.label}</option>`).join('')}${[...new Set(RULES.map(r=>r.section))].filter(a=>a!=='校级处分').map(sec=>`<option value="${escapeHTML(sec)}" ${sec===state.quizScope?'selected':''}>${escapeHTML(sec)}</option>`).join('')}</select><button class="btn btn-primary" data-action="restart-scope">开始新章节 ${ico('arrow')}</button></div></div>
-<section class="question-card">${questionView(q,rec)}<div class="question-footer"><button type="button" class="btn btn-quiet" data-action="previous" ${s.index===0?'disabled':''}>${ico('back')} 上一题</button><button type="button" class="btn ${rec?'btn-primary':'btn-outline'}" data-action="next">${s.index===s.questions.length-1?'完成本轮':rec?'下一题':'跳过此题'} ${ico('arrow')}</button></div></section><div class="quiz-shortcuts">键盘快捷键 · 1–4 选择答案 · Enter 下一题 · F 收藏</div></div>${rec&&state.answerSheetOpen?answerSheet(q,rec):''}`;
+<section class="question-card">${questionView(q,rec)}<div class="question-footer"><button type="button" class="btn btn-quiet" data-action="previous" ${s.index===0?'disabled':''}>${ico('back')} 上一题</button><button type="button" class="btn btn-primary" data-action="next">${s.index===s.questions.length-1?'完成本轮':'下一题'} ${ico('arrow')}</button></div></section><div class="quiz-shortcuts">键盘快捷键 · 1–4 选择答案 · Enter 下一题 · F 收藏</div></div>`;
 }
 function renderCollection(type){let ids=type==='wrong'?progress.wrong:progress.saved;const entries=ids.map(id=>questionIndex.get(id)).filter(Boolean);const wrong=type==='wrong';
 return `<div class="page-enter"><div class="page-heading"><div><span class="section-overline">PERSONAL NOTEBOOK</span><h1>${wrong?'错题重练':'我的收藏'}</h1><p>${wrong?'做错自动记录；在错题训练中答对后，题目将自动移出错题本。':'在做题时点击星标，即可把重点题目留在这里。'} 当前 ${entries.length} 题。</p></div>${entries.length?`<button class="btn btn-primary" data-action="start-collection" data-type="${type}">${ico('target')} ${wrong?'开始错题重练':'复习所有收藏'}</button>`:''}</div>
@@ -163,11 +162,33 @@ function answer(index){let s=state.session;if(!s)return;let qid=s.questions[s.in
 const correct=q.choices[index]===q.answer;
 s.answers[qid]={choice:index,correct};const prev=progress.answers[qid]||{count:0,correct:0};prev.count+=1;prev.correct+=Number(correct);prev.lastCorrect=correct;prev.lastAt=Date.now();progress.answers[qid]=prev;
 progress.wrong=progress.wrong.filter(id=>id!==qid);if(!correct)progress.wrong.unshift(qid);
-saveProgress();state.answerSheetOpen=true;let sc=window.scrollY;render();window.scrollTo({top:sc,behavior:'instant'});
-requestAnimationFrame(()=>$('.answer-sheet')?.focus({preventScroll:true}));
+saveProgress();
+const buttons=[...document.querySelectorAll('.question-answers .option')];
+buttons.forEach((btn,i)=>{
+ const isRight=q.choices[i]===q.answer, isPicked=i===index;
+ btn.disabled=true;
+ btn.classList.add(isRight?'right':isPicked?'wrong':'dim');
+ if(isRight||isPicked)btn.insertAdjacentHTML('beforeend',ico(isRight?'check':'x'));
+});
+const feedback=$('#inline-feedback');
+if(feedback){
+ const inner=feedback.querySelector('.inline-feedback-inner');
+ inner.innerHTML=inlineFeedback(q,s.answers[qid]);
+ requestAnimationFrame(()=>feedback.classList.add('revealed'));
+}
+const pct=Math.round((s.index+1)/s.questions.length*100);
+const bar=$('.quiz-progress span');if(bar)bar.style.width=pct+'%';
 }
 function changeFavorite(qid){const i=progress.saved.indexOf(qid);if(i>=0){progress.saved.splice(i,1);toast('已取消收藏');}else{progress.saved.unshift(qid);toast('已加入收藏夹 ⭐');}saveProgress();let y=window.scrollY;render();window.scrollTo({top:y,behavior:'instant'});}
-function moveQuestion(step){let s=state.session;if(!s)return;state.answerSheetOpen=false;s.index=Math.max(0,Math.min(s.questions.length,s.index+step));render();window.scrollTo({top:0,behavior:'instant'});}
+function moveQuestion(step){
+ const session=state.session;if(!session)return;
+ const nextIndex=Math.max(0,Math.min(session.questions.length,session.index+step));
+ if(nextIndex===session.index)return;
+ const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ const switchCard=(fallback=false)=>{session.index=nextIndex;render();window.scrollTo({top:0,behavior:'instant'});if(fallback&&!reduced)document.querySelector('.question-card')?.classList.add('question-card-enter');};
+ if(!reduced&&typeof document.startViewTransition==='function')document.startViewTransition(()=>switchCard(false));
+ else switchCard(true);
+}
 function focusRule(id,key){state.view='study';state.studyChapter='all';state.studySearch='';render();if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
 const el=document.getElementById('study-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});else if(key){state.studySearch=key;render();}
 }
@@ -181,8 +202,8 @@ if(action==='start'){begin(el.dataset.scope||'all',el.dataset.order||'random');r
 if(action==='restart-scope'){begin(state.quizScope,state.quizOrder);return;}
 if(action==='answer'){answer(Number(el.dataset.opt));return;}
 if(action==='toggle-settings'){state.settingsOpen=!state.settingsOpen;render();return;}
-if(action==='close-answer'){state.answerSheetOpen=false;render();return;}
-if(action==='review-answer'){state.answerSheetOpen=true;render();requestAnimationFrame(()=>$('.answer-sheet')?.focus({preventScroll:true}));return;}
+
+
 if(action==='previous'){moveQuestion(-1);return;}
 if(action==='next'){moveQuestion(1);return;}
 if(action==='favorite'){changeFavorite(el.dataset.qid);return;}
@@ -198,7 +219,7 @@ if(action==='import'){importProgress();return;}
 document.addEventListener('click',e=>{let el=e.target.closest('[data-action]');if(el)actionHandler(el);});
 document.addEventListener('input',e=>{if(e.target.id==='study-search'){state.studySearch=e.target.value;renderStudyList();}});
 document.addEventListener('change',e=>{if(e.target.id==='quiz-select')state.quizScope=e.target.value;});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'&&state.answerSheetOpen){e.preventDefault();state.answerSheetOpen=false;render();return;}if(state.view!=='quiz'||!state.session||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
+document.addEventListener('keydown',e=>{if(state.view!=='quiz'||!state.session||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
  if(/^[1-4]$/.test(e.key)){e.preventDefault();answer(Number(e.key)-1);}else if(e.key==='Enter'){e.preventDefault();moveQuestion(1);}else if(e.key.toLowerCase()==='f'){const qid=state.session.questions[state.session.index];if(qid)changeFavorite(qid);}});
 window.addEventListener('resize',syncViewState);
 window.addEventListener('hashchange',()=>{const value=location.hash.slice(1);if(pageTitles[value]&&value!==state.view)navigate(value);});
