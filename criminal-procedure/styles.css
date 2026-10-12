@@ -80,3 +80,10 @@
  .site.quiz-mode .quiz-sticky .btn{min-width:99px;padding:9px 10px}
  .site.quiz-mode .quiz-sticky-counter{font-size:10px}
 }
+
+/* V1.1.1 fix: avoid transform-created containing blocks in the practice screen.
+   The toolbar is additionally portaled as a direct child of .site.quiz-mode. */
+.site.quiz-mode .view {animation:none !important;transform:none !important;}
+.site.quiz-mode .quiz-sticky {position:fixed !important;bottom:0 !important;z-index:100;}
+/* Ensure the final explanation row stays scrollable above the viewport toolbar. */
+.site.quiz-mode .quiz-frame {padding-bottom:calc(110px + env(safe-area-inset-bottom)) !important;}
