@@ -3,7 +3,7 @@
 L.render=function(){
  const p=L.UI.page;
  const view=L.views[p]||L.views.home;
- document.getElementById("app").innerHTML='<div class="site">'+L.header()+'<main class="layout">'+view()+L.footer()+'</main>'+L.bottom()+(L.modalHTML?.()||"")+'</div>';
+ document.getElementById("app").innerHTML='<div class="site'+(p==="quiz"?' quiz-mode':'')+'">'+(p==="quiz"?'':L.header())+'<main class="layout">'+view()+(p==="quiz"?'':L.footer())+'</main>'+(p==="quiz"?'':L.bottom())+(L.modalHTML?.()||"")+'</div>';
  document.title=({home:"首页",study:"章节学习",map:"思维导图",quiz:"专项刷题",review:"错题复习"}[p]||"诉研")+" · 诉研";
  if(L.UI.unitToOpen&&p==="study"){
   let id=L.UI.unitToOpen;L.UI.unitToOpen="";
@@ -38,7 +38,7 @@ document.addEventListener("click",function(e){
  let a=b.dataset.action,id=b.dataset.id;
  if(a==="close"&&b.classList.contains("modal-screen")&&e.target!==b)return;
  if(a==="page"){L.go(b.dataset.page);return}
- if(a==="settings"||a==="grid"){L.UI.modal=a;L.render();return}
+ if(a==="settings"||a==="grid"||a==="quizfilters"){L.UI.modal=a;L.render();return}
  if(a==="close"){L.UI.modal="";L.render();return}
  if(a==="section"){L.UI.section=id;L.render();return}
  if(a==="openunit"){L.openUnit(b.dataset.unit);return}
@@ -52,6 +52,7 @@ document.addEventListener("click",function(e){
  if(a==="pick"){let q=L.D.questions.find(x=>x.id===id);if(!q||L.P.answers[id])return;
  let v=L.UI.choices[id]||[],letter=b.dataset.letter;
  L.UI.choices[id]=q.type==="multi"?(v.includes(letter)?v.filter(x=>x!==letter):[...v,letter]):[letter];
+ if(q.type==="single"){doSubmit();return}
  redraw();return}
  if(a==="submit"){doSubmit();return}
  if(a==="bookmark"){L.P.bookmarks[id]=!L.P.bookmarks[id];if(!L.P.bookmarks[id])delete L.P.bookmarks[id];L.save();redraw();L.toast(L.P.bookmarks[id]?"已加入收藏":"已取消收藏");return}
