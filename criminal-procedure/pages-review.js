@@ -19,7 +19,12 @@ L.modalHTML=function(){
 if(!L.UI.modal)return "";
 let body="";
 if(L.UI.modal==="grid"){let s=L.session();body=`<h2>题号速览</h2><p>蓝色表示当前题，绿色代表答对，红色代表答错。点击对应题号即可跳转。</p><div class="answer-grid">${s.ids.map((id,i)=>{let a=L.P.answers[id];return `<button data-action="jump" data-index="${i}" class="${i===s.index?"current":a?(a.correct?"answered":"incorrect"):""}">${i+1}</button>`}).join("")}</div>`;}
-else{body=`<h2>学习进度与设置</h2><p>学习记录默认保存在浏览器本地，不会自动跨设备同步。清理站点数据可能导致丢失，请定期导出备份。</p>
+else if(L.UI.modal==="quizfilters"){
+ const [activeMode,activeUnit]=(L.P.lastSession||"all:all").split(":");
+ const modes=[["all","全章顺序练习"],["new","只做未完成题"],["wrong","错题专项练习"],["saved","我的收藏题"]];
+ body=`<h2>切换练习题组</h2><p>切换题组后，下次回来会记住该题组的题号和作答进度。</p><div class="focus-filter-list">${modes.map(([mode,label])=>`<button class="focus-filter-choice ${mode===activeMode&&activeUnit==="all"?"active":""}" data-action="start" data-mode="${mode}" data-unit="all"><span>${label}</span><span class="tag">${L.pool(mode,"all").length} 道</span></button>`).join("")}</div>${activeUnit!=="all"?`<div class="notice" style="margin-top:12px">目前练习知识点：${L.h(L.unit(activeUnit)?.title||"当前单元")}</div><button class="btn soft wide" style="margin-top:12px" data-action="close">继续本知识点</button>`:""}<button class="btn outline wide" style="margin-top:15px" data-action="exitquiz">退出刷题，返回上一页面</button>`;
+ }
+ else{body=`<h2>学习进度与设置</h2><p>学习记录默认保存在浏览器本地，不会自动跨设备同步。清理站点数据可能导致丢失，请定期导出备份。</p>
 <div class="setting-row"><div><b>自动保存</b><br><small>${L.attempted()} 道已答 · ${L.learned()} 个模块已学</small></div><span class="tag green">运行中</span></div>
 <div class="setting-row"><div><b>导出进度</b><br><small>保存为 JSON 文件</small></div><button class="btn soft" data-action="export">${L.icon("download")} 导出</button></div>
 <div class="setting-row"><div><b>导入进度</b><br><small>从本网站导出的备份恢复</small></div><button class="btn outline" data-action="import">${L.icon("upload")} 导入</button></div>
