@@ -4,6 +4,14 @@ L.render=function(){
  const p=L.UI.page;
  const view=L.views[p]||L.views.home;
  document.getElementById("app").innerHTML='<div class="site'+(p==="quiz"?' quiz-mode':'')+'">'+(p==="quiz"?'':L.header())+'<main class="layout">'+view()+(p==="quiz"?'':L.footer())+'</main>'+(p==="quiz"?'':L.bottom())+(L.modalHTML?.()||"")+'</div>';
+ // A transformed ancestor makes position:fixed relative to the scrolling
+ // question content. Move the toolbar outside .view/.quiz-frame so it remains
+ // anchored to the visual viewport even with long explanations or animations.
+ if(p==="quiz"){
+  const shell=document.querySelector("#app > .site.quiz-mode");
+  const toolbar=shell?.querySelector(".quiz-sticky");
+  if(shell&&toolbar)shell.appendChild(toolbar);
+ }
  document.title=({home:"首页",study:"章节学习",map:"思维导图",quiz:"专项刷题",review:"错题复习"}[p]||"诉研")+" · 诉研";
  if(L.UI.unitToOpen&&p==="study"){
   let id=L.UI.unitToOpen;L.UI.unitToOpen="";
