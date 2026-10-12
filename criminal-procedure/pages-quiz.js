@@ -2,7 +2,7 @@
 L.views.quiz=function(){
  const sess=L.session(),q=L.current(),section=(L.P.lastSession||"all:all").split(":")[1];
  const progress=`<div class="quiz-meter" aria-label="刷题进度"><div class="quiz-meter-fill" style="width:${L.pct(sess.index+1,sess.ids.length)}%"></div></div>`;
- const back=`<header class="focus-header"><button class="focus-exit" data-action="page" data-page="home" aria-label="退出刷题">${L.icon("back")}</button><div class="focus-heading"><strong>第二章 · 专项练习</strong><span>${sess.ids.length?"第 "+(sess.index+1)+" / "+sess.ids.length+" 题":"准备开始"}</span></div><button class="focus-tool" data-action="quizfilters" aria-label="选择题组" title="选择题组">${L.icon("settings")}</button><button class="focus-tool" data-action="grid" aria-label="题号导航" title="题号导航">${L.icon("grid")}</button></header>`;
+ const back=`<header class="focus-header"><button class="focus-exit" data-action="exitquiz" aria-label="退出刷题">${L.icon("back")}</button><div class="focus-heading"><strong>第二章 · 专项练习</strong><span>${sess.ids.length?"第 "+(sess.index+1)+" / "+sess.ids.length+" 题":"准备开始"}</span></div><button class="focus-tool" data-action="quizfilters" aria-label="选择题组" title="选择题组">${L.icon("settings")}</button><button class="focus-tool" data-action="grid" aria-label="题号导航" title="题号导航">${L.icon("grid")}</button></header>`;
  if(!q)return `<div class="view quiz-frame focus-page">${back}<div class="card empty" style="margin-top:28px"><h3>本组暂无待练习的题目</h3><p>可能是当前题组已经全部做完了，可以切换至完整题库继续练习。</p><button class="btn primary" data-action="start" data-mode="all" data-unit="all">查看所有题目</button></div></div>`;
  const a=L.P.answers[q.id],chosen=L.UI.choices[q.id]||a?.choices||[];
  const isMulti=q.type==="multi";
