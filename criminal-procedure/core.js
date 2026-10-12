@@ -41,7 +41,7 @@ L.toast=msg=>{document.querySelector(".toast")?.remove();let t=document.createEl
 L.pool=(mode,unit)=>D.questions.filter(q=>(unit==="all"||q.unit===unit)&&(mode!=="new"||!L.P.answers[q.id])&&(mode!=="wrong"||L.P.mistakes[q.id])&&(mode!=="saved"||L.P.bookmarks[q.id])).map(q=>q.id);
 L.session=()=>{const p=L.P;if(!p.sessions[p.lastSession])p.sessions[p.lastSession]={ids:L.pool("all","all"),index:0};let s=p.sessions[p.lastSession];s.ids=s.ids.filter(id=>D.questions.some(q=>q.id===id));s.index=Math.max(0,Math.min(s.index||0,Math.max(0,s.ids.length-1)));return s};
 L.current=()=>{let s=L.session();return D.questions.find(q=>q.id===s.ids[s.index])};
-L.start=(mode="all",unit="all",restart=false)=>{let key=mode+":"+unit,ids=L.pool(mode,unit),old=L.P.sessions[key];if(!old||restart||!old.ids?.length){L.P.sessions[key]={ids,index:0}}else if(mode==="all"&&old.ids.length!==ids.length){L.P.sessions[key]={ids,index:Math.min(old.index,Math.max(0,ids.length-1))}}L.P.lastSession=key;L.save();L.go("quiz")};
+L.start=(mode="all",unit="all",restart=false)=>{let key=mode+":"+unit,ids=L.pool(mode,unit),old=L.P.sessions[key];if(!old||restart||!old.ids?.length){L.P.sessions[key]={ids,index:0}}else if(mode==="all"&&old.ids.length!==ids.length){L.P.sessions[key]={ids,index:Math.min(old.index,Math.max(0,ids.length-1))}}if(L.UI.page!=="quiz")L.UI.quizReturn=L.UI.page;L.P.lastSession=key;L.save();L.go("quiz")};
 L.go=page=>{L.UI.page=page;L.UI.modal="";location.hash=page;L.render();window.scrollTo(0,0)};
 L.openUnit=id=>{L.UI.search="";L.UI.section="all";L.UI.unitToOpen=id;L.go("study")};
 return L;
