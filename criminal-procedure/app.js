@@ -38,13 +38,14 @@ document.addEventListener("click",function(e){
  let a=b.dataset.action,id=b.dataset.id;
  if(a==="close"&&b.classList.contains("modal-screen")&&e.target!==b)return;
  if(a==="page"){L.go(b.dataset.page);return}
+ if(a==="exitquiz"){L.go(L.UI.quizReturn||"home");return}
  if(a==="settings"||a==="grid"||a==="quizfilters"){L.UI.modal=a;L.render();return}
  if(a==="close"){L.UI.modal="";L.render();return}
  if(a==="section"){L.UI.section=id;L.render();return}
  if(a==="openunit"){L.openUnit(b.dataset.unit);return}
  if(a==="learn"){L.P.views[b.dataset.unit]=!L.P.views[b.dataset.unit];L.UI.unitToOpen=b.dataset.unit;L.save();redraw();return}
  if(a==="start"){L.start(b.dataset.mode||"all",b.dataset.unit||"all");return}
- if(a==="resume"){L.go("quiz");return}
+ if(a==="resume"){if(L.UI.page!=="quiz")L.UI.quizReturn=L.UI.page;L.go("quiz");return}
  if(a==="move"){let s=L.session();s.index=Math.max(0,Math.min(s.ids.length-1,s.index+Number(b.dataset.offset)));L.save();L.render();window.scrollTo(0,0);return}
  if(a==="jump"){L.session().index=Number(b.dataset.index);L.UI.modal="";L.save();L.render();window.scrollTo(0,0);return}
  if(a==="reviewtab"){L.UI.reviewTab=id;L.render();return}
