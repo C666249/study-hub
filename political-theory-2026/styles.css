@@ -11,3 +11,7 @@ body.in-focus .app-header{display:none}body.in-focus .shell{max-width:810px;padd
 }
 @media(max-width:380px){.shell{padding-left:12px;padding-right:12px}.brand-sub{display:none}.brand-name{font-size:14px}.nav-item{min-width:39px;padding:9px 9px;font-size:11px}.theme-switch{width:32px;height:32px}.welcome-copy{padding:24px 19px}.welcome h1{font-size:29px}.welcome-actions{gap:8px}.welcome .btn{padding:0 12px}.option-copy{font-size:15.5px}.question-title{font-size:21px}.question-zone{padding-top:22px}.dock-mid{min-width:42px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}
+
+/* Shared sliding nav thumb must remain visible above its own glass background. */
+.nav-thumb{z-index:0}.nav-item{position:relative;z-index:1}
+details.numbers-wrap>summary{display:flex;justify-content:space-between;gap:12px;align-items:center;list-style:none;cursor:pointer;font-size:14px;font-weight:800}details.numbers-wrap>summary::-webkit-details-marker{display:none}details.numbers-wrap>summary .hint{font-size:11px;color:var(--muted);font-weight:650}details.numbers-wrap[open]>summary{margin-bottom:19px}
