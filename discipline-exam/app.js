@@ -8,6 +8,7 @@ const RULES = DATA.rules;
 const NOTES = DATA.notes;
 const PDF_FILE = '南京警察学院学生违纪行为处理标准.pdf';
 const STORAGE_KEY = 'discipline-lab-progress-v1';
+const SESSION_KEY = 'discipline-lab-quiz-session-v1';
 const chapters = [{id:'all',label:'全部章节'},{id:'dorm',label:'宿舍内务'},{id:'behavior',label:'行为规范'},{id:'sanction',label:'校级处分'},{id:'notes',label:'扣分备注'}];
 const quickPoints = [
   {label:'旷课按「课时」扣分',key:'旷课',rule:'behavior-04'},
@@ -70,7 +71,30 @@ function emptyProgress(){return {version:1,answers:{},wrong:[],saved:[]};}
 function readProgress(){try{let x=JSON.parse(localStorage.getItem(STORAGE_KEY));if(x&&typeof x==='object'&&x.answers&&Array.isArray(x.wrong)&&Array.isArray(x.saved))return x;}catch(_e){}return emptyProgress();}
 let progress=readProgress();
 const saveProgress=()=>{try{localStorage.setItem(STORAGE_KEY,JSON.stringify(progress));}catch(_e){toast('浏览器无法保存学习记录，请检查隐私模式或存储空间');}};
-let state={view:'home',session:null,studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:'random',settingsOpen:false};
+// Session is stored separately to preserve all existing v1 answers, wrong questions, and favorites.
+function normalizeSession(raw){
+ if(!raw||typeof raw!=='object'||!Array.isArray(raw.questions)||raw.questions.length>QUESTIONS.length)return null;
+ const questions=raw.questions;
+ if(!questions.length||questions.some(id=>typeof id!=='string'||!questionIndex.has(id))||new Set(questions).size!==questions.length)return null;
+ const answers={};
+ if(raw.answers&&typeof raw.answers==='object'&&!Array.isArray(raw.answers)){
+  for(const [id,rec] of Object.entries(raw.answers)){
+   if(!questions.includes(id)||!rec||!Number.isInteger(rec.choice))continue;
+   const q=questionIndex.get(id);
+   if(rec.choice<0||rec.choice>=q.choices.length)continue;
+   answers[id]={choice:rec.choice,correct:q.choices[rec.choice]===q.answer};
+  }
+ }
+ const scope=typeof raw.scope==='string'&&raw.scope.length<=90?raw.scope:'all';
+ const poolType=['all','wrong','saved','single'].includes(raw.poolType)?raw.poolType:'all';
+ const order=raw.order==='sequential'?'sequential':'random';
+ const index=Number.isInteger(raw.index)?Math.max(0,Math.min(questions.length,raw.index)):0;
+ return {questions:[...questions],index,answers,poolType,order,scope};
+}
+function readSession(){try{return normalizeSession(JSON.parse(localStorage.getItem(SESSION_KEY)));}catch(_e){return null;}}
+const restoredSession=readSession();
+let state={view:'home',session:restoredSession,studyChapter:'all',studySearch:'',quizScope:restoredSession?.scope||'all',quizOrder:restoredSession?.order||'random',settingsOpen:false};
+function saveSession(){try{if(state.session)localStorage.setItem(SESSION_KEY,JSON.stringify({version:1,...state.session}));else localStorage.removeItem(SESSION_KEY);}catch(_e){toast('无法保存本轮题号，请检查浏览器存储权限');}}
 let toastTimer;
 function toast(msg){let el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
 function stats(){let attempted=Object.keys(progress.answers).filter(k=>questionIndex.has(k)).length;let count=0,right=0;for(let rec of Object.values(progress.answers)){if(!rec||typeof rec!=='object')continue;count+=Number(rec.count)||0;right+=Number(rec.correct)||0;}return {attempted,count,right,accuracy:count?Math.round(right/count*100):0,wrong:progress.wrong.filter(k=>questionIndex.has(k)).length,saved:progress.saved.filter(k=>questionIndex.has(k)).length};}
@@ -91,14 +115,14 @@ function render(){updateNav();setHash(state.view);syncViewState();let main=$('#m
  if(state.view==='study'){main.innerHTML=renderStudy();renderStudyList();}
 }
 function cardStat(label,value,caption,icon,color){return `<article class="stat-card"><div class="stat-upper"><span>${label}</span><span class="stat-icon ${color}">${ico(icon)}</span></div><strong class="stat-value">${value}</strong><span class="stat-foot">${caption}</span></article>`;}
-function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);
+function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);const resume=state.session&&state.session.questions.length&&state.session.index<state.session.questions.length;
 const content=[{id:'dorm',icon:'🛏️',label:'宿舍内务',num:15,desc:'床铺、地面、阳台与卫生间',color:'sage'},
 {id:'behavior',icon:'🛡️',label:'行为规范',num:75,desc:'课堂、警容、安全与日常纪律',color:'blue'},
 {id:'sanction',icon:'⚖️',label:'校级处分',num:5,desc:'通报批评到留校察看',color:'peach'},
 {id:'notes',icon:'📌',label:'扣分原则',num:4,desc:'不重复扣分、最高分值等备注',color:'violet'}];
 const used=r=>QUESTIONS.filter(q=>q.scope===r).filter(q=>progress.answers[q.id]).length;
 return `<div class="page-enter">
-<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="start" data-scope="all" data-order="random">${ico('target')} 开始随机刷题 ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="start" data-scope="all" data-order="sequential">${ico('book')} 顺序刷题</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
+<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="${resume?'resume':'start'}" data-scope="all" data-order="random">${ico('target')} ${resume?`继续上次练习 · ${state.session.index+1}/${state.session.questions.length}`:'开始随机刷题'} ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="start" data-scope="all" data-order="sequential">${ico('book')} 顺序刷题</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
 <section class="stats" aria-label="学习统计">${cardStat('题库总量',total,'覆盖全部95条标准及备注','book','')}${cardStat('已练题目',s.attempted,`题库覆盖 ${ratio}%`,'check','green')}${cardStat('作答正确率',s.accuracy+'%',s.count?`累计作答 ${s.count} 次`:'开始第一次练习吧','target','purple')}${cardStat('待复习错题',s.wrong,'答对后自动移出','repeat','orange')}</section>
 <div class="section-head"><div><span class="section-overline">LEARNING MODULES</span><h2>按知识模块开始</h2></div><button type="button" class="section-link" data-action="goto" data-view="study">完整知识点 ${ico('arrow')}</button></div>
 <div class="study-grid">${content.map(x=>`<button type="button" class="study-card" data-action="start" data-scope="${x.id}" data-order="random"><div class="study-glyph ${x.color}">${x.icon}</div><strong>${x.label}</strong><p>${x.desc}</p><div class="study-card-end"><span>${x.num} 条内容</span>${ico('arrow')}</div></button>`).join('')}</div>
@@ -111,7 +135,7 @@ function shuffled(a){let arr=[...a];for(let i=arr.length-1;i>0;i--){let j=Math.f
 function begin(scope='all',order='random',poolType='all',ids){
  const q=ids?ids.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='wrong'?progress.wrong.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='saved'?progress.saved.map(id=>questionIndex.get(id)).filter(Boolean):scopePool(scope);
  const collection=order==='random'?shuffled(q):q;
- state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;state.view='quiz';render();window.scrollTo({top:0,behavior:'instant'});
+ state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;state.view='quiz';saveSession();render();window.scrollTo({top:0,behavior:'instant'});
 }
 function startFocused(id){begin('all','sequential','single',[id]);}
 function highlightExcerpt(text){
@@ -162,7 +186,7 @@ function answer(index){let s=state.session;if(!s)return;let qid=s.questions[s.in
 const correct=q.choices[index]===q.answer;
 s.answers[qid]={choice:index,correct};const prev=progress.answers[qid]||{count:0,correct:0};prev.count+=1;prev.correct+=Number(correct);prev.lastCorrect=correct;prev.lastAt=Date.now();progress.answers[qid]=prev;
 progress.wrong=progress.wrong.filter(id=>id!==qid);if(!correct)progress.wrong.unshift(qid);
-saveProgress();
+saveProgress();saveSession();
 const buttons=[...document.querySelectorAll('.question-answers .option')];
 buttons.forEach((btn,i)=>{
  const isRight=q.choices[i]===q.answer, isPicked=i===index;
@@ -185,19 +209,20 @@ function moveQuestion(step){
  const nextIndex=Math.max(0,Math.min(session.questions.length,session.index+step));
  if(nextIndex===session.index)return;
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
- const switchCard=(fallback=false)=>{session.index=nextIndex;state.settingsOpen=false;render();const viewport=$('#exam-scroll');if(viewport)viewport.scrollTop=0;window.scrollTo({top:0,behavior:'instant'});if(fallback&&!reduced)document.querySelector('.question-card')?.classList.add('question-card-enter');};
+ const switchCard=(fallback=false)=>{session.index=nextIndex;state.settingsOpen=false;saveSession();render();const viewport=$('#exam-scroll');if(viewport)viewport.scrollTop=0;window.scrollTo({top:0,behavior:'instant'});if(fallback&&!reduced)document.querySelector('.question-card')?.classList.add('question-card-enter');};
  if(!reduced&&typeof document.startViewTransition==='function')document.startViewTransition(()=>switchCard(false));
  else switchCard(true);
 }
 function focusRule(id,key){state.view='study';state.studyChapter='all';state.studySearch='';render();if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
 const el=document.getElementById('study-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});else if(key){state.studySearch=key;render();}
 }
-function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
+function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
 function importProgress(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{try{if(!input.files?.length)return;const payload=JSON.parse(await input.files[0].text());let next=payload.progress;if(payload.product!=='discipline-lab'||!next||typeof next.answers!=='object'||!Array.isArray(next.wrong)||!Array.isArray(next.saved))throw Error('格式不正确');if(!confirm('恢复备份将覆盖当前浏览器里的学习记录，确定继续吗？'))return;
-progress={version:1,answers:Object.fromEntries(Object.entries(next.answers).filter(([id,r])=>questionIndex.has(id)&&r&&typeof r==='object'&&Number.isFinite(Number(r.count))&&Number.isFinite(Number(r.correct))).map(([id,r])=>[id,{count:Math.max(0,Math.floor(Number(r.count))),correct:Math.max(0,Math.floor(Number(r.correct))),lastCorrect:Boolean(r.lastCorrect),lastAt:Number(r.lastAt)||Date.now()}])),wrong:[...new Set(next.wrong.filter(id=>questionIndex.has(id)))],saved:[...new Set(next.saved.filter(id=>questionIndex.has(id)))]};state.session=null;saveProgress();render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
+progress={version:1,answers:Object.fromEntries(Object.entries(next.answers).filter(([id,r])=>questionIndex.has(id)&&r&&typeof r==='object'&&Number.isFinite(Number(r.count))&&Number.isFinite(Number(r.correct))).map(([id,r])=>[id,{count:Math.max(0,Math.floor(Number(r.count))),correct:Math.max(0,Math.floor(Number(r.correct))),lastCorrect:Boolean(r.lastCorrect),lastAt:Number(r.lastAt)||Date.now()}])),wrong:[...new Set(next.wrong.filter(id=>questionIndex.has(id)))],saved:[...new Set(next.saved.filter(id=>questionIndex.has(id)))]};state.session=normalizeSession(payload.session);state.quizScope=state.session?.scope||'all';state.quizOrder=state.session?.order||'random';saveProgress();saveSession();render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
 function pdfOpen(){window.open(encodeURI(PDF_FILE),'_blank','noopener,noreferrer');}
 function actionHandler(el){const action=el.dataset.action;if(!action)return;
 if(action==='goto'){navigate(el.dataset.view);return;}
+if(action==='resume'){navigate('quiz');return;}
 if(action==='start'){begin(el.dataset.scope||'all',el.dataset.order||'random');return;}
 if(action==='restart-scope'){begin(state.quizScope,state.quizOrder);return;}
 if(action==='answer'){answer(Number(el.dataset.opt));return;}
@@ -225,5 +250,5 @@ document.addEventListener('keydown',e=>{if(state.view!=='quiz'||!state.session||
 window.addEventListener('resize',syncViewState);
 window.addEventListener('hashchange',()=>{const value=location.hash.slice(1);if(pageTitles[value]&&value!==state.view)navigate(value);});
 const requested=location.hash.slice(1);if(pageTitles[requested])state.view=requested;
-if(state.view==='quiz')begin('all','random');else render();
+if(state.view==='quiz'&&!state.session)begin('all','random');else render();
 })();
