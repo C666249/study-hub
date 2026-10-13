@@ -18,7 +18,7 @@ try{
  assert.equal(await page.locator('.lesson-button').first().getAttribute('aria-expanded'),'true');
  await page.locator('.nav-item[href="#practice"]').click();
  await page.locator('details.numbers-wrap summary').waitFor();
- assert.equal(await page.locator('.number-dot').count(),0,'60 question directory stays collapsed');
+ assert.equal(await page.locator('details.numbers-wrap').getAttribute('open'),null,'question directory is collapsed by default');
  await page.locator('details.numbers-wrap summary').click();
  assert.equal(await page.locator('.number-dot').count(),60,'full bank index contains 60');
  await page.locator('.practice-hero [data-act="open-all"]').click();
