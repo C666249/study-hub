@@ -104,8 +104,30 @@ function updateNav(){let a=stats();const html=(mobile=false)=>navItems.map(v=>{
  return `<button type="button" class="${mobile?'bottom-link':'side-link'} ${state.view===v.id?'active':''}" data-action="goto" data-view="${v.id}" aria-current="${state.view===v.id?'page':'false'}">${ico(v.icon)}<span>${mobile?({home:'首页',quiz:'刷题',wrong:'错题',favorites:'收藏',study:'原文'}[v.id]):v.label}</span>${count>0&&!mobile?`<small class="nav-count">${count}</small>`:''}</button>`;
  }).join('');$('#side-nav').innerHTML=html();$('#bottom-nav').innerHTML=html(true);$('#crumb-title').textContent=pageTitles[state.view];document.title=`${pageTitles[state.view]} · 督察备考`;
 }
-function navigate(view){if(!pageTitles[view])view='home';state.view=view;state.settingsOpen=false;if(view==='quiz'&&!state.session)begin('all','random');else render();window.scrollTo({top:0,behavior:'instant'});}
-function setHash(view){if(location.hash!==`#${view}`)history.replaceState(null,'',`#${view}`);}
+// Dedicated history entries let the Android system Back button leave focus mode
+// for the in-site homepage instead of closing the browser's webview.
+const routeState=view=>({disciplineRoute:true,view});
+const routeUrl=view=>location.pathname+location.search+'#'+view;
+function pushRoute(view){
+ // Entering quiz from any tab always creates a home step behind it.
+ if(view==='quiz'&&state.view!=='home')history.pushState(routeState('home'),' ',routeUrl('home'));
+ history.pushState(routeState(view),' ',routeUrl(view));
+}
+function setHash(view){
+ if(location.hash!=='#'+view||history.state?.disciplineRoute!==true||history.state.view!==view)
+  history.replaceState(routeState(view),'',routeUrl(view));
+}
+function navigate(view){
+ if(!pageTitles[view])view='home';
+ if(state.view==='quiz'&&view==='home'){
+  // There is always a home route underneath quiz, including chapter/review entry.
+  history.back();return;
+ }
+ if(view!==state.view)pushRoute(view);
+ state.view=view;state.settingsOpen=false;
+ if(view==='quiz'&&!state.session)begin('all','random');else render();
+ window.scrollTo({top:0,behavior:'instant'});
+}
 function syncViewState(){const immersive=state.view==='quiz';document.body.dataset.view=state.view;document.body.classList.toggle('quiz-immersive',immersive);document.body.classList.toggle('quiz-active',immersive&&!!(state.session&&state.session.questions[state.session.index]));}
 function render(){updateNav();setHash(state.view);syncViewState();let main=$('#main');
  if(state.view==='home')main.innerHTML=renderHome();
@@ -135,7 +157,7 @@ function shuffled(a){let arr=[...a];for(let i=arr.length-1;i>0;i--){let j=Math.f
 function begin(scope='all',order='random',poolType='all',ids){
  const q=ids?ids.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='wrong'?progress.wrong.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='saved'?progress.saved.map(id=>questionIndex.get(id)).filter(Boolean):scopePool(scope);
  const collection=order==='random'?shuffled(q):q;
- state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;state.view='quiz';saveSession();render();window.scrollTo({top:0,behavior:'instant'});
+ state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;if(state.view!=='quiz')pushRoute('quiz');state.view='quiz';saveSession();render();window.scrollTo({top:0,behavior:'instant'});
 }
 function startFocused(id){begin('all','sequential','single',[id]);}
 function highlightExcerpt(text){
@@ -213,7 +235,7 @@ function moveQuestion(step){
  if(!reduced&&typeof document.startViewTransition==='function')document.startViewTransition(()=>switchCard(false));
  else switchCard(true);
 }
-function focusRule(id,key){state.view='study';state.studyChapter='all';state.studySearch='';render();if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
+function focusRule(id,key){state.studyChapter='all';state.studySearch='';navigate('study');if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
 const el=document.getElementById('study-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});else if(key){state.studySearch=key;render();}
 }
 function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
@@ -248,7 +270,18 @@ document.addEventListener('change',e=>{if(e.target.id==='quiz-select')state.quiz
 document.addEventListener('keydown',e=>{if(state.view!=='quiz'||!state.session||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)||e.ctrlKey||e.metaKey||e.altKey)return;
  if(/^[1-4]$/.test(e.key)){e.preventDefault();answer(Number(e.key)-1);}else if(e.key==='Enter'){e.preventDefault();moveQuestion(1);}else if(e.key.toLowerCase()==='f'){const qid=state.session.questions[state.session.index];if(qid)changeFavorite(qid);}});
 window.addEventListener('resize',syncViewState);
-window.addEventListener('hashchange',()=>{const value=location.hash.slice(1);if(pageTitles[value]&&value!==state.view)navigate(value);});
-const requested=location.hash.slice(1);if(pageTitles[requested])state.view=requested;
-if(state.view==='quiz'&&!state.session)begin('all','random');else render();
+function reflectHistory(){
+ const view=pageTitles[location.hash.slice(1)]?location.hash.slice(1):'home';
+ if(view===state.view)return;
+ state.view=view;state.settingsOpen=false;
+ if(view==='quiz'&&!state.session)begin('all','random');else render();
+ window.scrollTo({top:0,behavior:'instant'});
+}
+window.addEventListener('popstate',reflectHistory);
+window.addEventListener('hashchange',reflectHistory);
+// Opening the website always lands on the overview, even from a previous
+// shared #quiz link. Existing quiz state stays in localStorage for Tab resume.
+state.view='home';
+history.replaceState(routeState('home'),' ',routeUrl('home'));
+render();
 })();
