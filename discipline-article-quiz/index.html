@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+<meta name="theme-color" content="#f4f7ff"/>
+<meta name="description" content="依据《南京警察学院学生违纪行为处理标准》原文制作的条款序号独立刷题工具。"/>
+<title>条款序号速记 · 督察备考</title>
+<style>
+:root{font-family:Inter,-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC","Microsoft Yahei",sans-serif;color:#17284a;background:#f4f7ff;font-synthesis:none}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:radial-gradient(ellipse 95% 35% at 0 0,#e6edff 0,transparent 80%),linear-gradient(155deg,#fafcff,#f2f6ff);-webkit-font-smoothing:antialiased}
+button{font-family:inherit;cursor:pointer}
+button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
+.app{max-width:680px;margin:0 auto;min-height:100vh;height:100dvh;display:flex;flex-direction:column;padding:0 18px;overflow:hidden}
+.top{flex:none;padding:calc(20px + env(safe-area-inset-top,0px)) 3px 0}
+.brand{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.brand-left{display:flex;align-items:center;gap:11px;min-width:0}
+.logo{display:grid;place-items:center;width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,#4c66db,#7585ee);color:#fff;box-shadow:0 10px 25px -13px #5365d9}
+.logo svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.brand-title{font-size:20px;line-height:1.18;font-weight:820;letter-spacing:-.5px}
+.brand-sub{font-size:11px;color:#8695b0;margin-top:4px;font-weight:580}
+.version{font-size:10px;letter-spacing:.08em;color:#7586ac;padding:8px 10px;border:1px solid #e0e8f7;border-radius:999px;background:#ffffffc7}
+.tabs{display:flex;gap:6px;padding:5px;background:#eaf0fc;border:1px solid #e0e8f8;border-radius:16px;margin-top:19px}
+.cat-tab{display:flex;justify-content:center;align-items:center;gap:4px;min-width:0;flex:1;white-space:nowrap;border:none;border-radius:12px;background:transparent;color:#627391;font-size:12px;font-weight:760;padding:11px 4px;transition:background .2s,box-shadow .2s,color .2s}
+.cat-tab span{font-size:10px;opacity:.72;font-variant-numeric:tabular-nums}
+.cat-tab.active{background:#fff;color:#2f4cc4;box-shadow:0 4px 13px -9px #3954ad}
+.stats{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:16px;padding:0 2px 10px}
+.mode{font-size:12px;color:#65799b;font-weight:660}
+.counter{display:flex;align-items:baseline;gap:4px;font-variant-numeric:tabular-nums;color:#8796b3}
+.counter strong{font-size:26px;color:#2e48af;letter-spacing:-.8px}
+.counter span{font-size:14px;font-weight:650}
+.track{height:5px;border-radius:99px;background:#e0e8fa;overflow:hidden}
+.track>div{height:100%;width:0;background:linear-gradient(90deg,#506ade,#8d8df4);border-radius:99px;transition:width .3s ease}
+.content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;padding:15px 1px 18px}
+.question{padding:22px 21px 19px;border:1px solid #e0e7f3;border-radius:23px;background:#fff;box-shadow:0 15px 50px -37px rgba(38,58,107,.34);animation:appear .28s cubic-bezier(.2,.8,.25,1) both}
+@keyframes appear{from{transform:translateY(8px);opacity:.65}to{opacity:1;transform:translateY(0)}}
+.question-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.scope-pill{background:#ebefff;color:#4861b1;border-radius:100px;padding:6px 10px;font-size:11px;font-weight:780}
+.section-text{font-size:11px;color:#587c8a;background:#eaf7f5;border-radius:100px;padding:6px 9px;font-weight:700}
+.saved-label{margin-left:auto;font-size:11px;color:#9aa7bd}
+.question h2{font-size:23px;letter-spacing:-.6px;line-height:1.38;margin:19px 0 14px;color:#162745}
+.rule-statement{position:relative;background:linear-gradient(130deg,#f1f5ff,#f9fbff);border:1px solid #d8e4fa;border-radius:17px;padding:15px 15px 12px;margin-bottom:16px}
+.rule-text{font-size:15px;line-height:1.72;font-weight:640;color:#31496e;white-space:pre-wrap;overflow-wrap:anywhere}
+.rule-text.clamp{max-height:135px;overflow:hidden}
+.rule-statement:not(.expanded) .rule-text.clamp{mask-image:linear-gradient(to bottom,#000 73%,transparent)}
+.rule-statement.expanded .rule-text{max-height:none;mask-image:none}
+.read-more{display:block;background:none;color:#476ad7;border:0;font-size:12px;padding:8px 0 0;font-weight:740}
+.read-more span{margin-left:4px}
+.choices{display:grid;gap:10px}
+.choice{display:flex;align-items:center;gap:13px;width:100%;min-height:65px;padding:12px 14px;border-radius:16px;border:1.5px solid #e0e6ef;background:#fff;color:#25395b;text-align:left;transition:background .28s,border-color .28s,color .24s,transform .16s;box-shadow:0 5px 16px -18px #294479}
+.choice:active:not(:disabled){transform:scale(.989)}
+.choice:disabled{cursor:default}
+.choice-letter{display:grid;place-items:center;flex:none;width:39px;height:39px;border-radius:12px;background:#f1f4fa;color:#61738e;font-weight:830;font-size:14px;transition:background .28s,color .28s}
+.choice-label{font-size:18px;font-weight:730;flex:1}
+.choice-label strong{font-size:23px;font-weight:850;font-variant-numeric:tabular-nums;margin:0 3px}
+.choice-end{min-width:17px;text-align:center;font-size:19px}
+.choice.correct{border-color:#6bc5a6;background:#e9f9f1;color:#207e5c}
+.choice.correct .choice-letter{background:#d2f2e2;color:#167e55}
+.choice.incorrect{border-color:#e9a5a0;background:#fff0ed;color:#b65751}
+.choice.incorrect .choice-letter{background:#ffdedb;color:#b4544f}
+.choice.muted{opacity:.56}
+.feedback{padding:13px 14px 12px;margin-top:15px;border-radius:13px;background:#f0faf4;border:1px solid #d8efe2;animation:reveal .3s cubic-bezier(.2,.8,.2,1)}
+.feedback.no{background:#fff5f2;border-color:#f3e0da}
+@keyframes reveal{from{opacity:0;transform:translateY(-7px)}to{opacity:1;transform:translateY(0)}}
+.feedback-label{display:flex;align-items:center;gap:7px;flex-wrap:wrap;font-size:12px;color:#27755c}
+.feedback.no .feedback-label{color:#a45c47}
+.feedback-label strong{font-size:13px}
+.feedback-label>span:last-child{margin-left:auto;font-size:12px;font-weight:750}
+.feedback-dot{display:grid;place-items:center;width:21px;height:21px;border-radius:50%;background:#d6f5e6;color:#23835f;font-weight:900}
+.feedback.no .feedback-dot{background:#ffe4df;color:#b76554}
+.feedback p{font-size:11px;line-height:1.6;color:#70829d;margin:9px 0 0}
+.bottom{display:grid;grid-template-columns:1fr 1.2fr;gap:10px;flex:none;padding:11px 2px calc(14px + env(safe-area-inset-bottom,0px));background:linear-gradient(0deg,#f4f7ff 75%,rgba(244,247,255,.85));border-top:1px solid #e6ecf7}
+.bottom button{min-height:51px;border:0;border-radius:15px;font-size:15px;font-weight:810}
+.prev{color:#62738e;background:#e8edf7}
+.prev:disabled{opacity:.43}
+.next{color:white;background:linear-gradient(110deg,#465ed5,#6978ec);box-shadow:0 9px 23px -13px #3756c6}
+.finish{padding:62px 22px 35px;text-align:center}
+.finish-mark{display:grid;place-items:center;margin:0 auto 22px;width:69px;height:69px;border-radius:22px;background:#def7e9;color:#1a9d71;font-size:34px}
+.finish>span{font-size:12px;color:#7387aa;font-weight:730}
+.finish h2{font-size:28px;margin:13px 0}
+.finish p{font-size:14px;color:#667a9c;line-height:1.8}
+.restart-primary{background:#4962da;color:white;border:none;border-radius:13px;padding:14px 24px;margin-top:12px;font-weight:800}
+.toast{position:fixed;left:50%;bottom:95px;transform:translate(-50%,12px);background:#243655;color:white;padding:11px 18px;border-radius:13px;font-size:12px;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;white-space:nowrap;z-index:20}
+.toast.visible{opacity:1;transform:translate(-50%,0)}
+@media(max-width:420px){
+ .app{padding:0 11px}.top{padding-top:calc(12px + env(safe-area-inset-top,0px))}
+ .brand-title{font-size:18px}.brand-sub{font-size:10px}.logo{width:37px;height:37px;border-radius:12px}
+ .tabs{margin-top:12px}.cat-tab{padding:10px 2px;font-size:11.5px}
+ .stats{margin-top:10px;padding-bottom:8px}
+ .counter strong{font-size:23px}
+ .content{padding-top:11px}
+ .question{padding:16px 14px 15px;border-radius:21px}
+ .question h2{font-size:21px;margin:14px 0 12px}
+ .rule-statement{padding:12px 13px;margin-bottom:12px}
+ .rule-text{font-size:14px;line-height:1.62}
+ .rule-text.clamp{max-height:119px}
+ .choices{gap:8px}
+ .choice{min-height:58px;padding:9px 11px;gap:11px}
+ .choice-letter{width:35px;height:35px;font-size:13px}
+ .choice-label{font-size:16px}
+ .choice-label strong{font-size:21px}
+ .bottom{padding-top:10px}.bottom button{min-height:49px}
+}
+@media(max-height:710px) and (max-width:600px){
+ .brand-sub{display:none}.top{padding-top:calc(9px + env(safe-area-inset-top,0px))}
+ .tabs{margin-top:9px}.stats{margin-top:7px}.question{padding-top:14px}
+ .question h2{margin:11px 0;font-size:20px}
+ .rule-text.clamp{max-height:100px}.choice{min-height:54px}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.001ms!important;transition-duration:.001ms!important}}
+</style>
+</head>
+<body>
+<div class="app">
+ <header class="top">
+  <div class="brand">
+   <div class="brand-left"><div class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5 11.5 3l7 2.5v14l-7-2.5L5 19.5z"/><path d="M11.5 3v14M7.5 10h2M14 10h2M14 13h2"/></svg></div><div><div class="brand-title">条款序号速记</div><div class="brand-sub">只考第几条 · 独立记忆 · 纯刷题</div></div></div>
+   <span class="version">NUMBER QUIZ</span>
+  </div>
+  <nav class="tabs" id="category-controls" aria-label="切换题库"></nav>
+  <div class="stats"><span id="current-mode" class="mode">行为规范 · 随机顺序</span><span class="counter" id="counter"><strong>01</strong><span>/ 75</span></span></div>
+  <div class="track" aria-label="本轮进度"><div id="progress-bar"></div></div>
+ </header>
+ <main class="content" id="content" aria-label="条款序号刷题"></main>
+ <footer class="bottom" aria-label="题目切换"><button class="prev" id="prev" type="button" data-action="previous">← 上一题</button><button class="next" id="next" type="button" data-action="next">下一题 →</button></footer>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>(function boot(RULES){
+ "use strict";
+ const STORAGE="discipline-article-number-quiz-v1";
+ const CATS=[
+   {id:"behavior",name:"行为规范",short:"行为",count:75},
+   {id:"dorm",name:"宿舍内务",short:"宿舍",count:15},
+   {id:"sanction",name:"校级处分",short:"处分",count:5},
+   {id:"all",name:"全部条款",short:"全部",count:95}
+ ];
+ const BYID=new Map(RULES.map(r=>[r.id,r]));
+ const $=s=>document.querySelector(s);
+ const escape=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const catName=id=>(CATS.find(x=>x.id===id)||CATS[0]).name;
+ function load(){
+   try{
+     const o=JSON.parse(localStorage.getItem(STORAGE));
+     if(o&&typeof o==="object"&&o.sessions&&typeof o.sessions==="object"&&CATS.some(x=>x.id===o.cat))return o;
+   }catch(e){}
+   return {version:1,cat:"behavior",sessions:{}};
+ }
+ let state=load();
+ function save(){try{localStorage.setItem(STORAGE,JSON.stringify(state));}catch(e){showToast("浏览器无法保存进度，请检查存储设置");}}
+ function rngHash(str){
+   let h=2166136261;
+   for(let i=0;i<str.length;i++){h=Math.imul(h^str.charCodeAt(i),16777619)>>>0;}
+   return h>>>0;
+ }
+ function shuffle(arr,seed){
+   const a=[...arr];
+   let z=seed??Math.floor(Math.random()*4294967296);
+   for(let i=a.length-1;i>0;i--){z=(Math.imul(1664525,z)+1013904223)>>>0;const j=z%(i+1);[a[i],a[j]]=[a[j],a[i]];}
+   return a;
+ }
+ function rulesIn(cat){return RULES.filter(r=>cat==="all"||r.part===cat);}
+ function freshSession(cat){
+   const entries=rulesIn(cat);
+   return {order:shuffle(entries.map(x=>x.id)),index:0,answers:{}};
+ }
+ function validateSession(s,cat){
+   if(!s||!Array.isArray(s.order)||!s.answers||typeof s.answers!=="object")return false;
+   const expected=rulesIn(cat).map(r=>r.id);
+   return s.order.length===expected.length&&new Set(s.order).size===expected.length&&
+      s.order.every(id=>expected.includes(id))&&Number.isInteger(s.index)&&s.index>=0&&s.index<=s.order.length;
+ }
+ function session(){
+   let s=state.sessions[state.cat];
+   if(!validateSession(s,state.cat)){s=freshSession(state.cat);state.sessions[state.cat]=s;save();}
+   return s;
+ }
+ function answersFor(q){
+   const max=q.part==="behavior"?75:q.part==="dorm"?15:5;
+   const correct=q.n;
+   const candidates=Array.from({length:max},(_,i)=>i+1).filter(n=>n!==correct);
+   candidates.sort((a,b)=>Math.abs(a-correct)-Math.abs(b-correct)||a-b);
+   const near=candidates.slice(0,Math.min(7,candidates.length));
+   const picks=shuffle(near,rngHash(q.id+"near")).slice(0,3);
+   return shuffle([correct,...picks],rngHash(q.id+"options"));
+ }
+ function curr(){const s=session();return BYID.get(s.order[s.index]);}
+ let timer;
+ function showToast(message){
+   const n=$("#toast");n.textContent=message;n.classList.add("visible");
+   clearTimeout(timer);timer=setTimeout(()=>n.classList.remove("visible"),2300);
+ }
+ function updateHeader(){
+   const s=session(),q=curr(),done=s.index>=s.order.length;
+   $("#category-controls").innerHTML=CATS.map(x=>'<button class="cat-tab '+(state.cat===x.id?"active":"")+'" type="button" data-action="category" data-cat="'+x.id+'" aria-pressed="'+(state.cat===x.id)+'">'+x.short+'<span>'+x.count+'</span></button>').join("");
+   $("#current-mode").textContent=catName(state.cat)+" · 随机顺序";
+   $("#counter").innerHTML='<strong>'+String(done?s.order.length:s.index+1).padStart(2,"0")+'</strong><span>/ '+s.order.length+'</span>';
+   $("#progress-bar").style.width=Math.round((s.index+(q&&s.answers[q.id]?1:0))/s.order.length*100)+"%";
+   $("#prev").disabled=s.index===0;
+   $("#next").textContent=done?"再刷一轮":s.index===s.order.length-1?"完成本轮":"下一题";
+   $("#next").disabled=false;
+ }
+ function feedback(q,chosen){
+   const correct=chosen===q.n;
+   return '<div class="feedback '+(correct?"yes":"no")+'" role="status" aria-live="polite">'
+     +'<div class="feedback-label"><span class="feedback-dot">'+(correct?"✓":"×")+'</span><strong>'+(correct?"回答正确":"回答错误")+'</strong><span>正确序号：第 '+q.n+' 条</span></div>'
+     +'<p>《南京警察学院学生违纪行为处理标准》 · '+escape(q.chapter)+' · '+escape(q.section)+' · PDF 第 '+q.page+' 页</p>'
+     +'</div>';
+ }
+ function render(){
+   updateHeader();
+   const s=session(),q=curr();
+   if(!q){
+     const right=Object.entries(s.answers).reduce((total,[id,choice])=>total+(BYID.get(id)?.n===choice?1:0),0);
+     $("#content").innerHTML='<div class="finish"><div class="finish-mark">✓</div><span>本轮练习完成</span><h2>'+catName(state.cat)+'</h2><p>本轮共有 '+s.order.length+' 道序号题，答对 '+right+' 道。你可以重新打乱练习，也可以切换其他章节。</p><button class="restart-primary" type="button" data-action="restart">重新练习 ↗</button></div>';
+     return;
+   }
+   const selected=s.answers[q.id];
+   const choices=answersFor(q);
+   const hasChoice=Number.isInteger(selected);
+   const long=q.content.length>104;
+   const score=s.order.filter(id=>Number.isInteger(s.answers[id])).length;
+   $("#content").innerHTML=
+     '<article class="question" aria-labelledby="question-title">'
+      +'<div class="question-meta"><span class="scope-pill">'+escape(q.chapter)+'</span><span class="section-text">'+escape(q.section)+'</span><span class="saved-label">'+score+' 已作答</span></div>'
+      +'<h2 id="question-title">以下规定出自第几条？</h2>'
+      +'<div class="rule-statement" id="rule-statement"><div class="rule-text '+(long?"clamp":"")+'" id="rule-text">'+escape(q.content)+'</div>'
+      +(long?'<button class="read-more" type="button" data-action="expand" aria-expanded="false">展开完整规定 <span>⌄</span></button>':"")
+      +'</div>'
+      +'<div class="choices" role="group" aria-label="选择条款序号">'
+      +choices.map((n,i)=>'<button type="button" class="choice '+(hasChoice?(n===q.n?"correct":n===selected?"incorrect":"muted"):"")+'" data-action="answer" data-number="'+n+'" '+(hasChoice?"disabled":"")+'><span class="choice-letter">'+String.fromCharCode(65+i)+'</span><span class="choice-label">第 <strong>'+n+'</strong> 条</span><span class="choice-end">'+(hasChoice?(n===q.n?"✓":n===selected?"×":""):"")+'</span></button>').join("")
+      +'</div><div id="feedback-mount">'+(hasChoice?feedback(q,selected):"")+'</div>'
+      +'</article>';
+   $("#content").scrollTop=0;
+ }
+ function selectAnswer(n){
+   const s=session(),q=curr();
+   if(!q||Number.isInteger(s.answers[q.id])||!Number.isInteger(n))return;
+   s.answers[q.id]=n;save();
+   document.querySelectorAll(".choice").forEach(btn=>{
+     const value=Number(btn.dataset.number);
+     btn.disabled=true;
+     btn.classList.add(value===q.n?"correct":value===n?"incorrect":"muted");
+     btn.querySelector(".choice-end").textContent=value===q.n?"✓":value===n?"×":"";
+   });
+   const place=$("#feedback-mount");
+   place.innerHTML=feedback(q,n);
+   $("#progress-bar").style.width=Math.round((s.index+1)/s.order.length*100)+"%";
+ }
+ function step(diff){
+   const s=session();
+   const next=Math.max(0,Math.min(s.order.length,s.index+diff));
+   if(next===s.index)return;
+   s.index=next;save();render();
+ }
+ function reset(){
+   if(!confirm("要重新打乱并开始本章节的练习吗？之前的题号进度会重置。"))return;
+   state.sessions[state.cat]=freshSession(state.cat);save();render();
+ }
+ document.addEventListener("click",e=>{
+   const el=e.target.closest("[data-action]");if(!el)return;
+   const a=el.dataset.action;
+   if(a==="category"){state.cat=el.dataset.cat;save();render();}
+   else if(a==="answer")selectAnswer(Number(el.dataset.number));
+   else if(a==="previous")step(-1);
+   else if(a==="next"){const s=session();if(s.index===s.order.length)reset();else step(1);}
+   else if(a==="restart")reset();
+   else if(a==="expand"){
+     const expanded=$("#rule-statement").classList.toggle("expanded");
+     el.setAttribute("aria-expanded",String(expanded));
+     el.innerHTML=expanded?'收起规定 <span>⌃</span>':'展开完整规定 <span>⌄</span>';
+   }
+ });
+ document.addEventListener("keydown",e=>{
+   if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName)||e.ctrlKey||e.altKey||e.metaKey)return;
+   const q=curr();
+   if(/^[1-4]$/.test(e.key)&&q&&!Number.isInteger(session().answers[q.id])){
+     const value=answersFor(q)[Number(e.key)-1];if(value!==undefined)selectAnswer(value);
+   }else if(e.key==="ArrowRight"||e.key==="Enter")step(1);
+   else if(e.key==="ArrowLeft")step(-1);
+ });
+ render();
+})([{"id":"dorm-01","n":1,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床上有杂物，蚊帐凉席未统一，被子稍差"},{"id":"dorm-02","n":2,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床单脏、皱下摆露，帽子腰带未按规定摆放，床下鞋架上鞋子摆放不齐"},{"id":"dorm-03","n":3,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"使用供被或被子未放置在床上"},{"id":"dorm-04","n":4,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床铺未整（被子不在床上且杂乱）"},{"id":"dorm-05","n":5,"part":"dorm","section":"桌面","chapter":"宿舍内务","page":1,"content":"（上床下桌）桌面脏，桌面有垃圾"},{"id":"dorm-06","n":6,"part":"dorm","section":"柜子","chapter":"宿舍内务","page":1,"content":"柜门未关"},{"id":"dorm-07","n":7,"part":"dorm","section":"柜子","chapter":"宿舍内务","page":1,"content":"床与墙/柜子之间脏（垃圾或灰尘）"},{"id":"dorm-08","n":8,"part":"dorm","section":"地面","chapter":"宿舍内务","page":1,"content":"垃圾未倒，有垃圾，同类物品未统一摆放，床下/书桌下有除鞋子之外杂物"},{"id":"dorm-09","n":9,"part":"dorm","section":"地面","chapter":"宿舍内务","page":1,"content":"地面脏"},{"id":"dorm-10","n":10,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"地面脏，窗槽、门框、门窗玻璃脏"},{"id":"dorm-11","n":11,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"物品杂乱，地面有垃圾，鞋摆放乱"},{"id":"dorm-12","n":12,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"阳台墙上摆放物品（鞋子、凳子、被子、盆栽、衣物等）"},{"id":"dorm-13","n":13,"part":"dorm","section":"卫生间","chapter":"宿舍内务","page":1,"content":"洗手台有杂物、有水渍扣，洗手台下脏/物品摆放乱，洗手池脏，警容镜脏或有水渍，墙壁脏，毛巾牙具、洗漱用品不齐，气窗有灰"},{"id":"dorm-14","n":14,"part":"dorm","section":"卫生间","chapter":"宿舍内务","page":1,"content":"气窗上挂衣服，卫生间地面脏，便池脏"},{"id":"dorm-15","n":15,"part":"dorm","section":"其他","chapter":"宿舍内务","page":1,"content":"随意张贴，物品杂乱，布设不符合警务化管理要求的物品"},{"id":"behavior-01","n":1,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课迟到、早退"},{"id":"behavior-02","n":2,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课吃东西、睡觉等嬉笑玩闹或行为不端的"},{"id":"behavior-03","n":3,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课未按规定上交手机，私自使用手机、平板电脑等电子产品（因教学需要老师要求使用的除外）。操课时间玩游戏、看漫画、看视频（与学习相关的视频除外）、与学习无关的图文等娱乐性活动，如确因学习需要，由督察队员进行鉴定、核实"},{"id":"behavior-04","n":4,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"旷课"},{"id":"behavior-05","n":5,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"课堂上不服从老师管理，顶撞老师的；其他破坏课堂纪律、影响教学秩序、带来安全隐患、引发安全事故的行为"},{"id":"behavior-06","n":6,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"损坏实验仪器、电教设备或不听从教师或管理人员指挥，违反操作规程操作的"},{"id":"behavior-07","n":7,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"无故集队点名不到，情节较轻的"},{"id":"behavior-08","n":8,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"无证外出、擅自超假（30 分钟及以上）或请假虽经批准但提前离校，情节较轻的"},{"id":"behavior-09","n":9,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"伪造、涂改出门证明、请假材料，情节较轻的"},{"id":"behavior-10","n":10,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"包上有挂饰"},{"id":"behavior-11","n":11,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"非制式皮鞋（皮鞋应全黑；绑鞋带或一脚蹬、样式贴近制式、没logo 以外的图案；）女生鞋跟不得高于4cm"},{"id":"behavior-12","n":12,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"警容风纪不整，警便混穿，警服混穿，未按规定着装，正课时间不着警服，警服有明显褶皱污渍，披衣、敞怀、挽袖、卷裤腿、扣子未系（不含风纪扣），领带松脱、领带夹未夹，内衬外露，系扎围巾，违规佩戴警用标识，未按要求佩戴标识徽章、未规范佩戴标识徽章，佩戴其他与警校生身份无关的标志"},{"id":"behavior-13","n":13,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"奇装异服，衣着暴露"},{"id":"behavior-14","n":14,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"着警服时穿浅色袜子、白色袜子、带浅色logo 的袜子或未穿袜子"},{"id":"behavior-15","n":15,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"未经批准，穿短裤进入教学楼、行政楼、图书馆、实验楼等行政办公教学区域"},{"id":"behavior-16","n":16,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"着警服在校园边走边吃东西、背手、袖手、搭肩、挽臂、揽腰、插兜、扇扇子、嬉戏打闹、高声喧哗、非雨雪天气打伞、行进间戴耳机等影响警容风纪的行为"},{"id":"behavior-17","n":17,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"染指甲、长指甲、蓄胡须、染发、烫发、奇异发型、化浓妆、戴首饰、头发长度超过规定、文身、文眉、穿耳洞、鼻洞、唇洞、佩戴有色眼镜（眼疾除外）"},{"id":"behavior-18","n":18,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"无正当理由穿拖鞋离开宿舍楼的，情节较轻的"},{"id":"behavior-19","n":19,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"擅自裁改警服或私自将警服外借的、送给非警务人员，情节较轻的"},{"id":"behavior-20","n":20,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":1,"content":"不按指定铺位就寝"},{"id":"behavior-21","n":21,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":1,"content":"宿舍区域影响他人休息"},{"id":"behavior-22","n":22,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"宿舍内饲养宠物；在校园内逗、喂、收留、饲养、接触流浪猫狗等动物，或因逗、喂、收留、饲养、接触流浪猫狗等动物被抓伤、咬伤的"},{"id":"behavior-23","n":23,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"宿舍内私自安装具有安全隐患的运动器材（单杠等）"},{"id":"behavior-24","n":24,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"在宿舍内留宿外来人员，情节较轻的"},{"id":"behavior-25","n":25,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"在宿舍内玩麻将、牌九、骰子等活动"},{"id":"behavior-26","n":26,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"持有大功率或违规电器，危险性、危害性电器，酒精炉、蜡烛等能产生明火的物品"},{"id":"behavior-27","n":27,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"违反安全管理规定，擅自使用明火，未出现危害后果的"},{"id":"behavior-28","n":28,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"损坏公共设施，情节较轻的"},{"id":"behavior-29","n":29,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"损坏或私自接驳水电设施，偷盗水电，情节较轻的"},{"id":"behavior-30","n":30,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"私接电源，改制开关的；私自松动、拆卸电子门锁后盖、电池，情节较轻的"},{"id":"behavior-31","n":31,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"持有管制刀具、烟花爆竹等危险物品的"},{"id":"behavior-32","n":32,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"影响安防监控摄像头正常使用，情节较轻的"},{"id":"behavior-33","n":33,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"未经批准在校园内骑自行车、电动车的、骑车带人（含被带人）、未经允许在校园内驾驶机动车辆，情节较轻的"},{"id":"behavior-34","n":34,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"未经允许，翻越围墙、校门进出校园，翻越围栏（墙）、阳台、门窗等进入教学、公寓、食堂、运动场地等区域、室内场所，情节较轻的"},{"id":"behavior-35","n":35,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"不按时熄灯就寝"},{"id":"behavior-36","n":36,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"熄灯后未按时就寝、洗漱、卧谈，无故在宿舍内、楼道内走动"},{"id":"behavior-37","n":37,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"操课、集合不按规定时间起床或集合迟到、中途脱离队伍"},{"id":"behavior-38","n":38,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"教学区未两人成行、三人成列、多人成队；队列行进中饮食、说话、玩闹、未报告离队、动作不规范、不听从指挥等影响队列整齐划一的行为；队列行进中，指挥员未能履行职责，未采取措施规范所带队伍的队列行进秩序"},{"id":"behavior-39","n":39,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"行进中使用手机（如行进间有电话，在多人队列中应离开队列，原地接听电话；单人行进中，站停接听电话）"},{"id":"behavior-40","n":40,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"有另行规定，违反该规定在食堂用餐，或在食堂、超市逗留，或在校园内闲逛的"},{"id":"behavior-41","n":41,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"正常操课期间留寝、休息、打游戏、看娱乐视频等娱乐休闲活动"},{"id":"behavior-42","n":42,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"熄灯就寝后，玩手机游戏、电脑游戏或看听影视娱乐节目、游戏视频、漫画、与学习无关的图文等娱乐性活动"},{"id":"behavior-43","n":43,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"无正当理由晚归（熄灯半小时之内），情节较轻的"},{"id":"behavior-44","n":44,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"逃寝（熄灯半小时之后检查不在宿舍），情节较轻的"},{"id":"behavior-45","n":45,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"教室、自习室、图书馆等公共区域霸座，个人物品多、杂乱"},{"id":"behavior-46","n":46,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在教学区、自习区域内吃东西"},{"id":"behavior-47","n":47,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"大声喧哗，不文明用语"},{"id":"behavior-48","n":48,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"糊弄、雇人、造假完成作业或学习任务"},{"id":"behavior-49","n":49,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"不遵守竞赛规则、不服从裁判"},{"id":"behavior-50","n":50,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"不遵守传染病防治防控规定，未按要求做好防护的"},{"id":"behavior-51","n":51,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"乱倒生活用水、果皮纸屑，乱扔快递、外卖盒（袋）等垃圾、杂物，情节较轻的"},{"id":"behavior-52","n":52,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"扰乱行政、教学、科研、学习、公寓、食堂、超市等公共场所秩序，情节较轻的"},{"id":"behavior-53","n":53,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"集体活动中，未按要求着装、携带装备物品的；违规携带明令禁止的物品参加集体活动（造成不良影响或实际后果的，给予处分）；在集体活动进出场过程中、集体活动进行过程中，不听从指挥、公然睡觉、长时间使用手机娱乐等个人不当言行；因个人原因给集体活动造成不良影响的"},{"id":"behavior-54","n":54,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"集体活动中，无故缺席的；擅自离队，撺掇、教唆他人擅自离队的；集体活动中起哄、吹口哨、喝倒彩、嬉笑、喧哗、玩闹等破坏秩序的；其他有损人民警察形象、学院形象、集体形象的行为"},{"id":"behavior-55","n":55,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"区队干部、学生干部、集体活动的组织者、带队负责人，发现有同学擅自离队、携带明令禁止的物品，拖延不报、隐瞒不报、帮忙掩盖的"},{"id":"behavior-56","n":56,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在承担执勤任务期间，不讲政治，行为散漫，不服从管理、安排，找理由逃脱，私自换岗的"},{"id":"behavior-57","n":57,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在大型安保任务、实习、见习等专项任务、活动中轻微违纪"},{"id":"behavior-58","n":58,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在学院进行专项纪律作风整治中，公然违反、明知故犯、顶风违纪的行为"},{"id":"behavior-59","n":59,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在统计、填报信息时，以虚假、欺骗等方式虚报、漏报、瞒报的"},{"id":"behavior-60","n":60,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"购买、持有香烟、烟盒、烟头等涉烟行为，购买、持有酒等涉酒行为，情节较轻的"},{"id":"behavior-61","n":61,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"检查时正在吸烟，情节较轻的"},{"id":"behavior-62","n":62,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"不配合督察检查，阻碍、影响督察检查或核查违纪，顶撞检查队员，围堵、威胁、挑衅、报复检查队员，情节较轻的（情节较重可给予处分）"},{"id":"behavior-63","n":63,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"包庇、掩护违纪同学，为违纪同学作伪证或弄虚作假，情节较轻的"},{"id":"behavior-64","n":64,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在对违纪认定、扣分处理的申诉中，伪造情节、虚构事实、隐瞒真相、欺骗、包庇、冒名顶替等违规申诉，情节较轻的"},{"id":"behavior-65","n":65,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"乱刻、乱写或乱画，蹬踏污损墙壁，情节较轻的"},{"id":"behavior-66","n":66,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"私自占有、损毁他人财物，私拿他人快递、外卖等物品（如主观故意，物品已被使用、损耗或灭失，未取得对方谅解，情节较重，或其他不适宜扣分的，应给予处分）"},{"id":"behavior-67","n":67,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"未经批准，使用互联网、贴吧、微博、微信等网络社交媒体发布传播涉及教学、招生、实习、专项任务、训练、日常生活等内容的图片和视频的"},{"id":"behavior-68","n":68,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，制作、发布、转发、传播不当信息、虚假信息，侮辱、诽谤他人的"},{"id":"behavior-69","n":69,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，制作、发布、转发、跟帖有损党和政府、公安机关人民警察、学院及师生声誉、名誉、形象的文字、图片、链接等行为的（情节较重的给予处分）"},{"id":"behavior-70","n":70,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，泄露本人或他人个人秘密、生活隐私的（情节较重的给予处分）"},{"id":"behavior-71","n":71,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"违反保密纪律、规定或要求的"},{"id":"behavior-72","n":72,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"同学间发生肢体冲突，情节较轻，未造成严重后果的"},{"id":"behavior-73","n":73,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"超出正常交往距离的亲密行为或其他不文明行为"},{"id":"behavior-74","n":74,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"学生干部不作为、乱作为"},{"id":"behavior-75","n":75,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"情节轻微、危害不大的一般违纪行为，可根据后果和认错情况扣2 或3 分"},{"id":"sanction-01","n":1,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"通报批评"},{"id":"sanction-02","n":2,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"警告"},{"id":"sanction-03","n":3,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"严重警告"},{"id":"sanction-04","n":4,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"记过"},{"id":"sanction-05","n":5,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"留校察看"}]);</script>
+</body>
+</html>
