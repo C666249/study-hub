@@ -121,6 +121,46 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
 .tabs[data-dragging="true"] .rubber-thumb{box-shadow:0 5px 17px -6px rgba(54,86,175,.39)}
 .bottom{position:sticky;bottom:0;z-index:15;box-shadow:0 -10px 26px -23px rgba(45,70,121,.25);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
 @media(prefers-reduced-motion:reduce){.cat-tab{transition:none}.rubber-thumb{will-change:auto}}
+
+/* V1.2 · FMV continuity: circular reveal from trigger, independent wrong-bank */
+.wrong-entry{display:inline-flex;align-items:center;gap:7px;justify-content:center;flex:none;min-height:42px;padding:7px 11px;color:#3f58a2;background:rgba(255,255,255,.87);border:1px solid #d8e2f7;border-radius:14px;box-shadow:0 6px 20px -14px rgba(56,87,148,.35);font-size:12px;font-weight:800;white-space:nowrap;transition:transform .16s ease,box-shadow .2s ease}
+.wrong-entry:active{transform:scale(.945);box-shadow:0 2px 9px -6px #445aaa}
+.wrong-entry-icon{font-size:18px;font-weight:700;line-height:1;color:#4965c6}
+.wrong-count{min-width:22px;text-align:center;padding:4px 6px;border-radius:8px;background:#e9edff;color:#4461c7;font-size:11px;font-variant-numeric:tabular-nums}
+.wrong-page{position:fixed;z-index:80;inset:0;background:radial-gradient(ellipse 94% 40% at 95% 2%,#e5eaff 0,transparent 82%),linear-gradient(160deg,#f8faff,#f1f5ff);overflow:hidden;contain:layout paint;isolation:isolate}
+.wrong-page[hidden]{display:none!important}
+.wrong-shell{max-width:680px;margin:0 auto;height:100%;height:100dvh;display:flex;flex-direction:column;padding:0 18px}
+.wrong-top{flex:none;padding:calc(16px + env(safe-area-inset-top,0px)) 3px 0}
+.wrong-heading{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wrong-back{display:inline-flex;align-items:center;gap:9px;min-height:38px;padding:8px 13px;border-radius:13px;border:1px solid #dbe3f6;background:#ffffffd9;color:#3a5084;font-size:12px;font-weight:800}
+.wrong-back:active{transform:scale(.96)}
+.wrong-remaining{background:#ffeae7;color:#af655b;padding:8px 12px;border-radius:100px;font-size:12px;font-weight:790;white-space:nowrap}
+.wrong-hero{padding:18px 3px 13px}
+.wrong-overline{font-weight:800;font-size:10px;letter-spacing:.16em;color:#667dd1}
+.wrong-hero h1{font-size:27px;line-height:1.14;letter-spacing:-.05em;margin:6px 0;color:#1b2c50;font-weight:870}
+.wrong-hero-dot{color:#6881ea}
+.wrong-hero p{margin:0;color:#8190a8;font-size:12px;line-height:1.6}
+.wrong-progressline{display:flex;align-items:center;justify-content:space-between;padding:0 3px 8px;font-size:12px;color:#687f9f}
+#wrong-counter{font-weight:850;color:#3955b2;font-variant-numeric:tabular-nums}
+#wrong-status{font-size:11px}
+.wrong-track{margin-bottom:1px}
+.wrong-content{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:13px 1px 14px;scrollbar-width:thin}
+.wrong-content .question{border:1px solid #e0e5f4}
+.wrong-content .choice{min-height:59px}
+.wrong-content .question-meta{margin-bottom:3px}
+.wrong-content .wrong-section-note{font-size:11px;line-height:1.8;color:#8492ad;padding:12px 2px 0}
+.wrong-content .feedback .cleared-note{font-weight:780;color:#288565;margin-top:6px}
+.wrong-bottom{margin-top:auto;position:sticky;bottom:0}
+.wrong-empty{padding:46px 18px 32px;text-align:center}
+.wrong-empty-icon{display:grid;place-items:center;width:72px;height:72px;border-radius:23px;background:#e3f7ef;color:#25886b;margin:0 auto 19px;font-size:31px;box-shadow:0 8px 25px -17px #22886e}
+.wrong-empty h2{font-size:22px;letter-spacing:-.035em}
+.wrong-empty p{font-size:13px;color:#7585a4;line-height:1.8}
+.wrong-empty button{margin-top:13px;background:#4c64d8;color:#fff;padding:13px 22px;border:0;border-radius:13px;font-weight:800}
+.wrong-page .question{animation:wrong-content-enter .43s cubic-bezier(.21,.83,.29,1) both}
+@keyframes wrong-content-enter{from{opacity:.2;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:420px){.wrong-entry{min-height:38px;padding:6px 9px;gap:5px;font-size:11px}.wrong-entry-icon{font-size:17px}.wrong-shell{padding:0 11px}.wrong-top{padding-top:calc(10px + env(safe-area-inset-top,0px))}.wrong-hero{padding:13px 3px 10px}.wrong-hero h1{font-size:25px}.wrong-content{padding-top:9px}.wrong-content .question{padding:16px 14px}}
+@media(max-height:690px) and (max-width:600px){.wrong-hero{padding:8px 3px}.wrong-hero h1{font-size:23px}.wrong-content{padding-top:8px}}
+@media(prefers-reduced-motion:reduce){.wrong-entry,.wrong-content .question{transition:none;animation:none}}
 </style>
 </head>
 <body>
@@ -128,7 +168,7 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
  <header class="top">
   <div class="brand">
    <div class="brand-left"><div class="logo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5 11.5 3l7 2.5v14l-7-2.5L5 19.5z"/><path d="M11.5 3v14M7.5 10h2M14 10h2M14 13h2"/></svg></div><div><div class="brand-title">条款序号速记</div><div class="brand-sub">只考第几条 · 独立记忆 · 纯刷题</div></div></div>
-   <span class="version">V1.1 · RUBBER</span>
+   <button class="wrong-entry" type="button" data-action="open-wrong" aria-label="打开错题本"><span class="wrong-entry-icon">↻</span><span>错题本</span><span id="wrong-count" class="wrong-count">0</span></button>
   </div>
   <nav class="tabs" id="category-controls" aria-label="切换题库"></nav>
   <div class="stats"><span id="current-mode" class="mode">行为规范 · 随机顺序</span><span class="counter" id="counter"><strong>01</strong><span>/ 75</span></span></div>
@@ -137,6 +177,24 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
  <main class="content" id="content" aria-label="条款序号刷题"></main>
  <footer class="bottom" aria-label="题目切换"><button class="prev" id="prev" type="button" data-action="previous">← 上一题</button><button class="next" id="next" type="button" data-action="next">下一题 →</button></footer>
 </div>
+<section id="wrong-page" class="wrong-page" role="dialog" aria-modal="true" aria-label="错题重做" hidden>
+ <div class="wrong-shell">
+  <header class="wrong-top">
+   <div class="wrong-heading">
+    <button id="wrong-back" class="wrong-back" type="button" data-action="close-wrong" aria-label="返回普通练习">← <span>返回练习</span></button>
+    <span id="wrong-remaining" class="wrong-remaining">错题 0</span>
+   </div>
+   <div class="wrong-hero"><span class="wrong-overline">FOCUS REVIEW</span><h1>错题重做<span class="wrong-hero-dot">.</span></h1><p>只练曾经答错的条款，答对后自动移出</p></div>
+   <div class="wrong-progressline"><span id="wrong-counter">00 / 00</span><span id="wrong-status">独立进度已保存</span></div>
+   <div class="track wrong-track"><div id="wrong-progress"></div></div>
+  </header>
+  <main id="wrong-content" class="wrong-content" aria-label="错题练习"></main>
+  <footer class="bottom wrong-bottom" aria-label="错题上一题下一题">
+   <button id="wrong-prev" class="prev" type="button" data-action="wrong-prev">← 上一题</button>
+   <button id="wrong-next" class="next" type="button" data-action="wrong-next">下一题 →</button>
+  </footer>
+ </div>
+</section>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>(function boot(RULES){
  "use strict";
@@ -286,6 +344,170 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
   window.addEventListener("resize",()=>requestAnimationFrame(()=>setRubber(state.cat,false)));
  }
 
+
+ // Independent wrong-answer bank and review progress. Never rewrite normal sessions.
+ const WRONG_KEY="discipline-article-number-wrongbank-v1";
+ function loadWrong(){
+  let saved=null;
+  try{saved=JSON.parse(localStorage.getItem(WRONG_KEY));}catch(_e){}
+  if(saved&&Array.isArray(saved.ids)&&saved.session&&Array.isArray(saved.session.order)){
+   const ids=[...new Set(saved.ids.filter(id=>BYID.has(id)))];
+   const order=[...new Set(saved.session.order.filter(id=>BYID.has(id)))];
+   const index=Number.isInteger(saved.session.index)?Math.max(0,Math.min(saved.session.index,order.length)):0;
+   const answers={};
+   for(const [id,answer] of Object.entries(saved.session.answers||{})){
+    const q=BYID.get(id);
+    if(q&&order.includes(id)&&Number.isInteger(answer)&&answer>=1&&answer<=(q.part==="behavior"?75:q.part==="dorm"?15:5))answers[id]=answer;
+   }
+   return {ids,session:{order,index,answers}};
+  }
+  // First upgrade: discover wrong selections in existing normal sessions.
+  const ids=[];
+  for(const s of Object.values(state.sessions)){
+   if(!s||typeof s.answers!=="object")continue;
+   for(const [id,chosen] of Object.entries(s.answers)){
+    if(BYID.has(id)&&Number.isInteger(chosen)&&chosen!==BYID.get(id).n&&!ids.includes(id))ids.push(id);
+   }
+  }
+  return {ids,session:{order:[...ids],index:0,answers:{}}};
+ }
+ let wrong=loadWrong(),wrongOpen=false,wrongTransition=null,wrongTransitionToken=0,wrongOrigin=null;
+ const wrongSession=()=>wrong.session;
+ function saveWrong(){try{localStorage.setItem(WRONG_KEY,JSON.stringify(wrong));}catch(_e){showToast("无法保存错题进度，请检查浏览器存储权限");}}
+ function wrongBadge(){
+  const n=wrong.ids.length;
+  const badge=$("#wrong-count"),total=$("#wrong-remaining");
+  if(badge)badge.textContent=String(n);
+  if(total)total.textContent="错题 "+n;
+ }
+ function addWrong(id){
+  if(!wrong.ids.includes(id))wrong.ids.push(id);
+  if(!wrong.session.order.includes(id))wrong.session.order.push(id);
+  saveWrong();wrongBadge();
+ }
+ function reconcileWrong(){
+  const w=wrongSession(),old=w.order,active=old[w.index];
+  const valid=old.filter(id=>wrong.ids.includes(id));
+  for(const id of wrong.ids)if(!valid.includes(id))valid.push(id);
+  w.order=valid;
+  w.index=active&&valid.includes(active)?valid.indexOf(active):Math.min(w.index,valid.length);
+  for(const id of Object.keys(w.answers))if(!valid.includes(id))delete w.answers[id];
+  saveWrong();
+ }
+ function wrongQuestion(){const s=wrongSession();return BYID.get(s.order[s.index]);}
+ function renderWrong(){
+  wrongBadge();
+  const s=wrongSession(),q=wrongQuestion(),length=s.order.length;
+  $("#wrong-counter").textContent=String(Math.min(s.index+1,length)).padStart(2,"0")+" / "+String(length).padStart(2,"0");
+  $("#wrong-status").textContent=Object.keys(s.answers).length+" 已重做 · 独立保存";
+  $("#wrong-progress").style.width=length?Math.round((s.index+(q&&Number.isInteger(s.answers[q.id])?1:0))/length*100)+"%":"0%";
+  $("#wrong-prev").disabled=s.index===0||length===0;
+  $("#wrong-next").disabled=length===0;
+  $("#wrong-next").textContent=s.index>=length?"再练一轮":s.index===length-1?"完成本轮":"下一题";
+  const container=$("#wrong-content");
+  if(!q){
+   container.innerHTML='<div class="wrong-empty"><div class="wrong-empty-icon">✓</div><h2>'+(wrong.ids.length?'本轮复习完成':'暂时没有错题')+'</h2><p>'+(wrong.ids.length?'还有 '+wrong.ids.length+' 道错题待巩固，可以再练一轮。':'答错的条款会自动收录在这里；重新答对后会移出。')+'</p><button type="button" data-action="'+(wrong.ids.length?'wrong-restart':'close-wrong')+'">'+(wrong.ids.length?'再练一轮':'返回普通练习')+'</button></div>';
+   container.scrollTop=0;return;
+  }
+  const selected=s.answers[q.id],hasAnswer=Number.isInteger(selected),choices=answersFor(q),long=q.content.length>104;
+  container.innerHTML='<article class="question" aria-labelledby="wrong-question-title">'
+   +'<div class="question-meta"><span class="scope-pill">'+escape(q.chapter)+'</span><span class="section-text">'+escape(q.section)+'</span><span class="saved-label">错题专项</span></div>'
+   +'<h2 id="wrong-question-title">以下规定出自第几条？</h2>'
+   +'<div id="wrong-rule" class="rule-statement"><div class="rule-text '+(long?'clamp':'')+'" id="wrong-rule-text">'+escape(q.content)+'</div>'
+   +(long?'<button type="button" data-action="wrong-expand" class="read-more" aria-expanded="false">展开完整规定 <span>⌄</span></button>':'')
+   +'</div><div class="choices" role="group" aria-label="选择条款序号">'
+   +choices.map((num,i)=>'<button type="button" class="choice '+(hasAnswer?(num===q.n?'correct':num===selected?'incorrect':'muted'):'')+'" data-action="wrong-answer" data-number="'+num+'" '+(hasAnswer?'disabled':'')+'><span class="choice-letter">'+String.fromCharCode(65+i)+'</span><span class="choice-label">第 <strong>'+num+'</strong> 条</span><span class="choice-end">'+(hasAnswer?(num===q.n?'✓':num===selected?'×':''):'')+'</span></button>').join("")
+   +'</div><div id="wrong-feedback">'+(hasAnswer?feedback(q,selected)+(selected===q.n?'<p class="wrong-section-note">✓ 已答对，本题已从错题池移除。</p>':''):'')+'</div></article>';
+  container.scrollTop=0;
+ }
+ function wrongAnswer(n){
+  const s=wrongSession(),q=wrongQuestion();
+  if(!q||Number.isInteger(s.answers[q.id])||!Number.isInteger(n))return;
+  s.answers[q.id]=n;
+  if(n===q.n)wrong.ids=wrong.ids.filter(id=>id!==q.id);
+  saveWrong();wrongBadge();
+  $("#wrong-content").querySelectorAll(".choice").forEach(btn=>{
+   const val=Number(btn.dataset.number);
+   btn.disabled=true;btn.classList.add(val===q.n?"correct":val===n?"incorrect":"muted");
+   btn.querySelector(".choice-end").textContent=val===q.n?"✓":val===n?"×":"";
+  });
+  $("#wrong-feedback").innerHTML=feedback(q,n)+(n===q.n?'<p class="wrong-section-note">✓ 已答对，本题已从错题池移除。</p>':'');
+  $("#wrong-progress").style.width=Math.round((s.index+1)/s.order.length*100)+"%";
+ }
+ function stepWrong(direction){
+  const s=wrongSession(),original=[...s.order],target=original[s.index+direction];
+  if(direction<0&&s.index===0)return;
+  if(direction>0&&s.index>=original.length){restartWrong();return;}
+  if(direction>0&&s.index===original.length)return;
+  reconcileWrong();
+  if(!s.order.length){s.index=0;saveWrong();renderWrong();return;}
+  if(target&&s.order.includes(target))s.index=s.order.indexOf(target);
+  else if(direction>0)s.index=Math.min(s.index+(target?0:1),s.order.length);
+  else s.index=Math.max(0,s.index-1);
+  saveWrong();renderWrong();
+ }
+ function restartWrong(){
+  reconcileWrong();
+  wrong.session={order:[...wrong.ids],index:0,answers:{}};
+  saveWrong();renderWrong();
+ }
+ function revealOrigin(event){
+  const rect=event?.currentTarget?.getBoundingClientRect?.()||event?.target?.closest?.("[data-action]")?.getBoundingClientRect?.();
+  const x=Number.isFinite(event?.clientX)&&event.clientX>0?event.clientX:(rect?rect.left+rect.width/2:innerWidth*.85);
+  const y=Number.isFinite(event?.clientY)&&event.clientY>0?event.clientY:(rect?rect.top+rect.height/2:100);
+  return {x:Math.max(0,Math.min(x,innerWidth)),y:Math.max(0,Math.min(y,innerHeight))};
+ }
+ function animateWrong(open){
+  const page=$("#wrong-page");
+  if(!page)return;
+  const token=++wrongTransitionToken;
+  wrongTransition?.cancel();wrongTransition=null;
+  const origin=wrongOrigin||{x:innerWidth*.84,y:80};
+  const radius=Math.max(Math.hypot(origin.x,origin.y),Math.hypot(innerWidth-origin.x,origin.y),Math.hypot(origin.x,innerHeight-origin.y),Math.hypot(innerWidth-origin.x,innerHeight-origin.y))+35;
+  const small='circle(0px at '+origin.x+'px '+origin.y+'px)';
+  const large='circle('+radius+'px at '+origin.x+'px '+origin.y+'px)';
+  if(open)page.hidden=false;
+  if(prefersReduced()||!page.animate){
+   page.hidden=!open;page.style.clipPath="";if(open)$("#wrong-back").focus();return;
+  }
+  page.style.clipPath=open?small:large;
+  const animation=page.animate([
+   {clipPath:open?small:large,offset:0},
+   {clipPath:open?large:small,offset:1}
+  ],{duration:open?620:510,easing:open?"cubic-bezier(.21,.83,.23,1)":"cubic-bezier(.55,0,.65,.35)",fill:"forwards"});
+  wrongTransition=animation;
+  animation.onfinish=()=>{
+   if(token!==wrongTransitionToken)return;
+   page.style.clipPath="";page.hidden=!open;
+   wrongTransition=null;
+   if(open)$("#wrong-back").focus();
+   else $("#wrong-count")?.focus?.();
+  };
+ }
+ function openWrong(event,instant=false){
+  if(wrongOpen)return;
+  wrongOrigin=instant?{x:innerWidth*.88,y:88}:revealOrigin(event);
+  wrongOpen=true;reconcileWrong();renderWrong();
+  if(!instant){
+   history.pushState({articleNumberMode:"wrong"},"",location.pathname+location.search+"#wrong");
+  }
+  animateWrong(true);
+ }
+ function closeWrong(){
+  if(!wrongOpen)return;
+  wrongOpen=false;animateWrong(false);
+ }
+ function requestCloseWrong(){
+  if(!wrongOpen)return;
+  if(history.state?.articleNumberMode==="wrong")history.back();
+  else closeWrong();
+ }
+ window.addEventListener("popstate",()=>{
+  if(history.state?.articleNumberMode==="wrong"){
+   if(!wrongOpen)openWrong(null,true);
+  }else if(wrongOpen)closeWrong();
+ });
+
  function updateHeader(){
    const s=session(),q=curr(),done=s.index>=s.order.length;
    const track=$("#category-controls");
@@ -298,6 +520,7 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
    $("#current-mode").textContent=catName(state.cat)+" · 随机顺序";
    $("#counter").innerHTML='<strong>'+String(done?s.order.length:s.index+1).padStart(2,"0")+'</strong><span>/ '+s.order.length+'</span>';
    $("#progress-bar").style.width=Math.round((s.index+(q&&s.answers[q.id]?1:0))/s.order.length*100)+"%";
+   wrongBadge();
    $("#prev").disabled=s.index===0;
    $("#next").textContent=done?"再刷一轮":s.index===s.order.length-1?"完成本轮":"下一题";
    $("#next").disabled=false;
@@ -339,6 +562,7 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
    const s=session(),q=curr();
    if(!q||Number.isInteger(s.answers[q.id])||!Number.isInteger(n))return;
    s.answers[q.id]=n;save();
+   if(n!==q.n)addWrong(q.id);
    document.querySelectorAll(".choice").forEach(btn=>{
      const value=Number(btn.dataset.number);
      btn.disabled=true;
@@ -367,6 +591,17 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
    else if(a==="previous")step(-1);
    else if(a==="next"){const s=session();if(s.index===s.order.length)reset();else step(1);}
    else if(a==="restart")reset();
+   else if(a==="open-wrong")openWrong(e);
+   else if(a==="close-wrong")requestCloseWrong();
+   else if(a==="wrong-prev")stepWrong(-1);
+   else if(a==="wrong-next")stepWrong(1);
+   else if(a==="wrong-restart")restartWrong();
+   else if(a==="wrong-answer")wrongAnswer(Number(el.dataset.number));
+   else if(a==="wrong-expand"){
+     const expanded=$("#wrong-rule").classList.toggle("expanded");
+     el.setAttribute("aria-expanded",String(expanded));
+     el.innerHTML=expanded?'收起规定 <span>⌃</span>':'展开完整规定 <span>⌄</span>';
+   }
    else if(a==="expand"){
      const expanded=$("#rule-statement").classList.toggle("expanded");
      el.setAttribute("aria-expanded",String(expanded));
@@ -375,13 +610,27 @@ button:focus-visible{outline:3px solid #8399ef;outline-offset:3px}
  });
  document.addEventListener("keydown",e=>{
    if(["INPUT","TEXTAREA","SELECT"].includes(document.activeElement?.tagName)||e.ctrlKey||e.altKey||e.metaKey)return;
+   if(wrongOpen){
+     if(e.key==="Escape"){requestCloseWrong();return;}
+     const q=wrongQuestion();
+     if(/^[1-4]$/.test(e.key)&&q&&!Number.isInteger(wrongSession().answers[q.id])){
+       const value=answersFor(q)[Number(e.key)-1];if(value!==undefined)wrongAnswer(value);
+     }else if(e.key==="ArrowRight"||e.key==="Enter")stepWrong(1);
+     else if(e.key==="ArrowLeft")stepWrong(-1);
+     return;
+   }
    const q=curr();
    if(/^[1-4]$/.test(e.key)&&q&&!Number.isInteger(session().answers[q.id])){
      const value=answersFor(q)[Number(e.key)-1];if(value!==undefined)selectAnswer(value);
    }else if(e.key==="ArrowRight"||e.key==="Enter")step(1);
    else if(e.key==="ArrowLeft")step(-1);
  });
- window.addEventListener("pagehide",save);
+ window.addEventListener("pagehide",()=>{save();saveWrong();});
+ if(location.hash==="#wrong"){
+  history.replaceState({articleNumberMode:"normal"},"",location.pathname+location.search);
+  history.pushState({articleNumberMode:"wrong"},"",location.pathname+location.search+"#wrong");
+  openWrong(null,true);
+ }
  render();
 })([{"id":"dorm-01","n":1,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床上有杂物，蚊帐凉席未统一，被子稍差"},{"id":"dorm-02","n":2,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床单脏、皱下摆露，帽子腰带未按规定摆放，床下鞋架上鞋子摆放不齐"},{"id":"dorm-03","n":3,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"使用供被或被子未放置在床上"},{"id":"dorm-04","n":4,"part":"dorm","section":"床铺","chapter":"宿舍内务","page":1,"content":"床铺未整（被子不在床上且杂乱）"},{"id":"dorm-05","n":5,"part":"dorm","section":"桌面","chapter":"宿舍内务","page":1,"content":"（上床下桌）桌面脏，桌面有垃圾"},{"id":"dorm-06","n":6,"part":"dorm","section":"柜子","chapter":"宿舍内务","page":1,"content":"柜门未关"},{"id":"dorm-07","n":7,"part":"dorm","section":"柜子","chapter":"宿舍内务","page":1,"content":"床与墙/柜子之间脏（垃圾或灰尘）"},{"id":"dorm-08","n":8,"part":"dorm","section":"地面","chapter":"宿舍内务","page":1,"content":"垃圾未倒，有垃圾，同类物品未统一摆放，床下/书桌下有除鞋子之外杂物"},{"id":"dorm-09","n":9,"part":"dorm","section":"地面","chapter":"宿舍内务","page":1,"content":"地面脏"},{"id":"dorm-10","n":10,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"地面脏，窗槽、门框、门窗玻璃脏"},{"id":"dorm-11","n":11,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"物品杂乱，地面有垃圾，鞋摆放乱"},{"id":"dorm-12","n":12,"part":"dorm","section":"阳台","chapter":"宿舍内务","page":1,"content":"阳台墙上摆放物品（鞋子、凳子、被子、盆栽、衣物等）"},{"id":"dorm-13","n":13,"part":"dorm","section":"卫生间","chapter":"宿舍内务","page":1,"content":"洗手台有杂物、有水渍扣，洗手台下脏/物品摆放乱，洗手池脏，警容镜脏或有水渍，墙壁脏，毛巾牙具、洗漱用品不齐，气窗有灰"},{"id":"dorm-14","n":14,"part":"dorm","section":"卫生间","chapter":"宿舍内务","page":1,"content":"气窗上挂衣服，卫生间地面脏，便池脏"},{"id":"dorm-15","n":15,"part":"dorm","section":"其他","chapter":"宿舍内务","page":1,"content":"随意张贴，物品杂乱，布设不符合警务化管理要求的物品"},{"id":"behavior-01","n":1,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课迟到、早退"},{"id":"behavior-02","n":2,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课吃东西、睡觉等嬉笑玩闹或行为不端的"},{"id":"behavior-03","n":3,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"上课未按规定上交手机，私自使用手机、平板电脑等电子产品（因教学需要老师要求使用的除外）。操课时间玩游戏、看漫画、看视频（与学习相关的视频除外）、与学习无关的图文等娱乐性活动，如确因学习需要，由督察队员进行鉴定、核实"},{"id":"behavior-04","n":4,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"旷课"},{"id":"behavior-05","n":5,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"课堂上不服从老师管理，顶撞老师的；其他破坏课堂纪律、影响教学秩序、带来安全隐患、引发安全事故的行为"},{"id":"behavior-06","n":6,"part":"behavior","section":"课堂管理","chapter":"行为规范","page":1,"content":"损坏实验仪器、电教设备或不听从教师或管理人员指挥，违反操作规程操作的"},{"id":"behavior-07","n":7,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"无故集队点名不到，情节较轻的"},{"id":"behavior-08","n":8,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"无证外出、擅自超假（30 分钟及以上）或请假虽经批准但提前离校，情节较轻的"},{"id":"behavior-09","n":9,"part":"behavior","section":"请销假","chapter":"行为规范","page":1,"content":"伪造、涂改出门证明、请假材料，情节较轻的"},{"id":"behavior-10","n":10,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"包上有挂饰"},{"id":"behavior-11","n":11,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"非制式皮鞋（皮鞋应全黑；绑鞋带或一脚蹬、样式贴近制式、没logo 以外的图案；）女生鞋跟不得高于4cm"},{"id":"behavior-12","n":12,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"警容风纪不整，警便混穿，警服混穿，未按规定着装，正课时间不着警服，警服有明显褶皱污渍，披衣、敞怀、挽袖、卷裤腿、扣子未系（不含风纪扣），领带松脱、领带夹未夹，内衬外露，系扎围巾，违规佩戴警用标识，未按要求佩戴标识徽章、未规范佩戴标识徽章，佩戴其他与警校生身份无关的标志"},{"id":"behavior-13","n":13,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"奇装异服，衣着暴露"},{"id":"behavior-14","n":14,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"着警服时穿浅色袜子、白色袜子、带浅色logo 的袜子或未穿袜子"},{"id":"behavior-15","n":15,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"未经批准，穿短裤进入教学楼、行政楼、图书馆、实验楼等行政办公教学区域"},{"id":"behavior-16","n":16,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"着警服在校园边走边吃东西、背手、袖手、搭肩、挽臂、揽腰、插兜、扇扇子、嬉戏打闹、高声喧哗、非雨雪天气打伞、行进间戴耳机等影响警容风纪的行为"},{"id":"behavior-17","n":17,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"染指甲、长指甲、蓄胡须、染发、烫发、奇异发型、化浓妆、戴首饰、头发长度超过规定、文身、文眉、穿耳洞、鼻洞、唇洞、佩戴有色眼镜（眼疾除外）"},{"id":"behavior-18","n":18,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"无正当理由穿拖鞋离开宿舍楼的，情节较轻的"},{"id":"behavior-19","n":19,"part":"behavior","section":"警容风纪","chapter":"行为规范","page":1,"content":"擅自裁改警服或私自将警服外借的、送给非警务人员，情节较轻的"},{"id":"behavior-20","n":20,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":1,"content":"不按指定铺位就寝"},{"id":"behavior-21","n":21,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":1,"content":"宿舍区域影响他人休息"},{"id":"behavior-22","n":22,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"宿舍内饲养宠物；在校园内逗、喂、收留、饲养、接触流浪猫狗等动物，或因逗、喂、收留、饲养、接触流浪猫狗等动物被抓伤、咬伤的"},{"id":"behavior-23","n":23,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"宿舍内私自安装具有安全隐患的运动器材（单杠等）"},{"id":"behavior-24","n":24,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"在宿舍内留宿外来人员，情节较轻的"},{"id":"behavior-25","n":25,"part":"behavior","section":"宿舍管理","chapter":"行为规范","page":2,"content":"在宿舍内玩麻将、牌九、骰子等活动"},{"id":"behavior-26","n":26,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"持有大功率或违规电器，危险性、危害性电器，酒精炉、蜡烛等能产生明火的物品"},{"id":"behavior-27","n":27,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"违反安全管理规定，擅自使用明火，未出现危害后果的"},{"id":"behavior-28","n":28,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"损坏公共设施，情节较轻的"},{"id":"behavior-29","n":29,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"损坏或私自接驳水电设施，偷盗水电，情节较轻的"},{"id":"behavior-30","n":30,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"私接电源，改制开关的；私自松动、拆卸电子门锁后盖、电池，情节较轻的"},{"id":"behavior-31","n":31,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"持有管制刀具、烟花爆竹等危险物品的"},{"id":"behavior-32","n":32,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"影响安防监控摄像头正常使用，情节较轻的"},{"id":"behavior-33","n":33,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"未经批准在校园内骑自行车、电动车的、骑车带人（含被带人）、未经允许在校园内驾驶机动车辆，情节较轻的"},{"id":"behavior-34","n":34,"part":"behavior","section":"安全管理","chapter":"行为规范","page":2,"content":"未经允许，翻越围墙、校门进出校园，翻越围栏（墙）、阳台、门窗等进入教学、公寓、食堂、运动场地等区域、室内场所，情节较轻的"},{"id":"behavior-35","n":35,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"不按时熄灯就寝"},{"id":"behavior-36","n":36,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"熄灯后未按时就寝、洗漱、卧谈，无故在宿舍内、楼道内走动"},{"id":"behavior-37","n":37,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"操课、集合不按规定时间起床或集合迟到、中途脱离队伍"},{"id":"behavior-38","n":38,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"教学区未两人成行、三人成列、多人成队；队列行进中饮食、说话、玩闹、未报告离队、动作不规范、不听从指挥等影响队列整齐划一的行为；队列行进中，指挥员未能履行职责，未采取措施规范所带队伍的队列行进秩序"},{"id":"behavior-39","n":39,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"行进中使用手机（如行进间有电话，在多人队列中应离开队列，原地接听电话；单人行进中，站停接听电话）"},{"id":"behavior-40","n":40,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"有另行规定，违反该规定在食堂用餐，或在食堂、超市逗留，或在校园内闲逛的"},{"id":"behavior-41","n":41,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"正常操课期间留寝、休息、打游戏、看娱乐视频等娱乐休闲活动"},{"id":"behavior-42","n":42,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"熄灯就寝后，玩手机游戏、电脑游戏或看听影视娱乐节目、游戏视频、漫画、与学习无关的图文等娱乐性活动"},{"id":"behavior-43","n":43,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"无正当理由晚归（熄灯半小时之内），情节较轻的"},{"id":"behavior-44","n":44,"part":"behavior","section":"一日生活制度","chapter":"行为规范","page":2,"content":"逃寝（熄灯半小时之后检查不在宿舍），情节较轻的"},{"id":"behavior-45","n":45,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"教室、自习室、图书馆等公共区域霸座，个人物品多、杂乱"},{"id":"behavior-46","n":46,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在教学区、自习区域内吃东西"},{"id":"behavior-47","n":47,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"大声喧哗，不文明用语"},{"id":"behavior-48","n":48,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"糊弄、雇人、造假完成作业或学习任务"},{"id":"behavior-49","n":49,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"不遵守竞赛规则、不服从裁判"},{"id":"behavior-50","n":50,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"不遵守传染病防治防控规定，未按要求做好防护的"},{"id":"behavior-51","n":51,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"乱倒生活用水、果皮纸屑，乱扔快递、外卖盒（袋）等垃圾、杂物，情节较轻的"},{"id":"behavior-52","n":52,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"扰乱行政、教学、科研、学习、公寓、食堂、超市等公共场所秩序，情节较轻的"},{"id":"behavior-53","n":53,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"集体活动中，未按要求着装、携带装备物品的；违规携带明令禁止的物品参加集体活动（造成不良影响或实际后果的，给予处分）；在集体活动进出场过程中、集体活动进行过程中，不听从指挥、公然睡觉、长时间使用手机娱乐等个人不当言行；因个人原因给集体活动造成不良影响的"},{"id":"behavior-54","n":54,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"集体活动中，无故缺席的；擅自离队，撺掇、教唆他人擅自离队的；集体活动中起哄、吹口哨、喝倒彩、嬉笑、喧哗、玩闹等破坏秩序的；其他有损人民警察形象、学院形象、集体形象的行为"},{"id":"behavior-55","n":55,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"区队干部、学生干部、集体活动的组织者、带队负责人，发现有同学擅自离队、携带明令禁止的物品，拖延不报、隐瞒不报、帮忙掩盖的"},{"id":"behavior-56","n":56,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在承担执勤任务期间，不讲政治，行为散漫，不服从管理、安排，找理由逃脱，私自换岗的"},{"id":"behavior-57","n":57,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在大型安保任务、实习、见习等专项任务、活动中轻微违纪"},{"id":"behavior-58","n":58,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在学院进行专项纪律作风整治中，公然违反、明知故犯、顶风违纪的行为"},{"id":"behavior-59","n":59,"part":"behavior","section":"日常管理","chapter":"行为规范","page":2,"content":"在统计、填报信息时，以虚假、欺骗等方式虚报、漏报、瞒报的"},{"id":"behavior-60","n":60,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"购买、持有香烟、烟盒、烟头等涉烟行为，购买、持有酒等涉酒行为，情节较轻的"},{"id":"behavior-61","n":61,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"检查时正在吸烟，情节较轻的"},{"id":"behavior-62","n":62,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"不配合督察检查，阻碍、影响督察检查或核查违纪，顶撞检查队员，围堵、威胁、挑衅、报复检查队员，情节较轻的（情节较重可给予处分）"},{"id":"behavior-63","n":63,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"包庇、掩护违纪同学，为违纪同学作伪证或弄虚作假，情节较轻的"},{"id":"behavior-64","n":64,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在对违纪认定、扣分处理的申诉中，伪造情节、虚构事实、隐瞒真相、欺骗、包庇、冒名顶替等违规申诉，情节较轻的"},{"id":"behavior-65","n":65,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"乱刻、乱写或乱画，蹬踏污损墙壁，情节较轻的"},{"id":"behavior-66","n":66,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"私自占有、损毁他人财物，私拿他人快递、外卖等物品（如主观故意，物品已被使用、损耗或灭失，未取得对方谅解，情节较重，或其他不适宜扣分的，应给予处分）"},{"id":"behavior-67","n":67,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"未经批准，使用互联网、贴吧、微博、微信等网络社交媒体发布传播涉及教学、招生、实习、专项任务、训练、日常生活等内容的图片和视频的"},{"id":"behavior-68","n":68,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，制作、发布、转发、传播不当信息、虚假信息，侮辱、诽谤他人的"},{"id":"behavior-69","n":69,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，制作、发布、转发、跟帖有损党和政府、公安机关人民警察、学院及师生声誉、名誉、形象的文字、图片、链接等行为的（情节较重的给予处分）"},{"id":"behavior-70","n":70,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"在互联网、贴吧、微博、微信等自媒体上，泄露本人或他人个人秘密、生活隐私的（情节较重的给予处分）"},{"id":"behavior-71","n":71,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"违反保密纪律、规定或要求的"},{"id":"behavior-72","n":72,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"同学间发生肢体冲突，情节较轻，未造成严重后果的"},{"id":"behavior-73","n":73,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"超出正常交往距离的亲密行为或其他不文明行为"},{"id":"behavior-74","n":74,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"学生干部不作为、乱作为"},{"id":"behavior-75","n":75,"part":"behavior","section":"日常管理","chapter":"行为规范","page":3,"content":"情节轻微、危害不大的一般违纪行为，可根据后果和认错情况扣2 或3 分"},{"id":"sanction-01","n":1,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"通报批评"},{"id":"sanction-02","n":2,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"警告"},{"id":"sanction-03","n":3,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"严重警告"},{"id":"sanction-04","n":4,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"记过"},{"id":"sanction-05","n":5,"part":"sanction","section":"校级处分","chapter":"校级处分","page":3,"content":"留校察看"}]);</script>
 </body>
