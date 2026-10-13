@@ -97,7 +97,7 @@ try{state=Object.assign(empty(),JSON.parse(localStorage.getItem(key)||'{}'));}ca
 for(const k of ['attempts','sessions','learned'])if(!state[k]||typeof state[k]!=='object')state[k]={};
 for(const k of ['wrong','starred','exams'])if(!Array.isArray(state[k]))state[k]=[];
 const save=()=>{try{localStorage.setItem(key,JSON.stringify(state));}catch(e){toast('浏览器存储不可用，当前进度可能无法保存。')}};
-let all=[], qmap=new Map(),bankQuery='',bankType='all',bankTopic='all',expandedKey='',toastTimer,returnFocus=null;
+let all=[], qmap=new Map(),bankQuery='',bankType='all',bankTopic='all',expandedKey='',toastTimer,returnFocus=null,lastRenderedRoute='';
 const go=(route)=>{const target='#'+route;if(location.hash===target)render();else location.hash=target};
 const hash=()=>decodeURIComponent((location.hash||'#home').slice(1));
 const shuffle=(a)=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b};
@@ -339,7 +339,8 @@ function updateUIState(route){
 }
 function render(){
  if(!all.length)return;
- const r=hash();
+ const r=hash(),routeChanged=r!==lastRenderedRoute;
+ lastRenderedRoute=r;
  updateUIState(r);
  if(r==='home')renderHome();
  else if(r==='learn')renderLearn();
@@ -353,7 +354,7 @@ function render(){
  else if(r==='exam-play')renderExamQuestion();
  else if(r==='exam-result')renderExamResult();
  else{location.hash='#home';renderHome();}
- if(!r.startsWith('quiz/')&&r!=='exam-play'&&r!=='practice')window.scrollTo({top:0,behavior:'instant'});
+ if(routeChanged||(!r.startsWith('quiz/')&&r!=='exam-play'&&r!=='practice'))window.scrollTo({top:0,behavior:'instant'});
 }
 function moveIndex(delta){
  const mode=hash().slice(5),s=getSession(mode);
