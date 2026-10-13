@@ -146,7 +146,7 @@ function animateCounters(){
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
  $$('.number-counter').forEach(el=>{
    const val=el.textContent.trim();
-   if(!/^\\d+(\\.\\d+)?$/.test(val)||val.length>5)return;
+   if(!/^[0-9]+([.][0-9]+)?$/.test(val)||val.length>5)return;
    const digitColumns=[];
    el.setAttribute('aria-label',val);
    el.innerHTML=[...val].map(ch=>{
