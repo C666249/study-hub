@@ -33,3 +33,8 @@
 .digit-item{display:block;flex:none;height:1.05em;line-height:1.05em}
 .digit-point{padding:0 .03em}
 @media(prefers-reduced-motion:reduce){.digit-strip{transition:none!important}}
+
+/* Important: transformed ancestors break position:fixed descendants.
+   Fade the route container without translating it so quiz controls remain viewport-fixed. */
+@keyframes contentFade{from{opacity:0}to{opacity:1}}
+.content{animation:contentFade .38s var(--ease) both}
