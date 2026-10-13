@@ -41,5 +41,5 @@ test('source-specific expected answers preserved',()=>{
 test('page references local app resources',()=>{
  const html=readFileSync(new URL('./index.html',dir),'utf8');
  for(const path of ['app.js','styles.css','favicon.svg'])assert.ok(html.includes(path));
- assert.ok(readFileSync(new URL('./app.js',dir),'utf8').includes("fetch('questions.json'"));
+ assert.match(readFileSync(new URL('./app.js',dir),'utf8'),/fetch\(['"]\.\/?questions\.json['"]/);
 });
