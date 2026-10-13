@@ -1,0 +1,22 @@
+name: Political Theory Quality Check
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'political-theory-2026/**'
+      - '.github/workflows/political-theory-qa.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: node --check political-theory-2026/app.js
+      - name: Verify source questions and site resources
+        run: node --test political-theory-2026/tests.mjs
