@@ -99,50 +99,75 @@ function sessionKey(s){
  if(!s)return 'all';
  if(s.poolType==='wrong'||s.poolType==='saved')return s.poolType;
  if(s.poolType==='single')return 'single:'+s.questions[0];
- return s.scope==='all'?'all':'scope:'+s.scope;
+ if(s.scope==='all')return s.order==='random'?'random:all':'all';
+ return 'scope:'+s.scope;
 }
 function readSessions(){
- const found={};let hasBank=false;
+ const found={};const aliases={};let hasBank=false,previousActive=null;
  try{
   const stored=localStorage.getItem(SESSION_BANK_KEY);
   if(stored!==null){
    hasBank=true;
    const parsed=JSON.parse(stored);
    if(parsed&&parsed.version===2&&parsed.sessions&&typeof parsed.sessions==='object'&&!Array.isArray(parsed.sessions)){
-    for(const [key,raw] of Object.entries(parsed.sessions)){
+    for(const [oldKey,raw] of Object.entries(parsed.sessions)){
      const s=normalizeSession(raw);
-     if(s&&sessionKey(s)===key)found[key]=s;
+     if(!s)continue;
+     const key=sessionKey(s);
+     // V1.9 migration: the old "all" session was random; keep it as random:all.
+     if(oldKey!==key&&!(oldKey==='all'&&key==='random:all'))continue;
+     found[key]=s;aliases[oldKey]=key;
     }
+    previousActive=typeof parsed.lastActiveKey==='string'?aliases[parsed.lastActiveKey]||null:null;
    }
   }
- }catch(_e){/* Corrupt v2 storage must not affect existing answers. */}
- // Migrate exactly once, without deleting or rewriting the historical v1 key.
+ }catch(_e){/* Corrupt storage must not overwrite original v1 answers. */}
  if(!hasBank){
   try{
    const legacy=normalizeSession(JSON.parse(localStorage.getItem(SESSION_KEY)));
-   if(legacy)found[sessionKey(legacy)]=legacy;
+   if(legacy){previousActive=sessionKey(legacy);found[previousActive]=legacy;}
   }catch(_e){}
  }
- return found;
+ // Older versions did not record last active; select a safe existing session.
+ const lastActiveKey=previousActive&&found[previousActive]?previousActive:(found['random:all']?'random:all':found.all?'all':Object.keys(found)[0]||null);
+ return {found,lastActiveKey};
 }
-let sessions=readSessions();
-let state={view:'home',session:sessions.all||null,activeSessionKey:'all',studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:sessions.all?.order||'random',settingsOpen:false};
+const restoredBank=readSessions();
+let sessions=restoredBank.found;
+let lastActiveKey=restoredBank.lastActiveKey;
+let state={view:'home',session:sessions.all||null,activeSessionKey:'all',studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:'sequential',settingsOpen:false};
 function saveSession(){
  try{
-  if(state.session&&state.activeSessionKey)sessions[state.activeSessionKey]=state.session;
-  localStorage.setItem(SESSION_BANK_KEY,JSON.stringify({version:2,sessions}));
+  if(state.session&&state.activeSessionKey){
+   sessions[state.activeSessionKey]=state.session;
+   lastActiveKey=state.activeSessionKey;
+  }
+  localStorage.setItem(SESSION_BANK_KEY,JSON.stringify({version:2,lastActiveKey,sessions}));
  }catch(_e){toast('无法保存本轮题号，请检查浏览器存储权限');}
 }
 function activateSession(key,s){
  state.activeSessionKey=key;state.session=s;state.quizScope=s.scope;state.quizOrder=s.order;state.settingsOpen=false;
+ saveSession();
  if(state.view!=='quiz')pushRoute('quiz');
  state.view='quiz';render();window.scrollTo({top:0,behavior:'instant'});
 }
-function openScope(scope='all'){
- const key=scope==='all'?'all':'scope:'+scope;
+function openScope(scope='all',mode='sequential'){
+ const key=scope==='all'?(mode==='random'?'random:all':'all'):'scope:'+scope;
  const saved=sessions[key];
  if(saved){activateSession(key,saved);return;}
- begin(scope,'random');
+ begin(scope,scope==='all'?mode:'random');
+}
+function continueLastSession(){
+ if(lastActiveKey&&sessions[lastActiveKey]){activateSession(lastActiveKey,sessions[lastActiveKey]);return;}
+ openScope('all','sequential');
+}
+function sessionModeLabel(key){
+ if(key==='all')return '全部题库·顺序';
+ if(key==='random:all')return '全部题库·随机';
+ if(key==='wrong')return '错题重练';
+ if(key==='saved')return '收藏复习';
+ if(key.startsWith('scope:'))return ({dorm:'宿舍内务',behavior:'行为规范',sanction:'校级处分',notes:'扣分原则'})[key.slice(6)]||key.slice(6);
+ return '专项练习';
 }
 let toastTimer;
 function toast(msg){let el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
@@ -186,14 +211,14 @@ function render(){updateNav();setHash(state.view);syncViewState();let main=$('#m
  if(state.view==='study'){main.innerHTML=renderStudy();renderStudyList();}
 }
 function cardStat(label,value,caption,icon,color){return `<article class="stat-card"><div class="stat-upper"><span>${label}</span><span class="stat-icon ${color}">${ico(icon)}</span></div><strong class="stat-value">${value}</strong><span class="stat-foot">${caption}</span></article>`;}
-function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);const allSession=sessions.all;const resume=allSession&&allSession.questions.length&&allSession.index<allSession.questions.length;
+function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);const recent=lastActiveKey&&sessions[lastActiveKey]||null;const resume=!!recent;const randomSession=sessions['random:all'];
 const content=[{id:'dorm',icon:'🛏️',label:'宿舍内务',num:15,desc:'床铺、地面、阳台与卫生间',color:'sage'},
 {id:'behavior',icon:'🛡️',label:'行为规范',num:75,desc:'课堂、警容、安全与日常纪律',color:'blue'},
 {id:'sanction',icon:'⚖️',label:'校级处分',num:5,desc:'通报批评到留校察看',color:'peach'},
 {id:'notes',icon:'📌',label:'扣分原则',num:4,desc:'不重复扣分、最高分值等备注',color:'violet'}];
 const used=r=>QUESTIONS.filter(q=>q.scope===r).filter(q=>progress.answers[q.id]).length;
 return `<div class="page-enter">
-<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="${resume?'resume':'start'}" data-scope="all" data-order="random">${ico('target')} ${resume?`继续上次练习 · ${allSession.index+1}/${allSession.questions.length}`:'开始随机刷题'} ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="start" data-scope="all" data-order="sequential">${ico('book')} 顺序刷题</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
+<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="resume-global">${ico('target')} ${resume?`继续上次练习 · ${sessionModeLabel(lastActiveKey)} ${Math.min(recent.index+1,recent.questions.length)}/${recent.questions.length}`:'开始学习 · 113题顺序练习'} ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="open-random">${ico('repeat')} ${randomSession?`随机刷题 · ${Math.min(randomSession.index+1,randomSession.questions.length)}/${randomSession.questions.length}`:'随机刷题'} ${ico('arrow')}</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
 <section class="stats" aria-label="学习统计">${cardStat('题库总量',total,'覆盖全部95条标准及备注','book','')}${cardStat('已练题目',s.attempted,`题库覆盖 ${ratio}%`,'check','green')}${cardStat('作答正确率',s.accuracy+'%',s.count?`累计作答 ${s.count} 次`:'开始第一次练习吧','target','purple')}${cardStat('待复习错题',s.wrong,'答对后自动移出','repeat','orange')}</section>
 <div class="section-head"><div><span class="section-overline">LEARNING MODULES</span><h2>按知识模块开始</h2></div><button type="button" class="section-link" data-action="goto" data-view="study">完整知识点 ${ico('arrow')}</button></div>
 <div class="study-grid">${content.map(x=>{const saved=sessions['scope:'+x.id];const progressText=saved?(saved.index>=saved.questions.length?'本轮已完成 · 可重新练习':`继续第 ${saved.index+1} / ${saved.questions.length} 题`):`${x.num} 条内容`;return `<button type="button" class="study-card" data-action="open-scope" data-scope="${x.id}"><div class="study-glyph ${x.color}">${x.icon}</div><strong>${x.label}</strong><p>${x.desc}</p><div class="study-card-end"><span>${progressText}</span>${ico('arrow')}</div></button>`;}).join('')}</div>
@@ -290,19 +315,26 @@ function moveQuestion(step){
 function focusRule(id,key){state.studyChapter='all';state.studySearch='';navigate('study');if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
 const el=document.getElementById('study-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});else if(key){state.studySearch=key;render();}
 }
-function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session,sessions},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
+function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session,sessions,lastActiveKey},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
 function importProgress(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{try{if(!input.files?.length)return;const payload=JSON.parse(await input.files[0].text());let next=payload.progress;if(payload.product!=='discipline-lab'||!next||typeof next.answers!=='object'||!Array.isArray(next.wrong)||!Array.isArray(next.saved))throw Error('格式不正确');if(!confirm('恢复备份将覆盖当前浏览器里的学习记录，确定继续吗？'))return;
 progress={version:1,answers:Object.fromEntries(Object.entries(next.answers).filter(([id,r])=>questionIndex.has(id)&&r&&typeof r==='object'&&Number.isFinite(Number(r.count))&&Number.isFinite(Number(r.correct))).map(([id,r])=>[id,{count:Math.max(0,Math.floor(Number(r.count))),correct:Math.max(0,Math.floor(Number(r.correct))),lastCorrect:Boolean(r.lastCorrect),lastAt:Number(r.lastAt)||Date.now()}])),wrong:[...new Set(next.wrong.filter(id=>questionIndex.has(id)))],saved:[...new Set(next.saved.filter(id=>questionIndex.has(id)))]};const imported={};
 if(payload.sessions&&typeof payload.sessions==='object'&&!Array.isArray(payload.sessions)){
- for(const [key,raw] of Object.entries(payload.sessions)){const val=normalizeSession(raw);if(val&&sessionKey(val)===key)imported[key]=val;}
+ for(const [key,raw] of Object.entries(payload.sessions)){const val=normalizeSession(raw);if(val&&(sessionKey(val)===key||(key==='all'&&sessionKey(val)==='random:all')))imported[sessionKey(val)]=val;}
 }
 const legacyImported=normalizeSession(payload.session);
 if(legacyImported&&!imported[sessionKey(legacyImported)])imported[sessionKey(legacyImported)]=legacyImported;
-sessions=imported;state.activeSessionKey='all';state.session=sessions.all||null;state.quizScope='all';state.quizOrder=state.session?.order||'random';saveProgress();saveSession();render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
+sessions=imported;
+lastActiveKey=typeof payload.lastActiveKey==='string'&&sessions[payload.lastActiveKey]?payload.lastActiveKey:sessionKey(legacyImported);
+if(!sessions[lastActiveKey])lastActiveKey=Object.keys(sessions)[0]||null;
+state.activeSessionKey='all';state.session=sessions.all||null;state.quizScope='all';state.quizOrder='sequential';
+saveProgress();
+try{localStorage.setItem(SESSION_BANK_KEY,JSON.stringify({version:2,lastActiveKey,sessions}));}catch(_e){}
+render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
 function pdfOpen(){window.open(encodeURI(PDF_FILE),'_blank','noopener,noreferrer');}
 function actionHandler(el){const action=el.dataset.action;if(!action)return;
 if(action==='goto'){navigate(el.dataset.view);return;}
-if(action==='resume'){openScope('all');return;}
+if(action==='resume'||action==='resume-global'){continueLastSession();return;}
+if(action==='open-random'){openScope('all','random');return;}
 if(action==='open-scope'){openScope(el.dataset.scope||'all');return;}
 if(action==='start'){begin(el.dataset.scope||'all',el.dataset.order||'random');return;}
 if(action==='repeat-session'){const s=state.session;if(s)begin(s.scope,s.order,s.poolType,s.poolType==='single'?[s.questions[0]]:undefined);return;}
@@ -337,8 +369,9 @@ function reflectHistory(){
  if(view==='quiz'){
   const key=typeof history.state?.sessionKey==='string'?history.state.sessionKey:'all';
   const recovered=sessions[key]||sessions.all;
-  if(!recovered){openScope('all');return;}
+  if(!recovered){openScope('all','sequential');return;}
   state.activeSessionKey=sessions[key]?key:'all';state.session=recovered;state.quizScope=recovered.scope;state.quizOrder=recovered.order;
+  lastActiveKey=state.activeSessionKey;
  }
  render();
  window.scrollTo({top:0,behavior:'instant'});
