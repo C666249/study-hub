@@ -8,7 +8,8 @@ const RULES = DATA.rules;
 const NOTES = DATA.notes;
 const PDF_FILE = '南京警察学院学生违纪行为处理标准.pdf';
 const STORAGE_KEY = 'discipline-lab-progress-v1';
-const SESSION_KEY = 'discipline-lab-quiz-session-v1';
+const SESSION_KEY = 'discipline-lab-quiz-session-v1'; // legacy: retained for migration only
+const SESSION_BANK_KEY = 'discipline-lab-quiz-sessions-v2';
 const chapters = [{id:'all',label:'全部章节'},{id:'dorm',label:'宿舍内务'},{id:'behavior',label:'行为规范'},{id:'sanction',label:'校级处分'},{id:'notes',label:'扣分备注'}];
 const quickPoints = [
   {label:'旷课按「课时」扣分',key:'旷课',rule:'behavior-04'},
@@ -91,10 +92,58 @@ function normalizeSession(raw){
  const index=Number.isInteger(raw.index)?Math.max(0,Math.min(questions.length,raw.index)):0;
  return {questions:[...questions],index,answers,poolType,order,scope};
 }
-function readSession(){try{return normalizeSession(JSON.parse(localStorage.getItem(SESSION_KEY)));}catch(_e){return null;}}
-const restoredSession=readSession();
-let state={view:'home',session:restoredSession,studyChapter:'all',studySearch:'',quizScope:restoredSession?.scope||'all',quizOrder:restoredSession?.order||'random',settingsOpen:false};
-function saveSession(){try{if(state.session)localStorage.setItem(SESSION_KEY,JSON.stringify({version:1,...state.session}));else localStorage.removeItem(SESSION_KEY);}catch(_e){toast('无法保存本轮题号，请检查浏览器存储权限');}}
+// Separate banks: the bottom Quiz tab is ALWAYS the entire 113-question bank.
+// The four module cards, additional chapter filters, wrong review and saved review
+// each retain their own position and shuffled order independently.
+function sessionKey(s){
+ if(!s)return 'all';
+ if(s.poolType==='wrong'||s.poolType==='saved')return s.poolType;
+ if(s.poolType==='single')return 'single:'+s.questions[0];
+ return s.scope==='all'?'all':'scope:'+s.scope;
+}
+function readSessions(){
+ const found={};let hasBank=false;
+ try{
+  const stored=localStorage.getItem(SESSION_BANK_KEY);
+  if(stored!==null){
+   hasBank=true;
+   const parsed=JSON.parse(stored);
+   if(parsed&&parsed.version===2&&parsed.sessions&&typeof parsed.sessions==='object'&&!Array.isArray(parsed.sessions)){
+    for(const [key,raw] of Object.entries(parsed.sessions)){
+     const s=normalizeSession(raw);
+     if(s&&sessionKey(s)===key)found[key]=s;
+    }
+   }
+  }
+ }catch(_e){/* Corrupt v2 storage must not affect existing answers. */}
+ // Migrate exactly once, without deleting or rewriting the historical v1 key.
+ if(!hasBank){
+  try{
+   const legacy=normalizeSession(JSON.parse(localStorage.getItem(SESSION_KEY)));
+   if(legacy)found[sessionKey(legacy)]=legacy;
+  }catch(_e){}
+ }
+ return found;
+}
+let sessions=readSessions();
+let state={view:'home',session:sessions.all||null,activeSessionKey:'all',studyChapter:'all',studySearch:'',quizScope:'all',quizOrder:sessions.all?.order||'random',settingsOpen:false};
+function saveSession(){
+ try{
+  if(state.session&&state.activeSessionKey)sessions[state.activeSessionKey]=state.session;
+  localStorage.setItem(SESSION_BANK_KEY,JSON.stringify({version:2,sessions}));
+ }catch(_e){toast('无法保存本轮题号，请检查浏览器存储权限');}
+}
+function activateSession(key,s){
+ state.activeSessionKey=key;state.session=s;state.quizScope=s.scope;state.quizOrder=s.order;state.settingsOpen=false;
+ if(state.view!=='quiz')pushRoute('quiz');
+ state.view='quiz';render();window.scrollTo({top:0,behavior:'instant'});
+}
+function openScope(scope='all'){
+ const key=scope==='all'?'all':'scope:'+scope;
+ const saved=sessions[key];
+ if(saved){activateSession(key,saved);return;}
+ begin(scope,'random');
+}
 let toastTimer;
 function toast(msg){let el=$('#toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),2600);}
 function stats(){let attempted=Object.keys(progress.answers).filter(k=>questionIndex.has(k)).length;let count=0,right=0;for(let rec of Object.values(progress.answers)){if(!rec||typeof rec!=='object')continue;count+=Number(rec.count)||0;right+=Number(rec.correct)||0;}return {attempted,count,right,accuracy:count?Math.round(right/count*100):0,wrong:progress.wrong.filter(k=>questionIndex.has(k)).length,saved:progress.saved.filter(k=>questionIndex.has(k)).length};}
@@ -106,7 +155,7 @@ function updateNav(){let a=stats();const html=(mobile=false)=>navItems.map(v=>{
 }
 // Dedicated history entries let the Android system Back button leave focus mode
 // for the in-site homepage instead of closing the browser's webview.
-const routeState=view=>({disciplineRoute:true,view});
+const routeState=view=>({disciplineRoute:true,view,...(view==='quiz'?{sessionKey:state.activeSessionKey}:{})});
 const routeUrl=view=>location.pathname+location.search+'#'+view;
 function pushRoute(view){
  // Entering quiz from any tab always creates a home step behind it.
@@ -114,7 +163,7 @@ function pushRoute(view){
  history.pushState(routeState(view),' ',routeUrl(view));
 }
 function setHash(view){
- if(location.hash!=='#'+view||history.state?.disciplineRoute!==true||history.state.view!==view)
+ if(location.hash!=='#'+view||history.state?.disciplineRoute!==true||history.state.view!==view||(view==='quiz'&&history.state?.sessionKey!==state.activeSessionKey))
   history.replaceState(routeState(view),'',routeUrl(view));
 }
 function navigate(view){
@@ -123,9 +172,9 @@ function navigate(view){
   // There is always a home route underneath quiz, including chapter/review entry.
   history.back();return;
  }
+ if(view==='quiz'){openScope('all');return;}
  if(view!==state.view)pushRoute(view);
- state.view=view;state.settingsOpen=false;
- if(view==='quiz'&&!state.session)begin('all','random');else render();
+ state.view=view;state.settingsOpen=false;render();
  window.scrollTo({top:0,behavior:'instant'});
 }
 function syncViewState(){const immersive=state.view==='quiz';document.body.dataset.view=state.view;document.body.classList.toggle('quiz-immersive',immersive);document.body.classList.toggle('quiz-active',immersive&&!!(state.session&&state.session.questions[state.session.index]));}
@@ -137,17 +186,17 @@ function render(){updateNav();setHash(state.view);syncViewState();let main=$('#m
  if(state.view==='study'){main.innerHTML=renderStudy();renderStudyList();}
 }
 function cardStat(label,value,caption,icon,color){return `<article class="stat-card"><div class="stat-upper"><span>${label}</span><span class="stat-icon ${color}">${ico(icon)}</span></div><strong class="stat-value">${value}</strong><span class="stat-foot">${caption}</span></article>`;}
-function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);const resume=state.session&&state.session.questions.length&&state.session.index<state.session.questions.length;
+function renderHome(){const s=stats();const total=QUESTIONS.length;const ratio=Math.round(s.attempted/total*100);const allSession=sessions.all;const resume=allSession&&allSession.questions.length&&allSession.index<allSession.questions.length;
 const content=[{id:'dorm',icon:'🛏️',label:'宿舍内务',num:15,desc:'床铺、地面、阳台与卫生间',color:'sage'},
 {id:'behavior',icon:'🛡️',label:'行为规范',num:75,desc:'课堂、警容、安全与日常纪律',color:'blue'},
 {id:'sanction',icon:'⚖️',label:'校级处分',num:5,desc:'通报批评到留校察看',color:'peach'},
 {id:'notes',icon:'📌',label:'扣分原则',num:4,desc:'不重复扣分、最高分值等备注',color:'violet'}];
 const used=r=>QUESTIONS.filter(q=>q.scope===r).filter(q=>progress.answers[q.id]).length;
 return `<div class="page-enter">
-<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="${resume?'resume':'start'}" data-scope="all" data-order="random">${ico('target')} ${resume?`继续上次练习 · ${state.session.index+1}/${state.session.questions.length}`:'开始随机刷题'} ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="start" data-scope="all" data-order="sequential">${ico('book')} 顺序刷题</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
+<section class="hero"><div class="hero-copy"><span class="hero-tag">${ico('sparkle')} 督察考试 · 自主备考系统</span><h1>把校纪校规，<br/><em>练成条件反射。</em></h1><p>基于原始文件逐条整理 · 选择题即时反馈 · 每道题均可回查原文</p><div class="hero-actions"><button type="button" class="btn btn-mint" data-action="${resume?'resume':'start'}" data-scope="all" data-order="random">${ico('target')} ${resume?`继续上次练习 · ${allSession.index+1}/${allSession.questions.length}`:'开始随机刷题'} ${ico('arrow')}</button><button type="button" class="btn btn-transparent" data-action="start" data-scope="all" data-order="sequential">${ico('book')} 顺序刷题</button></div></div><div class="hero-art"><span class="orb-dot"></span><div class="orb">${ico('shield')}</div><span class="orb-dot d2"></span></div></section>
 <section class="stats" aria-label="学习统计">${cardStat('题库总量',total,'覆盖全部95条标准及备注','book','')}${cardStat('已练题目',s.attempted,`题库覆盖 ${ratio}%`,'check','green')}${cardStat('作答正确率',s.accuracy+'%',s.count?`累计作答 ${s.count} 次`:'开始第一次练习吧','target','purple')}${cardStat('待复习错题',s.wrong,'答对后自动移出','repeat','orange')}</section>
 <div class="section-head"><div><span class="section-overline">LEARNING MODULES</span><h2>按知识模块开始</h2></div><button type="button" class="section-link" data-action="goto" data-view="study">完整知识点 ${ico('arrow')}</button></div>
-<div class="study-grid">${content.map(x=>`<button type="button" class="study-card" data-action="start" data-scope="${x.id}" data-order="random"><div class="study-glyph ${x.color}">${x.icon}</div><strong>${x.label}</strong><p>${x.desc}</p><div class="study-card-end"><span>${x.num} 条内容</span>${ico('arrow')}</div></button>`).join('')}</div>
+<div class="study-grid">${content.map(x=>{const saved=sessions['scope:'+x.id];const progressText=saved?(saved.index>=saved.questions.length?'本轮已完成 · 可重新练习':`继续第 ${saved.index+1} / ${saved.questions.length} 题`):`${x.num} 条内容`;return `<button type="button" class="study-card" data-action="open-scope" data-scope="${x.id}"><div class="study-glyph ${x.color}">${x.icon}</div><strong>${x.label}</strong><p>${x.desc}</p><div class="study-card-end"><span>${progressText}</span>${ico('arrow')}</div></button>`;}).join('')}</div>
 <div class="home-columns"><section class="panel"><div class="panel-heading"><h3>你的学习进度</h3><span>实时保存在本机</span></div><div class="progress-summary"><div class="progress-ring" style="--p:${ratio}%"><div class="progress-ring-inner"><strong>${ratio}%</strong><span>题库覆盖</span></div></div><div class="progress-lines">${[{id:'dorm',n:'宿舍内务',total:15,cls:'mint'},{id:'behavior',n:'行为规范',total:75,cls:''},{id:'sanction',n:'校级处分',total:5,cls:'purple'}].map(x=>{let done=used(x.id);return `<div class="progress-line"><div class="progress-line-top"><span>${x.n}</span><strong>${done} / ${x.total}</strong></div><div class="track"><i class="${x.cls}" style="width:${done/x.total*100}%"></i></div></div>`}).join('')}</div></div></section>
 <section class="panel"><div class="panel-heading"><h3>高频易混 · 重点速记</h3><span>点按查看原文</span></div><div class="keypoint-list">${quickPoints.map(x=>`<button type="button" class="keypoint-row" data-action="focus-rule" data-key="${escapeHTML(x.key)}" data-rid="${x.rule}"><span class="keypoint-mark">${ico('file')}</span><span>${x.label}</span>${ico('chevron')}</button>`).join('')}</div></section></div>
 <section class="tools-row"><p>换手机或清除浏览器数据之前，建议先导出学习记录备份。</p><div class="action-row"><button type="button" class="btn btn-outline" data-action="export">导出学习记录</button><button type="button" class="btn btn-outline" data-action="import">恢复学习记录</button></div></section></div>`;
@@ -157,7 +206,10 @@ function shuffled(a){let arr=[...a];for(let i=arr.length-1;i>0;i--){let j=Math.f
 function begin(scope='all',order='random',poolType='all',ids){
  const q=ids?ids.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='wrong'?progress.wrong.map(id=>questionIndex.get(id)).filter(Boolean):poolType==='saved'?progress.saved.map(id=>questionIndex.get(id)).filter(Boolean):scopePool(scope);
  const collection=order==='random'?shuffled(q):q;
- state.session={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;if(state.view!=='quiz')pushRoute('quiz');state.view='quiz';saveSession();render();window.scrollTo({top:0,behavior:'instant'});
+ const next={questions:collection.map(v=>v.id),index:0,answers:{},poolType,order,scope};
+ state.session=next;state.activeSessionKey=sessionKey(next);state.quizScope=scope;state.quizOrder=order;state.settingsOpen=false;
+ if(state.view!=='quiz')pushRoute('quiz');
+ state.view='quiz';saveSession();render();window.scrollTo({top:0,behavior:'instant'});
 }
 function startFocused(id){begin('all','sequential','single',[id]);}
 function highlightExcerpt(text){
@@ -178,7 +230,7 @@ function questionView(q,rec){return `<div class="question-header"><div class="qu
  }).join('')}</div>
 <div class="inline-feedback ${rec?'revealed':''}" id="inline-feedback" role="status" aria-live="polite" aria-atomic="true"><div class="inline-feedback-inner">${rec?inlineFeedback(q,rec):''}</div></div>`;}
 function renderQuiz(){const s=state.session;if(!s)return '';const qid=s.questions[s.index];const q=questionIndex.get(qid);
-if(!q){return `<div class="page-enter"><div class="quiz-end"><div class="end-emoji">${s.questions.length?'🎉':'📭'}</div><h2>${s.questions.length?'本轮练习完成！':'这里还没有题目'}</h2><p>${s.questions.length?'本轮题目已全部练习。答错的题会保留在错题本，重做正确后自动移出。':s.poolType==='wrong'?'暂时没有错题。先做几道题，再回来巩固吧。':s.poolType==='saved'?'还没有收藏题目，刷题时点击星标即可收藏。':'换一个知识模块试试。'}</p><div class="end-stats"><div><strong>${s.questions.length}</strong><span>本轮题量</span></div><div><strong>${Object.values(s.answers).filter(v=>v.correct).length}</strong><span>答对题数</span></div></div><div class="action-row" style="justify-content:center"><button class="btn btn-primary" data-action="start" data-scope="all" data-order="random">再刷一轮 ${ico('arrow')}</button><button class="btn btn-outline" data-action="goto" data-view="home">返回总览</button></div></div></div>`;}
+if(!q){return `<div class="page-enter"><div class="quiz-end"><div class="end-emoji">${s.questions.length?'🎉':'📭'}</div><h2>${s.questions.length?'本轮练习完成！':'这里还没有题目'}</h2><p>${s.questions.length?'本轮题目已全部练习。答错的题会保留在错题本，重做正确后自动移出。':s.poolType==='wrong'?'暂时没有错题。先做几道题，再回来巩固吧。':s.poolType==='saved'?'还没有收藏题目，刷题时点击星标即可收藏。':'换一个知识模块试试。'}</p><div class="end-stats"><div><strong>${s.questions.length}</strong><span>本轮题量</span></div><div><strong>${Object.values(s.answers).filter(v=>v.correct).length}</strong><span>答对题数</span></div></div><div class="action-row" style="justify-content:center"><button class="btn btn-primary" data-action="repeat-session">再刷一轮 ${ico('arrow')}</button><button class="btn btn-outline" data-action="goto" data-view="home">返回总览</button></div></div></div>`;}
 const rec=s.answers[qid];const pct=Math.round((s.index+(rec?1:0))/s.questions.length*100);
 return `<div class="question-surface exam-layout page-enter">
 <header class="exam-header">
@@ -238,15 +290,23 @@ function moveQuestion(step){
 function focusRule(id,key){state.studyChapter='all';state.studySearch='';navigate('study');if(id.startsWith('note')){setTimeout(()=>$('#study-note-'+id.split('-')[1])?.scrollIntoView({behavior:'smooth',block:'center'}),30);return;}
 const el=document.getElementById('study-'+id);if(el)el.scrollIntoView({behavior:'smooth',block:'center'});else if(key){state.studySearch=key;render();}
 }
-function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
+function exportProgress(){let blob=new Blob([JSON.stringify({product:'discipline-lab',savedAt:new Date().toISOString(),progress,session:state.session,sessions},null,2)],{type:'application/json'});let url=URL.createObjectURL(blob);let a=document.createElement('a');a.href=url;a.download=`督察备考-学习记录-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);toast('学习记录已导出');}
 function importProgress(){const input=document.createElement('input');input.type='file';input.accept='.json,application/json';input.addEventListener('change',async()=>{try{if(!input.files?.length)return;const payload=JSON.parse(await input.files[0].text());let next=payload.progress;if(payload.product!=='discipline-lab'||!next||typeof next.answers!=='object'||!Array.isArray(next.wrong)||!Array.isArray(next.saved))throw Error('格式不正确');if(!confirm('恢复备份将覆盖当前浏览器里的学习记录，确定继续吗？'))return;
-progress={version:1,answers:Object.fromEntries(Object.entries(next.answers).filter(([id,r])=>questionIndex.has(id)&&r&&typeof r==='object'&&Number.isFinite(Number(r.count))&&Number.isFinite(Number(r.correct))).map(([id,r])=>[id,{count:Math.max(0,Math.floor(Number(r.count))),correct:Math.max(0,Math.floor(Number(r.correct))),lastCorrect:Boolean(r.lastCorrect),lastAt:Number(r.lastAt)||Date.now()}])),wrong:[...new Set(next.wrong.filter(id=>questionIndex.has(id)))],saved:[...new Set(next.saved.filter(id=>questionIndex.has(id)))]};state.session=normalizeSession(payload.session);state.quizScope=state.session?.scope||'all';state.quizOrder=state.session?.order||'random';saveProgress();saveSession();render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
+progress={version:1,answers:Object.fromEntries(Object.entries(next.answers).filter(([id,r])=>questionIndex.has(id)&&r&&typeof r==='object'&&Number.isFinite(Number(r.count))&&Number.isFinite(Number(r.correct))).map(([id,r])=>[id,{count:Math.max(0,Math.floor(Number(r.count))),correct:Math.max(0,Math.floor(Number(r.correct))),lastCorrect:Boolean(r.lastCorrect),lastAt:Number(r.lastAt)||Date.now()}])),wrong:[...new Set(next.wrong.filter(id=>questionIndex.has(id)))],saved:[...new Set(next.saved.filter(id=>questionIndex.has(id)))]};const imported={};
+if(payload.sessions&&typeof payload.sessions==='object'&&!Array.isArray(payload.sessions)){
+ for(const [key,raw] of Object.entries(payload.sessions)){const val=normalizeSession(raw);if(val&&sessionKey(val)===key)imported[key]=val;}
+}
+const legacyImported=normalizeSession(payload.session);
+if(legacyImported&&!imported[sessionKey(legacyImported)])imported[sessionKey(legacyImported)]=legacyImported;
+sessions=imported;state.activeSessionKey='all';state.session=sessions.all||null;state.quizScope='all';state.quizOrder=state.session?.order||'random';saveProgress();saveSession();render();toast('学习记录已恢复');}catch(e){toast('恢复失败：请选择本站导出的 JSON 记录');}});input.click();}
 function pdfOpen(){window.open(encodeURI(PDF_FILE),'_blank','noopener,noreferrer');}
 function actionHandler(el){const action=el.dataset.action;if(!action)return;
 if(action==='goto'){navigate(el.dataset.view);return;}
-if(action==='resume'){navigate('quiz');return;}
+if(action==='resume'){openScope('all');return;}
+if(action==='open-scope'){openScope(el.dataset.scope||'all');return;}
 if(action==='start'){begin(el.dataset.scope||'all',el.dataset.order||'random');return;}
-if(action==='restart-scope'){begin(state.quizScope,state.quizOrder);return;}
+if(action==='repeat-session'){const s=state.session;if(s)begin(s.scope,s.order,s.poolType,s.poolType==='single'?[s.questions[0]]:undefined);return;}
+if(action==='restart-scope'){openScope(state.quizScope);return;}
 if(action==='answer'){answer(Number(el.dataset.opt));return;}
 if(action==='toggle-settings'){state.settingsOpen=!state.settingsOpen;const panel=$('#exam-settings');const trigger=$('.exam-chapters');if(panel)panel.hidden=!state.settingsOpen;if(trigger){trigger.classList.toggle('active',state.settingsOpen);trigger.setAttribute('aria-expanded',String(state.settingsOpen));}return;}
 if(action==='expand-rule'){const block=el.closest('.question-excerpt');if(block){const expanded=block.classList.toggle('expanded');el.setAttribute('aria-expanded',String(expanded));el.innerHTML=`${expanded?'收起条款':'展开完整条款'} ${ico('chevron')}`;}return;}
@@ -274,7 +334,13 @@ function reflectHistory(){
  const view=pageTitles[location.hash.slice(1)]?location.hash.slice(1):'home';
  if(view===state.view)return;
  state.view=view;state.settingsOpen=false;
- if(view==='quiz'&&!state.session)begin('all','random');else render();
+ if(view==='quiz'){
+  const key=typeof history.state?.sessionKey==='string'?history.state.sessionKey:'all';
+  const recovered=sessions[key]||sessions.all;
+  if(!recovered){openScope('all');return;}
+  state.activeSessionKey=sessions[key]?key:'all';state.session=recovered;state.quizScope=recovered.scope;state.quizOrder=recovered.order;
+ }
+ render();
  window.scrollTo({top:0,behavior:'instant'});
 }
 window.addEventListener('popstate',reflectHistory);
