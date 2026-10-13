@@ -101,7 +101,7 @@ let all=[], qmap=new Map(),bankQuery='',bankType='all',bankTopic='all',expandedK
 const go=(route)=>{const target='#'+route;if(location.hash===target)render();else location.hash=target};
 const hash=()=>decodeURIComponent((location.hash||'#home').slice(1));
 const shuffle=(a)=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b};
-const correct=(q,sel)=>[...(sel||[])].sort().join('')===q.answer.split('').sort().join('');
+const correct=(q,sel)=>toLetters(sel)===q.answer.split('').sort().join('');
 const toLetters=(sel)=>(sel||[]).map(i=>'ABCD'[i]).sort().join('');
 const isDone=(id)=>Boolean(state.attempts[id]);
 const answered=()=>all.filter(q=>isDone(q.id)).length;
