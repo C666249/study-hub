@@ -98,7 +98,7 @@ for(const k of ['attempts','sessions','learned'])if(!state[k]||typeof state[k]!=
 for(const k of ['wrong','starred','exams'])if(!Array.isArray(state[k]))state[k]=[];
 const save=()=>{try{localStorage.setItem(key,JSON.stringify(state));}catch(e){toast('浏览器存储不可用，当前进度可能无法保存。')}};
 let all=[], qmap=new Map(),bankQuery='',bankType='all',bankTopic='all',expandedKey='',toastTimer,returnFocus=null;
-const go=(route)=>{location.hash='#'+route;if(location.hash==='#'+route)render()};
+const go=(route)=>{const target='#'+route;if(location.hash===target)render();else location.hash=target};
 const hash=()=>decodeURIComponent((location.hash||'#home').slice(1));
 const shuffle=(a)=>{const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b};
 const correct=(q,sel)=>[...(sel||[])].sort().join('')===q.answer.split('').sort().join('');
@@ -158,7 +158,7 @@ function renderHome(){
  const lastText=lastQ&&qmap.has(lastQ)?'继续'+modeLabel(state.lastMode)+' · '+((latest.index||0)+1)+'/'+latest.order.length:'从第一道题开始你的学习旅程';
  const qs=topics.map(t=>({t,n:qByTopic(t.name).length,done:qByTopic(t.name).filter(q=>isDone(q.id)).length}));
  $('#content').innerHTML=
-  '<div class="hero"><div class="hero-copy"><div class="eyebrow">YOUR STUDY COMPANION · 2026</div><h1>让每一次学习，<br>都成为看得见的进步。</h1><p>南京警察学院 · 2025级政治理论应知应会<br>把零散知识变成清晰的路径，稳稳掌握全部60道题。</p><div class="hero-buttons"><button class="button" data-action="continue">'+ico('arrow')+' '+(lastQ?'继续上次练习':'开始完整练习')+'</button><button class="button ghost" data-action="route" data-route="learn">'+ico('book-open')+' 知识地图</button></div></div><div class="hero-art"><span class="halo"></span><span class="orbit"></span><span class="orb"></span><span class="spark s1">✦</span><span class="spark s2">✦</span></div></div>'+
+  '<div class="hero"><div class="hero-copy"><div class="eyebrow">YOUR STUDY COMPANION · 2026</div><h1>让每一次学习，<br>都成为看得见的进步。</h1><p>南京警察学院 · 2025级政治理论应知应会<br>把零散知识变成清晰的路径，稳稳掌握全部60道题。</p><div class="hero-buttons"><button class="button" data-action="continue">'+ico('arrow')+' '+(lastQ?'继续上次练习':'开始完整练习')+'</button><button class="button ghost" data-action="route" data-route="learn">'+ico('book-open')+' 知识地图</button><button class="button ghost" data-action="route" data-route="practice">'+ico('search')+' 题库目录</button></div></div><div class="hero-art"><span class="halo"></span><span class="orbit"></span><span class="orb"></span><span class="spark s1">✦</span><span class="spark s2">✦</span></div></div>'+
   '<div class="stats-grid">'+cardMetric('layers',60,'题库总量')+cardMetric('check-circle',answered(),'已练习题目','green')+cardMetric('target',accuracy()+'','当前正确率','orange')+cardMetric('bookmark',state.wrong.length,'累计错题','rose')+'</div>'+
   '<div class="layout-two"><section class="panel"><div class="panel-heading"><div><h2 class="section-heading">你的学习路径</h2><p class="section-sub">STEP BY STEP · 循序渐进</p></div><button class="tiny-link" data-action="route" data-route="learn" style="border:0;background:transparent;cursor:pointer">探索知识地图 →</button></div><div class="study-steps">'+
    '<div class="study-row" data-action="route" data-route="learn"><span class="step-number">01</span><div class="step-copy"><b>掌握知识框架</b><span>7个知识专题 · 重点梳理、知识导图</span></div><span class="step-arrow">'+ico('chevron')+'</span></div>'+
@@ -236,6 +236,7 @@ function explanationHTML(q,isRight){
 }
 function renderQuiz(mode){
  const s=getSession(mode);
+ if(state.lastMode!==mode){state.lastMode=mode;save()}
  if(!s.order.length){go('review');return}
  const id=s.order[s.index],q=qmap.get(id),entry=s.answers[id],draft=s.drafts[id]||[],selected=entry?.selected||draft;
  const n=s.order.length,done=s.order.filter(id=>s.answers[id]).length;
@@ -271,7 +272,7 @@ function renderExamIntro(){
  const active=state.exam&&!state.exam.finished;
  $('#content').innerHTML=heading('MOCK EXAM','模拟考试','按照复习材料中的考试规则，从题库抽取30道题，检验真实掌握程度。')+
  '<div class="exam-banner" style="margin:0"><div><div class="eyebrow">EXAM FORMAT</div><h3>30 道题 · 满分 3.0 分</h3><p>单选 20题 / 多选 10题，每题0.1分。答题期间不显示答案，交卷后统一评分。</p></div><span style="font-size:47px;color:#8c85df">'+ico('medal')+'</span></div>'+
- '<div class="stats-grid" style="grid-template-columns:repeat(3,minmax(0,1fr))">'+cardMetric('check-circle',20,'单项选择')+cardMetric('layers',10,'多项选择','orange')+cardMetric('medal','3.0','考试总分','green')+'</div>'+
+ '<div class="stats-grid exam-stats">'+cardMetric('check-circle',20,'单项选择')+cardMetric('layers',10,'多项选择','orange')+cardMetric('medal','3.0','考试总分','green')+'</div>'+
  '<div class="panel" style="max-width:700px;margin:auto"><h2 class="section-heading">考前须知</h2><div class="guide-list" style="margin:20px 0">'+[
  '题目从60道原题中抽取，覆盖单选和多选两种题型。',
  '多选题只有完全选对才得分，多选、少选、错选均不得分。',
@@ -310,7 +311,7 @@ function renderExamResult(){
 function updateUIState(route){
  const isQuiz=route.startsWith('quiz/')||route==='exam-play';document.body.classList.toggle('is-quiz',isQuiz);
  const active=route==='learn'||route.startsWith('topic/')?'learn':route==='practice'||route.startsWith('quiz/')?'practice':route==='review'?'review':route==='stats'?'stats':'home';
- $('#desktopNav').innerHTML=nav.map(([id,label,icon])=>'<a class="nav-link '+(active===id?'active':'')+'" href="#'+id+'">'+ico(icon)+label+'</a>').join('');
+ $('#desktopNav').innerHTML=nav.map(([id,label,icon])=>'<a class="nav-link '+(active===id?'active':'')+'" href="#'+(id==='practice'?'quiz/all':id)+'">'+ico(icon)+label+'</a>').join('');
  $('#mobileNav').innerHTML=nav.map(([id,label,icon])=>'<a class="mobile-link '+(active===id?'active':'')+'" href="#'+(id==='practice'?'quiz/all':id)+'">'+ico(icon)+'<span>'+label+'</span></a>').join('');
  $('#currentCrumb').textContent=route.startsWith('quiz/')?'练习模式':route.startsWith('topic/')?'专题学习':route==='exam-play'?'模拟考试':{home:'学习总览',learn:'知识学习',practice:'完整刷题',review:'错题收藏',stats:'学习报告',exam:'模拟考试','exam-result':'考试成绩'}[route]||'学习空间';
  $('#themeToggle').innerHTML=ico(state.theme==='dark'?'sun':'moon');
