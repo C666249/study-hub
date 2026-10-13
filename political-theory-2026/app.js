@@ -144,7 +144,20 @@ function cardMetric(iconId,n,label,cls=''){
 }
 function animateCounters(){
  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches)return;
- $$('.number-counter').forEach(el=>{const end=+el.dataset.val;if(!Number.isFinite(end)||end>999||end<1)return;let start=0;const began=performance.now();const duration=650;function tick(now){const t=Math.min(1,(now-began)/duration);const v=Math.round(end*(1-Math.pow(1-t,4)));el.textContent=v;if(t<1)requestAnimationFrame(tick)}requestAnimationFrame(tick)});
+ $$('.number-counter').forEach(el=>{
+   const val=el.textContent.trim();
+   if(!/^\\d+(\\.\\d+)?$/.test(val)||val.length>5)return;
+   const digitColumns=[];
+   el.setAttribute('aria-label',val);
+   el.innerHTML=[...val].map(ch=>{
+     if(ch==='.')return '<span aria-hidden="true" class="digit-point">.</span>';
+     const digit=Number(ch),i=digitColumns.push(digit)-1;
+     return '<span aria-hidden="true" class="digit-window"><span class="digit-strip" data-digit="'+digit+'" data-col="'+i+'">'+Array.from({length:10},(_,n)=>'<span class="digit-item">'+n+'</span>').join('')+'</span></span>';
+   }).join('');
+   requestAnimationFrame(()=>requestAnimationFrame(()=>{
+     $$('.digit-strip',el).forEach(strip=>{strip.style.transform='translateY(calc(-'+strip.dataset.digit+' * 1.05em))'});
+   }));
+ });
 }
 function topicCard(t){
  const qs=qByTopic(t.name), done=qs.filter(q=>isDone(q.id)).length,p=percent(done,qs.length);
@@ -298,6 +311,14 @@ function finishExam(){
  if(answeredN<30&&!confirm('还有 '+(30-answeredN)+' 道题未作答，确定现在交卷吗？'))return;
  const correctN=ex.ids.filter(id=>ex.answers[id]&&correct(qmap.get(id),ex.answers[id].selected)).length;
  const history={date:timeStamp(),score:Number((correctN*.1).toFixed(1)),correct:correctN,total:30,ids:ex.ids,answers:JSON.parse(JSON.stringify(ex.answers))};
+ for(const id of ex.ids){
+   const entry=ex.answers[id];
+   if(entry){
+     const right=correct(qmap.get(id),entry.selected);
+     state.attempts[id]={selected:[...entry.selected],correct:right,at:Date.now()};
+     if(!right&&!state.wrong.includes(id))state.wrong.push(id);
+   }else if(!state.wrong.includes(id))state.wrong.push(id);
+ }
  state.exams.push(history);ex.finished=true;save();go('exam-result');
 }
 function renderExamResult(){
