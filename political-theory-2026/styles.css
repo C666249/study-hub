@@ -25,3 +25,11 @@
  .quest-feedback{margin-top:14px}
  .quiz-bottom{box-shadow:0 -5px 22px #242c4512}
 }
+
+/* FMV-NUM-COUNTER-001: independent, clipped digit columns */
+.number-counter{display:inline-flex;align-items:baseline;white-space:nowrap;font-variant-numeric:tabular-nums}
+.digit-window{display:inline-block;width:.64em;height:1.05em;overflow:hidden;line-height:1.05em;vertical-align:-.11em}
+.digit-strip{display:flex;flex-direction:column;transform:translateY(0);transition:transform 850ms cubic-bezier(.19,1.08,.28,1);will-change:transform}
+.digit-item{display:block;flex:none;height:1.05em;line-height:1.05em}
+.digit-point{padding:0 .03em}
+@media(prefers-reduced-motion:reduce){.digit-strip{transition:none!important}}
