@@ -129,7 +129,7 @@ function renderPractice(){
  $('#view').innerHTML='<div class="page"><div class="simple-head"><div class="eyebrow">QUESTION BANK</div><h1 class="title">60题，全都要掌握。</h1><div class="subtext">无遗漏收录 40 道单选、20 道多选。想练多少、练到哪里，由你决定。</div></div>'+
  '<div class="practice-hero"><div><div class="eyebrow">FULL LIBRARY</div><h2>完整题库 · '+done+' / 60</h2><p>从上次的位置继续。单选即点即判，多选选好提交；题目之间切换无需滑到页面底部。</p></div><button class="btn btn-primary" data-act="open-all">进入完整刷题 '+svg('arrow')+'</button></div>'+
  '<div class="mode-list"><button class="mode-card" data-act="open-mode" data-mode="random"><span class="mode-icon">'+svg('shuffle')+'</span><span class="mode-info"><strong>随机练习</strong><small>60题乱序 · 独立进度</small></span><span class="mode-arrow">›</span></button><button class="mode-card" data-act="exam-intro"><span class="mode-icon" style="background:#e7f7f1;color:#18a58b">◉</span><span class="mode-info"><strong>模拟考试</strong><small>随机30题 · 交卷评分</small></span><span class="mode-arrow">›</span></button><button class="mode-card" data-act="open-mode" data-mode="wrong"><span class="mode-icon" style="background:#ffedf0;color:#e47889">↻</span><span class="mode-info"><strong>错题强化</strong><small>'+state.wrong.length+'题 · 专练薄弱点</small></span><span class="mode-arrow">›</span></button><button class="mode-card" data-act="open-mode" data-mode="star"><span class="mode-icon" style="background:#fff2de;color:#daa248">☆</span><span class="mode-info"><strong>我的收藏</strong><small>'+state.starred.length+'题 · 重温考点</small></span><span class="mode-arrow">›</span></button></div>'+
- '<div class="heading-row"><div><h2>题目速览</h2><p>轻点号码，直接开始对应题目</p></div><span class="pill">全 60 题</span></div><div class="glass numbers-wrap"><div class="numbers-head"><h3>单选 01—40 · 多选 41—60</h3><span class="micro">'+done+' 题已完成</span></div>'+getNumGrid('all')+'</div></div>';
+ '<div class="heading-row"><div><h2>题目速览</h2><p>轻点号码，直接开始对应题目</p></div><span class="pill">全 60 题</span></div><details class="glass numbers-wrap"><summary><span>打开全部 60 题索引</span><span class="hint">单选 01—40 · 多选 41—60　⌄</span></summary>'+getNumGrid('all')+'</details></div>';
 }
 function renderMe(){
  const tab=reviewTab,ids=tab==='wrong'?state.wrong:state.starred;
@@ -231,7 +231,7 @@ function toggleLesson(btn){
  const target=btn.nextElementSibling,expand=btn.getAttribute('aria-expanded')!=='true';
  const y=target.getBoundingClientRect().height;
  target.style.transition='none';target.style.height=y+'px';void target.offsetHeight;
- btn.setAttribute('aria-expanded',String(expand));openLesson=expand?location.hash.slice(7)+':'+btn.dataset.lesson:'';
+ btn.setAttribute('aria-expanded',String(expand));openLesson=expand?decodeURIComponent(location.hash.slice(7))+':'+btn.dataset.lesson:'';
  target.style.transition='height '+(expand?430:325)+'ms cubic-bezier(.18,.82,.22,1)';
  requestAnimationFrame(()=>{target.style.height=expand?target.scrollHeight+'px':'0px'});
  const token=(target.__token||0)+1;target.__token=token;
