@@ -140,21 +140,20 @@ final class MotionViews {
             super.onDraw(canvas);
             float radius=getHeight()/2f;
             rect.set(0,0,getWidth(),getHeight());
-            paint.setColor(SURFACE);
-            paint.setShadowLayer(d(17),0,d(6),0x37000000);
+            // The real blurred glass is behind this view. Drawing a filled
+            // navigation background here would hide the moving light.
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.75f));
+            paint.setColor(0x42E2EDFB);
             canvas.drawRoundRect(rect,radius,radius,paint);
-            paint.clearShadowLayer();
-            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.85f));
-            paint.setColor(0x72C4D0BB);canvas.drawRoundRect(rect,radius,radius,paint);
             paint.setStyle(Paint.Style.FILL);
             if(center<0) {center=mid(selected);thumbWidth=(getWidth()-d(14))/2f-d(4);}
             float th= getHeight()-d(12);
             rect.set(center-thumbWidth/2,d(6)+(th*(1-thumbScale))/2,
                 center+thumbWidth/2,getHeight()-d(6)-(th*(1-thumbScale))/2);
-            paint.setColor(0xDF485C50);
+            paint.setColor(0x4D9BB6CF);
             canvas.drawRoundRect(rect,th/2,th/2,paint);
             paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.65f));
-            paint.setColor(0xACB7C6B1);
+            paint.setColor(0xA0ECF4FF);
             canvas.drawRoundRect(rect,th/2,th/2,paint);
             paint.setStyle(Paint.Style.FILL);
             paint.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
