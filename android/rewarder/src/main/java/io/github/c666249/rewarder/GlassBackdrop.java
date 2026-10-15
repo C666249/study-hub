@@ -8,190 +8,201 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
-import android.graphics.Rect;
+import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
 
 /**
- * Deep frosted glass with slowly flowing light BELOW the glass.
+ * GPU-friendly animated light behind frosted glass.
  *
- * No drawn wave paths: a domain-warped, smooth liquid color field is sampled
- * into a small filtered bitmap. A translucent milky pane and fixed microscopic
- * grain sit above it. Organic folds move as color and refraction, never lines.
+ * FMV Background Visual: continuous, slow, interruptible, no touch interception.
+ * Blue/violet/rose/cyan volumes orbit on DIFFERENT periods, softly stretch and
+ * overlap like water refracting light. No visible wave strokes.
  *
- * The texture is updated at <= 12.5 fps; because movement is extremely slow,
- * this is smooth without burdening a high refresh-rate phone.
+ * Unlike the former software pixel-field, no per-frame setPixels, pixel-wise
+ * sin/exp loops or large bitmap upload. Eight reusable radial shaders are
+ * transformed by Canvas at ~30 FPS. Animation is paused while not visible.
  */
 final class GlassBackdrop extends View {
-    private static final int SAMPLE_WIDTH=104;
-    private static final long FRAME_INTERVAL_MS=80L;
-    private final Paint fluid=new Paint(Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
-    private final Paint film=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-    private final Paint grainPaint=new Paint(Paint.FILTER_BITMAP_FLAG);
-    private final Rect target=new Rect();
-    private Bitmap texture;
+    private static final long FRAME_MS=33L;
+    private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
+    private final Paint veil=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
+    private final Paint grainPaint=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
+    private final Shader[] lights=new Shader[8];
     private Bitmap grain;
-    private int[] pixels;
-    private int textureHeight;
-    private float phase=0f;
-    private long lastRenderTime=0L;
-    private ValueAnimator motion;
+    private Shader background;
+    private Shader frost;
+    private ValueAnimator ticker;
+    private long epoch;
+    private long lastDraw=0L;
+    private float seconds=0f;
 
-    GlassBackdrop(Context context) {
-        super(context);
+    GlassBackdrop(Context c) {
+        super(c);
         setClickable(false);
         setFocusable(false);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        createShaders();
         createGrain();
     }
 
-    private static float blob(float x,float y,float cx,float cy,float sx,float sy) {
-        float dx=(x-cx)/sx;
-        float dy=(y-cy)/sy;
-        return (float)Math.exp(-1.35f*(dx*dx+dy*dy));
+    private void createShaders() {
+        // Center, inner haze, outer haze, transparent edge. Everything remains soft.
+        lights[0]=light(0xA14D87F3,0x685365C8,0x22405998);
+        lights[1]=light(0xBE9856EC,0x7D6A52B8,0x26404A8A);
+        lights[2]=light(0xB8D7528A,0x8B943C80,0x252C365F);
+        lights[3]=light(0x993BC9CC,0x6440A5B4,0x183F6A73);
+        lights[4]=light(0x987C6AEC,0x624A55A0,0x172F3F6E);
+        lights[5]=light(0xA35585D9,0x6A405997,0x152B395D);
+        // Glints are broad luminous volumes, not sparkles or visible lines.
+        lights[6]=light(0x428BC0FC,0x2B718DC8,0x0B4C6F9A);
+        lights[7]=light(0x4FDFA2B5,0x2AAB7A98,0x0A5A5C71);
     }
 
-    private static int bound(float channel){
-        return Math.max(0,Math.min(255,Math.round(channel)));
+    private static Shader light(int center,int inner,int outer) {
+        return new RadialGradient(0f,0f,1f,
+            new int[]{center,inner,outer,Color.TRANSPARENT},
+            new float[]{0f,.30f,.63f,1f},Shader.TileMode.CLAMP);
     }
 
-    private void prepareTexture() {
-        if(getWidth()<2 || getHeight()<2)return;
-        int nextHeight=Math.max(130,Math.min(300,Math.round(
-            SAMPLE_WIDTH*(getHeight()/(float)getWidth()))));
-        if(texture!=null && textureHeight==nextHeight)return;
-        if(texture!=null)texture.recycle();
-        textureHeight=nextHeight;
-        pixels=new int[SAMPLE_WIDTH*textureHeight];
-        texture=Bitmap.createBitmap(SAMPLE_WIDTH,textureHeight,Bitmap.Config.ARGB_8888);
-        lastRenderTime=0L;
-    }
-
-    private void createGrain() {
-        final int side=96;
+    private void createGrain(){
+        int side=96;
         grain=Bitmap.createBitmap(side,side,Bitmap.Config.ARGB_8888);
-        int[] specks=new int[side*side];
-        int seed=0x2a8195;
-        for(int i=0;i<specks.length;i++) {
-            // Deterministic, very faint optical diffusion. Stationary, never flickering.
+        int[] pixels=new int[side*side];
+        int seed=0x2877A5;
+        for(int i=0;i<pixels.length;i++){
             seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
             int alpha=2+((seed>>>24)&7);
-            specks[i]=Color.argb(alpha,248,250,239);
+            pixels[i]=Color.argb(alpha,248,248,249);
         }
-        grain.setPixels(specks,0,side,0,0,side,side);
+        grain.setPixels(pixels,0,side,0,0,side,side);
         grainPaint.setShader(new BitmapShader(grain,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT));
     }
 
-    private void renderFluid() {
-        if(texture==null)return;
-        final float t=phase;
-        // Light pools move independently and cross-fade through deep spruce glass.
-        final float ax=.26f+.12f*(float)Math.sin(t*.74f);
-        final float ay=.26f+.08f*(float)Math.cos(t*.63f);
-        final float bx=.84f+.13f*(float)Math.cos(t*.55f+1.1f);
-        final float by=.59f+.13f*(float)Math.sin(t*.67f+.7f);
-        final float cx=.25f+.10f*(float)Math.sin(t*.47f+1.8f);
-        final float cy=.93f+.07f*(float)Math.cos(t*.7f);
-        final float dx=.7f+.075f*(float)Math.cos(t*.41f);
-        final float dy=.18f+.08f*(float)Math.sin(t*.46f+1.4f);
-
-        for(int y=0;y<textureHeight;y++) {
-            float v=(y+.5f)/textureHeight;
-            float bendA=.051f*(float)Math.sin(v*5.8f+t*.65f);
-            float bendB=.030f*(float)Math.sin(v*11.2f-t*.34f);
-            for(int x=0;x<SAMPLE_WIDTH;x++) {
-                float u=(x+.5f)/SAMPLE_WIDTH;
-                // Smooth domain warping: visually akin to light refracted through
-                // liquid under a frosted surface. No explicit stroke or edge.
-                float ux=u+bendA+bendB*(float)Math.cos(u*2.5f+t*.21f);
-                float vy=v+.043f*(float)Math.sin(u*5.2f-t*.48f)
-                    +.023f*(float)Math.cos(u*9.0f+t*.31f+v*2.4f);
-
-                float jade=blob(ux,vy,ax,ay,.46f,.35f);
-                float amber=blob(ux,vy,bx,by,.41f,.35f);
-                float aqua=blob(ux,vy,cx,cy,.44f,.32f);
-                float pearl=blob(ux,vy,dx,dy,.38f,.25f);
-
-                // Luminous cloudy volume: wide soft pools rather than caustic
-                // stripes. The final undulation modulates color, not geometry.
-                float fold=(float)(Math.sin(ux*5.1f+vy*2.9f+t*.28f)
-                    *Math.sin(vy*4.6f-ux*3.4f-t*.24f));
-                float flow=3.5f*fold*(jade+amber+aqua);
-                float r=12f+43f*jade+91f*amber+20f*aqua+36f*pearl+flow;
-                float g=23f+82f*jade+58f*amber+73f*aqua+37f*pearl+flow;
-                float b=22f+69f*jade+36f*amber+79f*aqua+31f*pearl+flow;
-
-                // Dark, softly curved falloff anchors text legibility.
-                float edge=(float)(Math.pow(Math.abs(u-.5f)*1.18f,2)
-                    +Math.pow(Math.abs(v-.49f)*.7f,2));
-                float shade=1f-Math.min(.20f,edge*.13f);
-                pixels[y*SAMPLE_WIDTH+x]=Color.rgb(
-                    bound(r*shade),bound(g*shade),bound(b*shade));
-            }
-        }
-        texture.setPixels(pixels,0,SAMPLE_WIDTH,0,0,SAMPLE_WIDTH,textureHeight);
+    @Override protected void onSizeChanged(int w,int h,int ow,int oh){
+        super.onSizeChanged(w,h,ow,oh);
+        if(w<=0||h<=0)return;
+        background=new LinearGradient(0,0,w,h,
+            new int[]{0xff101528,0xff111520,0xff0c1521,0xff17121f},
+            new float[]{0f,.29f,.68f,1f},Shader.TileMode.CLAMP);
+        frost=new LinearGradient(0,0,w,h,
+            new int[]{0x13E6E9F5,0x04B5B9DC,0x0CE8D7E5,0x14C9D5E8},
+            new float[]{0f,.30f,.67f,1f},Shader.TileMode.CLAMP);
     }
 
-    private void start() {
-        if(motion!=null || !ValueAnimator.areAnimatorsEnabled())return;
-        motion=ValueAnimator.ofFloat(0f,(float)(Math.PI*2));
-        motion.setDuration(42000);
-        motion.setRepeatCount(ValueAnimator.INFINITE);
-        motion.setInterpolator(new LinearInterpolator());
-        motion.addUpdateListener(a->{
-            phase=(float)a.getAnimatedValue();
+    /**
+     * Draw a deforming, feather-soft elliptical light volume using only
+     * Canvas transforms. Different oscillation periods avoid a synchronized
+     * screensaver look and yield visible drift over a few seconds.
+     */
+    private void pool(Canvas canvas,int id,float cx,float cy,
+                      float rx,float ry,float rotation) {
+        canvas.save();
+        canvas.translate(cx,cy);
+        canvas.rotate(rotation);
+        canvas.scale(rx,ry);
+        paint.setShader(lights[id]);
+        canvas.drawCircle(0f,0f,1f,paint);
+        canvas.restore();
+    }
+
+    @Override protected void onDraw(Canvas canvas){
+        super.onDraw(canvas);
+        final float w=getWidth(),h=getHeight();
+        if(w<2||h<2)return;
+        if(background==null)onSizeChanged((int)w,(int)h,0,0);
+        paint.setShader(background);
+        canvas.drawRect(0,0,w,h,paint);
+
+        float t=seconds;
+        // A broad blue current rising from the left and folding back.
+        pool(canvas,0,
+            w*(.22f+.24f*(float)Math.sin(t*.37f+.38f)),
+            h*(.40f+.15f*(float)Math.cos(t*.29f)),
+            w*(.63f+.06f*(float)Math.sin(t*.48f)),
+            h*(.35f+.035f*(float)Math.sin(t*.32f)),
+            9f*(float)Math.sin(t*.40f));
+        // Purple glass caustic moves across upper-middle at another speed.
+        pool(canvas,1,
+            w*(.71f+.23f*(float)Math.cos(t*.29f+.4f)),
+            h*(.23f+.14f*(float)Math.sin(t*.39f+1.4f)),
+            w*(.57f+.045f*(float)Math.cos(t*.41f)),
+            h*(.36f+.055f*(float)Math.cos(t*.30f)),
+            -12f*(float)Math.sin(t*.28f));
+        // Rose/red liquid ribbon, rendered as a blurry volume with no edge.
+        pool(canvas,2,
+            w*(.77f+.21f*(float)Math.sin(t*.32f+1.1f)),
+            h*(.73f+.15f*(float)Math.cos(t*.33f+.2f)),
+            w*(.59f+.05f*(float)Math.cos(t*.38f)),
+            h*(.39f+.035f*(float)Math.sin(t*.45f)),
+            16f*(float)Math.cos(t*.33f));
+        // Cyan folds through the blue and violet rather than merely brightening.
+        pool(canvas,3,
+            w*(.23f+.25f*(float)Math.sin(t*.25f+2.4f)),
+            h*(.84f+.12f*(float)Math.cos(t*.35f+2.0f)),
+            w*(.61f+.05f*(float)Math.sin(t*.27f)),
+            h*(.31f+.045f*(float)Math.sin(t*.39f)),
+            -11f*(float)Math.sin(t*.26f));
+
+        // Inner liquid layers cross at independent rates for depth.
+        pool(canvas,4,
+            w*(.48f+.23f*(float)Math.sin(t*.42f+2.3f)),
+            h*(.53f+.16f*(float)Math.cos(t*.30f+1.2f)),
+            w*.44f,h*.25f,18f*(float)Math.sin(t*.35f));
+        pool(canvas,5,
+            w*(.37f+.18f*(float)Math.cos(t*.37f+2.0f)),
+            h*(.20f+.17f*(float)Math.sin(t*.31f+2.1f)),
+            w*.48f,h*.22f,-15f*(float)Math.sin(t*.36f));
+        pool(canvas,6,
+            w*(.48f+.31f*(float)Math.cos(t*.50f+1.6f)),
+            h*(.44f+.20f*(float)Math.sin(t*.42f+2.2f)),
+            w*.34f,h*.19f,12f*(float)Math.cos(t*.50f));
+        pool(canvas,7,
+            w*(.64f+.26f*(float)Math.sin(t*.48f)),
+            h*(.70f+.17f*(float)Math.cos(t*.37f+1.6f)),
+            w*.38f,h*.20f,10f*(float)Math.sin(t*.44f));
+
+        paint.setShader(null);
+        // Stationary matte pane on TOP of the moving color; no line motifs.
+        veil.setShader(frost);
+        canvas.drawRect(0,0,w,h,veil);
+        veil.setShader(null);
+        if(grain!=null)canvas.drawRect(0,0,w,h,grainPaint);
+    }
+
+    private void start(){
+        if(ticker!=null||!ValueAnimator.areAnimatorsEnabled())return;
+        if(epoch==0L)epoch=SystemClock.uptimeMillis();
+        ticker=ValueAnimator.ofFloat(0f,1f);
+        ticker.setDuration(60000L);
+        ticker.setRepeatCount(ValueAnimator.INFINITE);
+        ticker.setInterpolator(new LinearInterpolator());
+        ticker.addUpdateListener(a->{
             long now=SystemClock.uptimeMillis();
-            if(now-lastRenderTime>=FRAME_INTERVAL_MS)invalidate();
+            if(now-lastDraw<FRAME_MS)return;
+            lastDraw=now;
+            seconds=(now-epoch)/1000f;
+            postInvalidateOnAnimation();
         });
-        motion.start();
+        ticker.start();
     }
-
-    private void stop() {
-        if(motion!=null){motion.cancel();motion=null;}
-    }
-
-    @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){
-        super.onSizeChanged(w,h,oldw,oldh);
-        prepareTexture();
+    private void stop(){
+        if(ticker!=null){ticker.cancel();ticker=null;}
+        // Resume from the same visual phase, without a hard reset on tab switch.
     }
     @Override protected void onAttachedToWindow(){
         super.onAttachedToWindow();
         if(getWindowVisibility()==VISIBLE)start();
     }
+    @Override protected void onWindowVisibilityChanged(int v){
+        super.onWindowVisibilityChanged(v);
+        if(v==VISIBLE)start();else stop();
+    }
     @Override protected void onDetachedFromWindow(){
         stop();
-        if(texture!=null){texture.recycle();texture=null;}
-        pixels=null;
         if(grain!=null){grain.recycle();grain=null;}
         super.onDetachedFromWindow();
-    }
-    @Override protected void onWindowVisibilityChanged(int visibility){
-        super.onWindowVisibilityChanged(visibility);
-        if(visibility==VISIBLE)start();else stop();
-    }
-    @Override protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        int w=getWidth(),h=getHeight();
-        if(w<=0||h<=0)return;
-        if(texture==null)prepareTexture();
-        if(texture==null)return;
-        long now=SystemClock.uptimeMillis();
-        if(lastRenderTime==0 || now-lastRenderTime>=FRAME_INTERVAL_MS) {
-            lastRenderTime=now;
-            renderFluid();
-        }
-        target.set(0,0,w,h);
-        canvas.drawBitmap(texture,null,target,fluid);
-
-        // The matte pane above the moving field: gradual pale haze,
-        // not decorative strokes, with imperceptible static micro-grain.
-        film.setShader(new LinearGradient(0,0,w,h,
-            new int[]{0x1cf2f4e9,0x0bc8dcd0,0x0ac1c6ba,0x1acfd7c7},
-            new float[]{0f,.39f,.66f,1f},Shader.TileMode.CLAMP));
-        canvas.drawRect(0,0,w,h,film);
-        film.setShader(null);
-        if(grain!=null)canvas.drawRect(0,0,w,h,grainPaint);
     }
 }
