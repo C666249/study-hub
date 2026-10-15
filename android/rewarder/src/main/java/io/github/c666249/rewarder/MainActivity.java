@@ -401,7 +401,7 @@ public final class MainActivity extends Activity {
             totalView.roll(newTotal);
             // One physical event: coin arrives -> diffuse water ripples,
             // amount pill depresses then gently overshoots its resting size.
-            impact.burst(tx,ty);
+            impact.burst(tx,ty,miniBalance.getWidth(),miniBalance.getHeight());
             miniBalance.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
             miniBalance.animate().cancel();
             miniBalance.setScaleX(1f);
