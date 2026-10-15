@@ -3,7 +3,9 @@
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
-- 奖励页：当前任务、累计金额、金币曲线飞入、滚动数字；右上总额胶囊打开奖励流水。
+- 背景：无可见波浪线的动态液态光场，透过固定的雾化磨砂层缓缓流动；离开页面时停止渲染。
+- 任务管理：左滑短距离编辑、深滑删除，复用 FMV 的阻尼分段与斜向飞出、列表补位动画。
+- 奖励页：当前任务、累计金额、金币曲线飞入、落点双圈柔光水纹、按压回弹、滚动数字；右上总额胶囊打开奖励流水。
 - 设置页：创建、修改、删除每日/每周奖励任务；删除任务保留历史流水。
 - 每日以设备当地日期为周期；每周采用 ISO 周（周一至周日）。
 - 数据存储：应用内部 SharedPreferences 的原子 JSON snapshot，无网络权限、无联网 API。
@@ -14,8 +16,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.0.0-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.0.0-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.2.0-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.2.0-stable`
 
 ### 长期签名：只需配置一次
 
