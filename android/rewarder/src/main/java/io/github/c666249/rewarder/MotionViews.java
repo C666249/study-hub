@@ -225,6 +225,86 @@ final class MotionViews {
         void select(int index) {animateTo(index);}
     }
 
+    /**
+     * Two translucent, elliptical water rings bloom from the landing balance.
+     * Drawn in the window overlay; no clipping to the rounded capsule.
+     */
+    static final class ImpactRipple extends View {
+        private final Paint ring=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint glow=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF oval=new RectF();
+        private float centerX,centerY;
+        private float progress;
+        private ValueAnimator animator;
+        ImpactRipple(Context context) {
+            super(context);
+            setVisibility(GONE);
+            setClickable(false);
+            setFocusable(false);
+            setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        }
+        private float d(float size){return dp(getContext(),size);}
+        void burst(float x,float y) {
+            if(animator!=null)animator.cancel();
+            centerX=x;centerY=y;progress=0f;
+            if(!ValueAnimator.areAnimatorsEnabled()){setVisibility(GONE);return;}
+            setVisibility(VISIBLE);
+            animator=ValueAnimator.ofFloat(0f,1f);
+            animator.setDuration(700);
+            animator.setInterpolator(new DecelerateInterpolator(1.13f));
+            animator.addUpdateListener(a->{
+                progress=(float)a.getAnimatedValue();
+                invalidate();
+            });
+            animator.addListener(new AnimatorListenerAdapter(){
+                @Override public void onAnimationEnd(Animator a){
+                    if(a==animator){setVisibility(GONE);animator=null;}
+                }
+                @Override public void onAnimationCancel(Animator a){
+                    if(a==animator){setVisibility(GONE);animator=null;}
+                }
+            });
+            animator.start();
+        }
+        private void wave(Canvas canvas,float p,float intensity,int red,int green,int blue){
+            if(p<=0f||p>=1f)return;
+            float eased=1f-(1f-p)*(1f-p);
+            float rx=d(26)+d(83)*eased;
+            float ry=d(14)+d(65)*eased;
+            float alpha=(1f-p)*(1f-p)*intensity;
+            oval.set(centerX-rx,centerY-ry,centerX+rx,centerY+ry);
+            ring.setStyle(Paint.Style.STROKE);
+            ring.setStrokeWidth(d(10)*(1-p)+d(2));
+            ring.setColor(Color.argb((int)(28*alpha),red,green,blue));
+            canvas.drawOval(oval,ring);
+            ring.setStrokeWidth(d(1.2f)+d(.45f)*(1-p));
+            ring.setColor(Color.argb((int)(145*alpha),red,green,blue));
+            canvas.drawOval(oval,ring);
+            ring.setStyle(Paint.Style.FILL);
+        }
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);
+            float p=progress;
+            float warm=Math.max(0f,1f-p*2.7f);
+            if(warm>0f) {
+                glow.setStyle(Paint.Style.FILL);
+                glow.setShader(new RadialGradient(centerX,centerY,d(68),
+                    new int[]{Color.argb((int)(80*warm),255,239,190),
+                        Color.argb((int)(24*warm),217,239,213),Color.TRANSPARENT},
+                    new float[]{0f,.44f,1f},Shader.TileMode.CLAMP));
+                canvas.drawCircle(centerX,centerY,d(68),glow);
+                glow.setShader(null);
+            }
+            wave(canvas,p,1f,241,225,179);
+            float second=(p-.15f)/.85f;
+            wave(canvas,second,.63f,191,235,211);
+        }
+        @Override protected void onDetachedFromWindow(){
+            if(animator!=null)animator.cancel();
+            super.onDetachedFromWindow();
+        }
+    }
+
     static final class GoldFlight extends View {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint trail=new Paint(Paint.ANTI_ALIAS_FLAG);
