@@ -346,10 +346,10 @@ public final class MainActivity extends Activity {
         renderSettingsList();
         if(!android.animation.ValueAnimator.areAnimatorsEnabled())return;
         ViewTreeObserver observer=settingsList.getViewTreeObserver();
-        if(!observer.isAlive)return;
+        if(!observer.isAlive())return;
         observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
             @Override public boolean onPreDraw(){
-                if(observer.isAlive)observer.removeOnPreDrawListener(this);
+                if(observer.isAlive())observer.removeOnPreDrawListener(this);
                 for(int i=0;i<settingsList.getChildCount();i++){
                     View child=settingsList.getChildAt(i);
                     if(!(child.getTag() instanceof String))continue;
