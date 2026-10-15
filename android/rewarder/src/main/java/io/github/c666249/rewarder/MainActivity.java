@@ -30,6 +30,10 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.HashMap;
+import android.view.ViewTreeObserver;
+import android.view.animation.PathInterpolator;
 
 public final class MainActivity extends Activity {
     private static final int BG=MotionViews.BG;
@@ -97,6 +101,7 @@ public final class MainActivity extends Activity {
 
         rootFrame=new FrameLayout(this);
         rootFrame.setBackgroundColor(BG);
+        rootFrame.addView(new GlassBackdrop(this),fp(-1,-1,Gravity.FILL));
         LinearLayout stack=column();
         rootFrame.addView(stack,fp(-1,-1,Gravity.FILL));
         setContentView(rootFrame);
@@ -125,23 +130,22 @@ public final class MainActivity extends Activity {
     }
 
     private View createHeader() {
-        LinearLayout bar=row();bar.setPadding(d(24),d(10),d(24),0);
-        TextView emblem=text("✳",23,GOLD,true);
+        LinearLayout bar=row();bar.setPadding(d(23),d(12),d(23),0);
+        TextView emblem=text("✦",20,0xffF5DCAC,true);
         emblem.setGravity(Gravity.CENTER);
-        emblem.setBackground(shape(0xff27231D,13,0xff584B38));
-        bar.addView(emblem,lp(39,39));
-        TextView name=text("拾光",17,INK,true);
-        LinearLayout.LayoutParams nm=lp(-2,39);nm.leftMargin=d(11);
+        emblem.setBackground(shape(0xA22D3933,15,0x8DACAA94));
+        bar.addView(emblem,lp(40,40));
+        TextView name=text("拾光",18,INK,true);
+        LinearLayout.LayoutParams nm=lp(-2,40);nm.leftMargin=d(11);
         bar.addView(name,nm);
         View spacer=new View(this);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
-        miniBalance=text(money(displayedCents),14,GOLD,true);
+        miniBalance=text(money(displayedCents),13,0xffF0D0A1,true);
         miniBalance.setGravity(Gravity.CENTER);
         miniBalance.setPadding(d(15),0,d(15),0);
-        miniBalance.setBackground(shape(0xff24211C,20,0xff484032));
-        miniBalance.setContentDescription("查看累计奖励流水");
-        touch(miniBalance);
-        miniBalance.setOnClickListener(v->showHistory());
-        bar.addView(miniBalance,lp(-2,39));
+        miniBalance.setBackground(shape(0x9B25332F,23,0x76C8BFA2));
+        miniBalance.setContentDescription("查看累计奖励与领取记录");
+        touch(miniBalance);miniBalance.setOnClickListener(v->showHistory());
+        bar.addView(miniBalance,lp(-2,40));
         return bar;
     }
 
@@ -157,50 +161,42 @@ public final class MainActivity extends Activity {
     private ScrollView makeHome() {
         ScrollView sc=scroll();
         LinearLayout body=column();
-        body.setPadding(d(25),d(21),d(25),d(30));
+        body.setPadding(d(23),d(24),d(23),d(28));
         sc.addView(body,new ScrollView.LayoutParams(-1,-2));
 
-        TextView kicker=text("A MOMENT FOR YOURSELF",10.5f,GOLD,true);
-        kicker.setLetterSpacing(.20f);
-        body.addView(kicker,lp(-1,21));
-
-        TextView headline=text("每次坚持，都值得。",27,INK,true);
-        LinearLayout.LayoutParams hl=lp(-1,49);hl.topMargin=d(5);
-        body.addView(headline,hl);
-
-        TextView subtitle=text("完成一件小事，给自己一点奖励。",13.5f,MUTED,false);
-        body.addView(subtitle,lp(-1,29));
+        TextView headline=text("坚持，值得奖励。",28,INK,true);
+        body.addView(headline,lp(-1,44));
+        TextView subtitle=text("完成一次，就奖励自己一次。",12.5f,0xffB0BDB4,false);
+        LinearLayout.LayoutParams sub=lp(-1,26);sub.topMargin=d(1);
+        body.addView(subtitle,sub);
 
         balancePanel=column();
-        balancePanel.setPadding(d(23),d(20),d(20),d(17));
-        balancePanel.setBackground(shape(0xff1C1B1A,25,0xff3B352D));
-        LinearLayout.LayoutParams panel=lp(-1,-2);panel.topMargin=d(26);
+        balancePanel.setPadding(d(23),d(23),d(22),d(19));
+        balancePanel.setBackground(shape(0xAA24342F,29,0x94A6B6A4));
+        LinearLayout.LayoutParams panel=lp(-1,-2);panel.topMargin=d(30);
         body.addView(balancePanel,panel);
 
         LinearLayout brow=row();
-        TextView balanceTitle=text("累计奖励",13,0xffC4BBAE,false);
-        brow.addView(balanceTitle,new LinearLayout.LayoutParams(0,d(23),1));
-        TextView spark=text("✦",22,GOLD,true);
+        TextView balanceTitle=text("累计奖励",13,0xffD6D7C7,false);
+        brow.addView(balanceTitle,new LinearLayout.LayoutParams(0,d(26),1));
+        TextView spark=text("✧",22,0xffEED5A5,true);
         spark.setGravity(Gravity.CENTER);
-        brow.addView(spark,lp(30,28));
+        brow.addView(spark,lp(32,28));
         balancePanel.addView(brow,lp(-1,28));
 
         totalView=new MotionViews.RollingAmount(this);
         totalView.initialize(displayedCents);
-        LinearLayout.LayoutParams totalParams=lp(-1,67);
-        totalParams.topMargin=d(6);
-        balancePanel.addView(totalView,totalParams);
-
-        TextView caption=text("一点一点，积少成多。",12,0xff958D82,false);
-        LinearLayout.LayoutParams cp=lp(-1,27);
-        cp.topMargin=d(1);balancePanel.addView(caption,cp);
+        LinearLayout.LayoutParams total=lp(-1,73);total.topMargin=d(6);
+        balancePanel.addView(totalView,total);
+        TextView caption=text("属于你的每一次坚持",12,0xffA5B4A8,false);
+        balancePanel.addView(caption,lp(-1,25));
 
         LinearLayout section=row();
-        LinearLayout.LayoutParams sl=lp(-1,62);sl.topMargin=d(28);
+        LinearLayout.LayoutParams sl=lp(-1,62);sl.topMargin=d(23);
         body.addView(section,sl);
-        TextView listTitle=text("我的奖励任务",18,INK,true);
-        section.addView(listTitle,new LinearLayout.LayoutParams(0,-1,1));
-        taskCount=text("",12,MUTED,false);
+        TextView title=text("正在坚持",18,INK,true);
+        section.addView(title,new LinearLayout.LayoutParams(0,-1,1));
+        taskCount=text("",12,0xffADB9AD,false);
         section.addView(taskCount,lp(-2,-1));
 
         taskList=column();
@@ -211,41 +207,34 @@ public final class MainActivity extends Activity {
     private ScrollView makeSettings() {
         ScrollView sc=scroll();
         LinearLayout body=column();
-        body.setPadding(d(25),d(23),d(25),d(28));
+        body.setPadding(d(23),d(24),d(23),d(30));
         sc.addView(body,new ScrollView.LayoutParams(-1,-2));
 
-        TextView kicker=text("YOUR OWN RULES",10.5f,GOLD,true);
-        kicker.setLetterSpacing(.20f);
-        body.addView(kicker,lp(-1,20));
-
-        TextView headline=text("奖励，由你定义。",28,INK,true);
-        LinearLayout.LayoutParams hp=lp(-1,55);hp.topMargin=d(5);
-        body.addView(headline,hp);
-        TextView sub=text("只保留真正想坚持的事。",13.5f,MUTED,false);
-        body.addView(sub,lp(-1,29));
-
-        TextView add=text("＋  添加奖励任务",16,BG,true);
+        LinearLayout top=row();
+        TextView headline=text("任务管理",28,INK,true);
+        top.addView(headline,new LinearLayout.LayoutParams(0,d(54),1));
+        TextView add=text("＋  新建",14,0xff192420,true);
         add.setGravity(Gravity.CENTER);
-        add.setBackground(shape(GOLD,20,0));
-        LinearLayout.LayoutParams addParams=lp(-1,54);addParams.topMargin=d(32);
-        body.addView(add,addParams);
+        add.setPadding(d(13),0,d(14),0);
+        add.setBackground(shape(0xffE9D0A6,18,0));
+        top.addView(add,lp(-2,42));
         touch(add);add.setOnClickListener(v->openEditor(null));
+        body.addView(top,lp(-1,57));
+
+        TextView instruction=text("左滑编辑 · 继续左滑删除",12,0xffABB9AF,false);
+        body.addView(instruction,lp(-1,32));
 
         LinearLayout section=row();
-        LinearLayout.LayoutParams sec=lp(-1,65);sec.topMargin=d(21);
+        LinearLayout.LayoutParams sec=lp(-1,51);sec.topMargin=d(15);
         body.addView(section,sec);
-        TextView title=text("任务管理",18,INK,true);
-        section.addView(title,new LinearLayout.LayoutParams(0,-1,1));
-        settingsCount=text("",12,MUTED,false);
+        TextView groupTitle=text("我的任务",16,INK,true);
+        section.addView(groupTitle,new LinearLayout.LayoutParams(0,-1,1));
+        settingsCount=text("",12,0xffAAB8A9,false);
         section.addView(settingsCount,lp(-2,-1));
 
         settingsList=column();
+        settingsList.setClipChildren(false);
         body.addView(settingsList,lp(-1,-2));
-
-        TextView foot=text("所有奖励仅记录在本机，删除任务不会清空已获得的金额。",12,0xff75716C,false);
-        foot.setLineSpacing(d(3),1f);
-        LinearLayout.LayoutParams fp=lp(-1,-2);fp.topMargin=d(29);
-        body.addView(foot,fp);
         return sc;
     }
 
@@ -257,26 +246,24 @@ public final class MainActivity extends Activity {
         if(all.isEmpty()) {
             LinearLayout empty=column();
             empty.setGravity(Gravity.CENTER);
-            empty.setPadding(d(20),d(27),d(20),d(27));
-            empty.setBackground(shape(SURFACE,23,LINE));
-            TextView glyph=text("✧",32,GOLD,true);glyph.setGravity(Gravity.CENTER);
-            empty.addView(glyph,lp(-1,45));
-            TextView note=text("还没有设定奖励",16,INK,true);note.setGravity(Gravity.CENTER);
-            empty.addView(note,lp(-1,32));
-            TextView hint=text("先去设置一个想坚持的目标吧。",12.5f,MUTED,false);
-            hint.setGravity(Gravity.CENTER);
-            empty.addView(hint,lp(-1,31));
-            TextView go=text("前往设置  ↗",13.5f,GOLD,true);
+            empty.setPadding(d(18),d(32),d(18),d(29));
+            empty.setBackground(shape(0x92263531,24,0x76A8B5A5));
+            TextView glyph=text("✧",31,GOLD,true);
+            glyph.setGravity(Gravity.CENTER);empty.addView(glyph,lp(-1,51));
+            TextView hint=text("还没有奖励任务",15,INK,true);
+            hint.setGravity(Gravity.CENTER);empty.addView(hint,lp(-1,33));
+            TextView go=text("创建第一项  ↗",13.5f,GOLD,true);
             go.setGravity(Gravity.CENTER);touch(go);
             go.setOnClickListener(v->tabs.select(1));
-            empty.addView(go,lp(-1,46));
+            empty.addView(go,lp(-1,43));
             taskList.addView(empty,lp(-1,-2));return;
         }
-        for(int i=0;i<all.size();i++) {
-            RewardStore.Task task=all.get(i);
+        for(RewardStore.Task task:all) {
             boolean claimed=store.alreadyClaimed(task);
             LinearLayout item=row();
-            item.setMinimumHeight(d(82));
+            item.setPadding(d(18),d(13),d(14),d(13));
+            item.setMinimumHeight(d(83));
+            item.setBackground(shape(0xAB25332F,22,0x72A8B4A3));
             LinearLayout content=column();
             content.setGravity(Gravity.CENTER_VERTICAL);
             TextView name=text(task.title,16.5f,INK,true);
@@ -284,21 +271,23 @@ public final class MainActivity extends Activity {
             name.setEllipsize(android.text.TextUtils.TruncateAt.END);
             content.addView(name,lp(-1,-2));
             TextView meta=text((RewardStore.WEEKLY.equals(task.cadence)?"每周":"每天")
-                +"  ·  "+money(task.cents),12.5f,MUTED,false);
+                +"  ·  "+money(task.cents),12.5f,0xffADBEB0,false);
             LinearLayout.LayoutParams mp=lp(-1,25);mp.topMargin=d(5);
             content.addView(meta,mp);
             item.addView(content,new LinearLayout.LayoutParams(0,-2,1));
-            TextView claim=text(claimed?"✓ 已领取":"领取",13.5f,claimed?0xff8B877F:BG,true);
+            TextView claim=text(claimed?"✓ 完成":"奖励",13.5f,
+                claimed?0xffAFBEAE:0xff17231C,true);
             claim.setGravity(Gravity.CENTER);
-            claim.setBackground(shape(claimed?SURFACE2:GOLD,18,claimed?LINE:0));
-            LinearLayout.LayoutParams cl=lp(claimed?88:75,41);cl.leftMargin=d(10);
+            claim.setBackground(shape(claimed?0x593C5148:0xffEDD3A3,16,
+                claimed?0x659AB1A0:0));
+            LinearLayout.LayoutParams cl=lp(claimed?74:67,42);cl.leftMargin=d(8);
             item.addView(claim,cl);
             touch(claim);
             claim.setEnabled(!claimed&&!rewarding&&!store.isReadOnly());
             claim.setContentDescription(claimed?"当前周期已领取 "+task.title:"领取 "+task.title+" 奖励 "+money(task.cents));
             claim.setOnClickListener(v->collect(task,claim));
-            taskList.addView(item,lp(-1,-2));
-            if(i<all.size()-1)taskList.addView(line(),lp(-1,1));
+            LinearLayout.LayoutParams card=lp(-1,-2);card.bottomMargin=d(11);
+            taskList.addView(item,card);
         }
     }
 
@@ -309,39 +298,72 @@ public final class MainActivity extends Activity {
         List<RewardStore.Task> tasks=store.tasks();
         settingsCount.setText(tasks.size()+" 项");
         if(tasks.isEmpty()) {
-            TextView hint=text("暂时没有任务。点击上方按钮创建第一项。",13,MUTED,false);
+            TextView hint=text("点击右上角，创建一个想坚持的目标。",13,MUTED,false);
             hint.setGravity(Gravity.CENTER);
-            hint.setPadding(d(13),d(30),d(13),d(30));
-            hint.setBackground(shape(SURFACE,19,LINE));
+            hint.setPadding(d(12),d(29),d(12),d(29));
+            hint.setBackground(shape(0x96273732,22,0x73AAB9A9));
             settingsList.addView(hint,lp(-1,-2));
         }
-        for(int i=0;i<tasks.size();i++) {
-            RewardStore.Task task=tasks.get(i);
-            LinearLayout item=row();item.setMinimumHeight(d(76));
-            LinearLayout labels=column();labels.setGravity(Gravity.CENTER_VERTICAL);
+        for(RewardStore.Task task:tasks) {
+            GestureTaskRow item=new GestureTaskRow(this);
+            item.setTag(task.id);
+            LinearLayout labels=column();
+            labels.setGravity(Gravity.CENTER_VERTICAL);
             TextView title=text(task.title,16,INK,true);
             title.setMaxLines(2);
             title.setEllipsize(android.text.TextUtils.TruncateAt.END);
             labels.addView(title,lp(-1,-2));
             TextView hint=text((RewardStore.WEEKLY.equals(task.cadence)?"每周":"每天")
-                +"  /  "+money(task.cents),12,MUTED,false);
-            LinearLayout.LayoutParams hp=lp(-1,27);hp.topMargin=d(5);
+                +"  ·  "+money(task.cents),12.5f,0xffB6C6BA,false);
+            LinearLayout.LayoutParams hp=lp(-1,26);hp.topMargin=d(4);
             labels.addView(hint,hp);
-            item.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
-            TextView edit=iconButton("✎");
-            edit.setContentDescription("编辑 "+task.title);
-            edit.setOnClickListener(v->openEditor(task));
-            LinearLayout.LayoutParams ep=lp(43,43);ep.leftMargin=d(5);
-            item.addView(edit,ep);
-            TextView remove=iconButton("×");
-            remove.setContentDescription("删除 "+task.title);
-            remove.setOnClickListener(v->confirmDelete(task));
-            LinearLayout.LayoutParams rp=lp(43,43);rp.leftMargin=d(5);
-            item.addView(remove,rp);
-            settingsList.addView(item,lp(-1,-2));
-            if(i<tasks.size()-1)settingsList.addView(line(),lp(-1,1));
+            item.surface.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
+            item.setContentDescription(task.title+"，向左滑动一点编辑，继续左滑删除");
+            item.onEdit=()->openEditor(task);
+            item.onDelete=()->deleteFromSwipe(task);
+            LinearLayout.LayoutParams card=lp(-1,-2);
+            card.bottomMargin=d(11);
+            settingsList.addView(item,card);
         }
         settingsScroll.post(()->settingsScroll.scrollTo(0,restore));
+    }
+
+    // FMV LedgerListReflow: preserve old screen positions, then spring surviving
+    // rows up into the removed row's footprint after the flight completes.
+    private void deleteFromSwipe(RewardStore.Task task) {
+        Map<String,Float> positions=new HashMap<>();
+        for(int i=0;i<settingsList.getChildCount();i++){
+            View child=settingsList.getChildAt(i);
+            if(child.getTag() instanceof String)
+                positions.put((String)child.getTag(),child.getY());
+        }
+        if(!store.deleteTask(task)){
+            renderSettingsList();
+            Toast.makeText(this,"删除失败，请重试",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        renderRewardList();
+        renderSettingsList();
+        if(!android.animation.ValueAnimator.areAnimatorsEnabled())return;
+        ViewTreeObserver observer=settingsList.getViewTreeObserver();
+        if(!observer.isAlive)return;
+        observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
+            @Override public boolean onPreDraw(){
+                if(observer.isAlive)observer.removeOnPreDrawListener(this);
+                for(int i=0;i<settingsList.getChildCount();i++){
+                    View child=settingsList.getChildAt(i);
+                    if(!(child.getTag() instanceof String))continue;
+                    Float old=positions.get((String)child.getTag());
+                    if(old==null)continue;
+                    float delta=old-child.getTop();
+                    if(Math.abs(delta)<1f)continue;
+                    child.setTranslationY(delta);
+                    child.animate().translationY(0).setDuration(370)
+                        .setInterpolator(new PathInterpolator(.18f,.80f,.24f,1f)).start();
+                }
+                return true;
+            }
+        });
     }
 
     private TextView iconButton(String character) {
@@ -403,35 +425,7 @@ public final class MainActivity extends Activity {
             }}).start();
     }
 
-    private void confirmDelete(RewardStore.Task task) {
-        Dialog sheet=new Dialog(this,R.style.RewardSheet);
-        LinearLayout body=column();
-        body.setPadding(d(24),d(27),d(24),d(28));
-        body.setBackground(shape(0xff202022,27,0xff49443C));
-        TextView title=text("删除这项任务？",21,INK,true);
-        body.addView(title,lp(-1,43));
-        TextView message=text("「"+task.title+"」将不再显示。已经获得的奖励金额和历史记录会完整保留。",13.5f,MUTED,false);
-        message.setLineSpacing(d(5),1);
-        LinearLayout.LayoutParams m=lp(-1,-2);m.bottomMargin=d(27);
-        body.addView(message,m);
-        LinearLayout actions=row();
-        TextView cancel=text("取消",15,INK,true);
-        cancel.setGravity(Gravity.CENTER);
-        cancel.setBackground(shape(SURFACE2,16,0));
-        actions.addView(cancel,new LinearLayout.LayoutParams(0,d(52),1));
-        touch(cancel);cancel.setOnClickListener(v->sheet.dismiss());
-        TextView remove=text("删除任务",15,0xffFFE1DA,true);
-        remove.setGravity(Gravity.CENTER);
-        remove.setBackground(shape(0xff74443E,16,0));
-        LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(0,d(52),1);rp.leftMargin=d(10);
-        actions.addView(remove,rp);touch(remove);
-        remove.setOnClickListener(v->{
-            if(store.deleteTask(task)){sheet.dismiss();renderRewardList();renderSettingsList();}
-            else Toast.makeText(this,"删除失败",Toast.LENGTH_SHORT).show();
-        });
-        body.addView(actions,lp(-1,-2));
-        showBottomSheet(sheet,body);
-    }
+
 
     private TextView formLabel(String label) {
         TextView t=text(label,12.5f,0xffB4AEA3,true);
@@ -445,7 +439,7 @@ public final class MainActivity extends Activity {
         e.setTextColor(INK);e.setTextSize(16);
         e.setInputType(inputType);
         e.setPadding(d(15),0,d(15),0);
-        e.setBackground(shape(SURFACE2,15,0));
+        e.setBackground(shape(0xff34413D,15,0x776C7E72));
         return e;
     }
 
@@ -454,12 +448,10 @@ public final class MainActivity extends Activity {
         Dialog sheet=new Dialog(this,R.style.RewardSheet);
         LinearLayout content=column();
         content.setPadding(d(24),d(27),d(24),d(30));
-        content.setBackground(shape(0xff202022,27,0xff49443C));
+        content.setBackground(shape(0xff22302C,27,0xff758477));
         String titleText=previous==null?"新增奖励任务":"编辑奖励任务";
         TextView title=text(titleText,22,INK,true);
         content.addView(title,lp(-1,42));
-        TextView desc=text("让坚持成为一件值得期待的小事。",12.5f,MUTED,false);
-        content.addView(desc,lp(-1,28));
 
         LinearLayout.LayoutParams nlabel=lp(-1,24);nlabel.topMargin=d(17);
         content.addView(formLabel("任务名称"),nlabel);
@@ -476,7 +468,7 @@ public final class MainActivity extends Activity {
         content.addView(formLabel("奖励周期"),flabel);
         LinearLayout segment=row();
         segment.setPadding(d(4),d(4),d(4),d(4));
-        segment.setBackground(shape(0xff161719,18,0));
+        segment.setBackground(shape(0xff1B2826,18,0));
         content.addView(segment,lp(-1,56));
         final String[] cadence={previous==null?RewardStore.DAILY:previous.cadence};
         TextView daily=text("每天",14,INK,true),weekly=text("每周",14,INK,true);
@@ -484,8 +476,8 @@ public final class MainActivity extends Activity {
         segment.addView(daily,new LinearLayout.LayoutParams(0,-1,1));
         segment.addView(weekly,new LinearLayout.LayoutParams(0,-1,1));
         Runnable updateChoice=()->{
-            daily.setBackground(shape(RewardStore.DAILY.equals(cadence[0])?0xff3F382D:Color.TRANSPARENT,15,0));
-            weekly.setBackground(shape(RewardStore.WEEKLY.equals(cadence[0])?0xff3F382D:Color.TRANSPARENT,15,0));
+            daily.setBackground(shape(RewardStore.DAILY.equals(cadence[0])?0xff4A564A:Color.TRANSPARENT,15,0));
+            weekly.setBackground(shape(RewardStore.WEEKLY.equals(cadence[0])?0xff4A564A:Color.TRANSPARENT,15,0));
             daily.setTextColor(RewardStore.DAILY.equals(cadence[0])?GOLD:MUTED);
             weekly.setTextColor(RewardStore.WEEKLY.equals(cadence[0])?GOLD:MUTED);
         };
@@ -551,7 +543,7 @@ public final class MainActivity extends Activity {
         Dialog sheet=new Dialog(this,R.style.RewardSheet);
         LinearLayout shell=column();
         shell.setPadding(d(22),d(24),d(22),d(20));
-        shell.setBackground(shape(0xff202022,27,0xff49443C));
+        shell.setBackground(shape(0xff22302C,27,0xff758477));
         LinearLayout heading=row();
         TextView title=text("奖励账本",21,INK,true);
         heading.addView(title,new LinearLayout.LayoutParams(0,d(42),1));
