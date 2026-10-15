@@ -3,6 +3,7 @@
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
+- 真正的背景模糊：使用 BlurView 3.2.0 / BlurTarget，采样持续运动的蓝紫玫红光色场，玻璃高光与折射边缘不遮挡内容。采用 JitPack 依赖（Apache-2.0）。
 - 背景：蓝、紫、玫红、青 8 层原生 GPU 渐变光团各自漂移与形变，磨砂玻璃覆盖层，约 30 fps；后台停止刷新。
 - 任务管理：左滑短距离编辑、深滑删除，复用 FMV 的阻尼分段与斜向飞出、列表补位动画。
 - 奖励页：当前任务、累计金额、金币曲线飞入、落点双圈柔光水纹、按压回弹、滚动数字；右上总额胶囊打开奖励流水。
@@ -16,8 +17,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.3.0-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.3.0-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.4.0-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.4.0-stable`
 
 ### 长期签名：只需配置一次
 
