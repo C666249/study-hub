@@ -50,7 +50,7 @@ final class GlassBackdrop extends View {
     private static float blob(float x,float y,float cx,float cy,float sx,float sy) {
         float dx=(x-cx)/sx;
         float dy=(y-cy)/sy;
-        return (float)Math.exp(-1.65f*(dx*dx+dy*dy));
+        return (float)Math.exp(-1.35f*(dx*dx+dy*dy));
     }
 
     private static int bound(float channel){
@@ -109,19 +109,19 @@ final class GlassBackdrop extends View {
                 float vy=v+.043f*(float)Math.sin(u*5.2f-t*.48f)
                     +.023f*(float)Math.cos(u*9.0f+t*.31f+v*2.4f);
 
-                float jade=blob(ux,vy,ax,ay,.68f,.49f);
-                float amber=blob(ux,vy,bx,by,.50f,.48f);
-                float aqua=blob(ux,vy,cx,cy,.64f,.43f);
-                float pearl=blob(ux,vy,dx,dy,.46f,.34f);
+                float jade=blob(ux,vy,ax,ay,.46f,.35f);
+                float amber=blob(ux,vy,bx,by,.41f,.35f);
+                float aqua=blob(ux,vy,cx,cy,.44f,.32f);
+                float pearl=blob(ux,vy,dx,dy,.38f,.25f);
 
                 // Luminous cloudy volume: wide soft pools rather than caustic
                 // stripes. The final undulation modulates color, not geometry.
                 float fold=(float)(Math.sin(ux*5.1f+vy*2.9f+t*.28f)
                     *Math.sin(vy*4.6f-ux*3.4f-t*.24f));
-                float flow=2.4f*fold*(jade+amber+aqua);
-                float r=13f+25f*jade+63f*amber+12f*aqua+24f*pearl+flow;
-                float g=25f+64f*jade+41f*amber+47f*aqua+25f*pearl+flow;
-                float b=24f+53f*jade+30f*amber+51f*aqua+22f*pearl+flow;
+                float flow=3.5f*fold*(jade+amber+aqua);
+                float r=12f+43f*jade+91f*amber+20f*aqua+36f*pearl+flow;
+                float g=23f+82f*jade+58f*amber+73f*aqua+37f*pearl+flow;
+                float b=22f+69f*jade+36f*amber+79f*aqua+31f*pearl+flow;
 
                 // Dark, softly curved falloff anchors text legibility.
                 float edge=(float)(Math.pow(Math.abs(u-.5f)*1.18f,2)
