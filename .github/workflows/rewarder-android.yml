@@ -8,7 +8,7 @@ on:
       - '.github/workflows/rewarder-android.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -34,3 +34,11 @@ jobs:
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
+      - name: Publish public APK download
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.0.0-preview.apk
+          gh release view rewarder-v1.0.0-preview >/dev/null 2>&1 || gh release create rewarder-v1.0.0-preview --title "拾光奖励 Android v1.0 预览版" --notes "原生双 Tab 奖励器，测试签名版。未来要覆盖更新请配置独立长期签名。" --prerelease --latest=false
+          gh release upload rewarder-v1.0.0-preview Shiguang-Rewarder-v1.0.0-preview.apk --clobber
