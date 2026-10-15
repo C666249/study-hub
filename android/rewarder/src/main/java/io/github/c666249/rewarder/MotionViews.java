@@ -232,73 +232,89 @@ final class MotionViews {
     static final class ImpactRipple extends View {
         private final Paint ring=new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint glow=new Paint(Paint.ANTI_ALIAS_FLAG);
-        private final RectF oval=new RectF();
-        private float centerX,centerY;
-        private float progress;
+        private final Path path=new Path();
+        private float centerX,centerY,halfWidth,halfHeight;
+        private float progress=1f;
         private ValueAnimator animator;
-        ImpactRipple(Context context) {
+
+        ImpactRipple(Context context){
             super(context);
             setVisibility(GONE);
             setClickable(false);
             setFocusable(false);
             setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         }
-        private float d(float size){return dp(getContext(),size);}
-        void burst(float x,float y) {
+        private float d(float v){return dp(getContext(),v);}
+
+        void burst(float x,float y,float width,float height){
             if(animator!=null)animator.cancel();
-            centerX=x;centerY=y;progress=0f;
+            centerX=x;centerY=y;
+            halfWidth=Math.max(d(34),width*.46f);
+            halfHeight=Math.max(d(17),height*.50f);
+            progress=0f;
             if(!ValueAnimator.areAnimatorsEnabled()){setVisibility(GONE);return;}
             setVisibility(VISIBLE);
-            animator=ValueAnimator.ofFloat(0f,1f);
-            animator.setDuration(700);
-            animator.setInterpolator(new DecelerateInterpolator(1.13f));
+            animator=ValueAnimator.ofFloat(0,1);
+            animator.setDuration(740);
+            animator.setInterpolator(new DecelerateInterpolator(1.05f));
             animator.addUpdateListener(a->{
                 progress=(float)a.getAnimatedValue();
                 invalidate();
             });
             animator.addListener(new AnimatorListenerAdapter(){
+                private boolean canceled=false;
+                @Override public void onAnimationCancel(Animator a){canceled=true;}
                 @Override public void onAnimationEnd(Animator a){
-                    if(a==animator){setVisibility(GONE);animator=null;}
-                }
-                @Override public void onAnimationCancel(Animator a){
-                    if(a==animator){setVisibility(GONE);animator=null;}
+                    if(animator==a){setVisibility(GONE);animator=null;}
                 }
             });
             animator.start();
         }
-        private void wave(Canvas canvas,float p,float intensity,int red,int green,int blue){
-            if(p<=0f||p>=1f)return;
-            float eased=1f-(1f-p)*(1f-p);
-            float rx=d(26)+d(83)*eased;
-            float ry=d(14)+d(65)*eased;
-            float alpha=(1f-p)*(1f-p)*intensity;
-            oval.set(centerX-rx,centerY-ry,centerX+rx,centerY+ry);
+
+        private void wave(Canvas canvas,float p,float intensity,int rgb){
+            if(p<0||p>=1)return;
+            float expand=1f-(1f-p)*(1f-p);
+            float rx=halfWidth+d(73)*expand;
+            float ry=halfHeight+d(59)*expand;
+            float wobble=d(3.1f)*(1f-p)*(1f-p);
+            path.reset();
+            for(int i=0;i<=64;i++){
+                float theta=i*(float)(Math.PI*2/64);
+                float ripple=1f+(.075f*(1f-p))*(float)Math.sin(theta*4-5*p)
+                    +(.035f*(1f-p))*(float)Math.sin(theta*7+4*p);
+                float x=centerX+(rx*ripple+wobble*(float)Math.cos(theta*5+4*p))*(float)Math.cos(theta);
+                float y=centerY+(ry*ripple+wobble*(float)Math.sin(theta*5-4*p))*(float)Math.sin(theta);
+                if(i==0)path.moveTo(x,y);else path.lineTo(x,y);
+            }
+            path.close();
+            float fade=(1f-p)*(1f-p)*intensity;
             ring.setStyle(Paint.Style.STROKE);
-            ring.setStrokeWidth(d(10)*(1-p)+d(2));
-            ring.setColor(Color.argb((int)(28*alpha),red,green,blue));
-            canvas.drawOval(oval,ring);
-            ring.setStrokeWidth(d(1.2f)+d(.45f)*(1-p));
-            ring.setColor(Color.argb((int)(145*alpha),red,green,blue));
-            canvas.drawOval(oval,ring);
+            ring.setStrokeJoin(Paint.Join.ROUND);
+            ring.setStrokeWidth(d(9f)*(1-p)+d(1.5f));
+            ring.setColor((rgb&0x00ffffff)|((int)(32*fade)<<24));
+            canvas.drawPath(path,ring);
+            ring.setStrokeWidth(d(1.6f));
+            ring.setColor((rgb&0x00ffffff)|((int)(173*fade)<<24));
+            canvas.drawPath(path,ring);
             ring.setStyle(Paint.Style.FILL);
         }
+
         @Override protected void onDraw(Canvas canvas){
             super.onDraw(canvas);
             float p=progress;
-            float warm=Math.max(0f,1f-p*2.7f);
-            if(warm>0f) {
-                glow.setStyle(Paint.Style.FILL);
-                glow.setShader(new RadialGradient(centerX,centerY,d(68),
-                    new int[]{Color.argb((int)(80*warm),255,239,190),
-                        Color.argb((int)(24*warm),217,239,213),Color.TRANSPARENT},
-                    new float[]{0f,.44f,1f},Shader.TileMode.CLAMP));
-                canvas.drawCircle(centerX,centerY,d(68),glow);
+            float impact=Math.max(0f,1f-p*3.1f);
+            if(impact>0f){
+                glow.setShader(new RadialGradient(centerX,centerY,d(72),
+                    new int[]{Color.argb((int)(92*impact),253,227,176),
+                        Color.argb((int)(28*impact),171,199,244),Color.TRANSPARENT},
+                    new float[]{0f,.39f,1f},Shader.TileMode.CLAMP));
+                canvas.drawCircle(centerX,centerY,d(72),glow);
                 glow.setShader(null);
             }
-            wave(canvas,p,1f,241,225,179);
-            float second=(p-.15f)/.85f;
-            wave(canvas,second,.63f,191,235,211);
+            wave(canvas,p,1f,0xfff8dcac); // warm impact pulse
+            wave(canvas,(p-.115f)/.885f,.75f,0xffadcaff); // cooler echo
         }
+
         @Override protected void onDetachedFromWindow(){
             if(animator!=null)animator.cancel();
             super.onDetachedFromWindow();
