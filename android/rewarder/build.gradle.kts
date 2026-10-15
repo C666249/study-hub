@@ -1,6 +1,12 @@
 plugins {
     id("com.android.application")
 }
+
+val stableSigned = listOf(
+    "REWARDER_KEYSTORE_PATH", "REWARDER_STORE_PASSWORD",
+    "REWARDER_KEY_ALIAS", "REWARDER_KEY_PASSWORD"
+).all { !System.getenv(it).isNullOrBlank() }
+
 android {
     namespace = "io.github.c666249.rewarder"
     compileSdk = 35
@@ -11,9 +17,20 @@ android {
         versionCode = 1
         versionName = "1.0.0"
     }
+    if (stableSigned) {
+        signingConfigs {
+            create("longTerm") {
+                storeFile = file(System.getenv("REWARDER_KEYSTORE_PATH"))
+                storePassword = System.getenv("REWARDER_STORE_PASSWORD")
+                keyAlias = System.getenv("REWARDER_KEY_ALIAS")
+                keyPassword = System.getenv("REWARDER_KEY_PASSWORD")
+            }
+        }
+    }
     buildTypes {
         release {
             isMinifyEnabled = false
+            if (stableSigned) signingConfig = signingConfigs.getByName("longTerm")
         }
     }
     compileOptions {
