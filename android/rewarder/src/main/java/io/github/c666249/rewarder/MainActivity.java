@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.HashMap;
 import android.view.ViewTreeObserver;
 import android.view.animation.PathInterpolator;
+import eightbitlab.com.blurview.BlurTarget;
 
 public final class MainActivity extends Activity {
     private static final int BG=MotionViews.BG;
@@ -45,6 +46,8 @@ public final class MainActivity extends Activity {
     private static final int LINE=MotionViews.HAIRLINE;
     private RewardStore store;
     private FrameLayout rootFrame, pages;
+    private BlurTarget blurTarget;
+    private View balanceGlass;
     private LinearLayout taskList, settingsList, balancePanel;
     private ScrollView homeScroll, settingsScroll;
     private TextView miniBalance, taskCount, settingsCount;
@@ -102,7 +105,11 @@ public final class MainActivity extends Activity {
 
         rootFrame=new FrameLayout(this);
         rootFrame.setBackgroundColor(BG);
-        rootFrame.addView(new GlassBackdrop(this),fp(-1,-1,Gravity.FILL));
+        // Target is ONLY the live fluid background; glass views stay outside of it
+        // to prevent recursion and preserve legible foreground contents.
+        blurTarget=new BlurTarget(this);
+        blurTarget.addView(new GlassBackdrop(this),fp(-1,-1,Gravity.FILL));
+        rootFrame.addView(blurTarget,fp(-1,-1,Gravity.FILL));
         LinearLayout stack=column();
         rootFrame.addView(stack,fp(-1,-1,Gravity.FILL));
         setContentView(rootFrame);
@@ -121,7 +128,7 @@ public final class MainActivity extends Activity {
         tabs=new MotionViews.RubberTabs(this,this::switchTab);
         FrameLayout.LayoutParams t=fp(282,67,Gravity.TOP|Gravity.CENTER_HORIZONTAL);
         t.topMargin=d(5);
-        tabArea.addView(tabs,t);
+        tabArea.addView(GlassMaterial.navigation(this,blurTarget,tabs,36),t);
 
         flight=new MotionViews.GoldFlight(this);
         rootFrame.addView(flight,fp(-1,-1,Gravity.FILL));
@@ -145,10 +152,10 @@ public final class MainActivity extends Activity {
         miniBalance=text(money(displayedCents),13,0xffF0D0A1,true);
         miniBalance.setGravity(Gravity.CENTER);
         miniBalance.setPadding(d(15),0,d(15),0);
-        miniBalance.setBackground(shape(0x9B25332F,23,0x76C8BFA2));
+        miniBalance.setMinimumHeight(d(40));
         miniBalance.setContentDescription("查看累计奖励与领取记录");
         touch(miniBalance);miniBalance.setOnClickListener(v->showHistory());
-        bar.addView(miniBalance,lp(-2,40));
+        bar.addView(GlassMaterial.pill(this,blurTarget,miniBalance,23),lp(-2,40));
         return bar;
     }
 
@@ -175,9 +182,10 @@ public final class MainActivity extends Activity {
 
         balancePanel=column();
         balancePanel.setPadding(d(23),d(23),d(22),d(19));
-        balancePanel.setBackground(shape(0xAA24342F,29,0x94A6B6A4));
+        // The translucent, blurred shell is separate from sharp foreground text.
         LinearLayout.LayoutParams panel=lp(-1,-2);panel.topMargin=d(30);
-        body.addView(balancePanel,panel);
+        balanceGlass=GlassMaterial.panel(this,blurTarget,balancePanel,29);
+        body.addView(balanceGlass,panel);
 
         LinearLayout brow=row();
         TextView balanceTitle=text("累计奖励",13,0xffD6D7C7,false);
@@ -216,11 +224,11 @@ public final class MainActivity extends Activity {
         LinearLayout top=row();
         TextView headline=text("任务管理",28,INK,true);
         top.addView(headline,new LinearLayout.LayoutParams(0,d(54),1));
-        TextView add=text("＋  新建",14,0xff192420,true);
+        TextView add=text("＋  新建",14,0xffF2E3C6,true);
         add.setGravity(Gravity.CENTER);
         add.setPadding(d(13),0,d(14),0);
-        add.setBackground(shape(0xffE9D0A6,18,0));
-        top.addView(add,lp(-2,42));
+        add.setMinimumHeight(d(42));
+        top.addView(GlassMaterial.pill(this,blurTarget,add,21),lp(-2,42));
         touch(add);add.setOnClickListener(v->openEditor(null));
         body.addView(top,lp(-1,57));
 
@@ -250,7 +258,7 @@ public final class MainActivity extends Activity {
             LinearLayout empty=column();
             empty.setGravity(Gravity.CENTER);
             empty.setPadding(d(18),d(32),d(18),d(29));
-            empty.setBackground(shape(0x92263531,24,0x76A8B5A5));
+            // Blurred live light replaces the old solid empty-state surface.
             TextView glyph=text("✧",31,GOLD,true);
             glyph.setGravity(Gravity.CENTER);empty.addView(glyph,lp(-1,51));
             TextView hint=text("还没有奖励任务",15,INK,true);
@@ -259,14 +267,14 @@ public final class MainActivity extends Activity {
             go.setGravity(Gravity.CENTER);touch(go);
             go.setOnClickListener(v->tabs.select(1));
             empty.addView(go,lp(-1,43));
-            taskList.addView(empty,lp(-1,-2));return;
+            taskList.addView(GlassMaterial.floatingCard(this,blurTarget,empty,25),lp(-1,-2));return;
         }
         for(RewardStore.Task task:all) {
             boolean claimed=store.alreadyClaimed(task);
             LinearLayout item=row();
             item.setPadding(d(18),d(13),d(14),d(13));
             item.setMinimumHeight(d(83));
-            item.setBackground(shape(0xAB25332F,22,0x72A8B4A3));
+            // Foreground must remain sharp, while the live background shines through.
             LinearLayout content=column();
             content.setGravity(Gravity.CENTER_VERTICAL);
             TextView name=text(task.title,16.5f,INK,true);
@@ -279,18 +287,18 @@ public final class MainActivity extends Activity {
             content.addView(meta,mp);
             item.addView(content,new LinearLayout.LayoutParams(0,-2,1));
             TextView claim=text(claimed?"✓ 完成":"奖励",13.5f,
-                claimed?0xffAFBEAE:0xff17231C,true);
+                claimed?0xffAFBEAE:0xffF3DDB8,true);
             claim.setGravity(Gravity.CENTER);
-            claim.setBackground(shape(claimed?0x593C5148:0xffEDD3A3,16,
-                claimed?0x659AB1A0:0));
+            claim.setMinimumWidth(d(claimed?74:67));
+            claim.setMinimumHeight(d(42));
             LinearLayout.LayoutParams cl=lp(claimed?74:67,42);cl.leftMargin=d(8);
-            item.addView(claim,cl);
+            item.addView(GlassMaterial.pill(this,blurTarget,claim,16),cl);
             touch(claim);
             claim.setEnabled(!claimed&&!rewarding&&!store.isReadOnly());
             claim.setContentDescription(claimed?"当前周期已领取 "+task.title:"领取 "+task.title+" 奖励 "+money(task.cents));
             claim.setOnClickListener(v->collect(task,claim));
             LinearLayout.LayoutParams card=lp(-1,-2);card.bottomMargin=d(11);
-            taskList.addView(item,card);
+            taskList.addView(GlassMaterial.floatingCard(this,blurTarget,item,22),card);
         }
     }
 
@@ -304,11 +312,11 @@ public final class MainActivity extends Activity {
             TextView hint=text("点击右上角，创建一个想坚持的目标。",13,MUTED,false);
             hint.setGravity(Gravity.CENTER);
             hint.setPadding(d(12),d(29),d(12),d(29));
-            hint.setBackground(shape(0x96273732,22,0x73AAB9A9));
-            settingsList.addView(hint,lp(-1,-2));
+            // Empty-state is a frosted glass pane, not an opaque tile.
+            settingsList.addView(GlassMaterial.floatingCard(this,blurTarget,hint,22),lp(-1,-2));
         }
         for(RewardStore.Task task:tasks) {
-            GestureTaskRow item=new GestureTaskRow(this);
+            GestureTaskRow item=new GestureTaskRow(this,blurTarget);
             item.setTag(task.id);
             LinearLayout labels=column();
             labels.setGravity(Gravity.CENTER_VERTICAL);
@@ -413,10 +421,10 @@ public final class MainActivity extends Activity {
                     .setInterpolator(new OvershootInterpolator(1.12f)).start())
                 .start();
             // The large ledger settles with the same subtle liquid inertia.
-            balancePanel.animate().cancel();
-            balancePanel.setScaleX(.988f);
-            balancePanel.setScaleY(.985f);
-            balancePanel.animate().scaleX(1f).scaleY(1f).setDuration(440)
+            balanceGlass.animate().cancel();
+            balanceGlass.setScaleX(.988f);
+            balanceGlass.setScaleY(.985f);
+            balanceGlass.animate().scaleX(1f).scaleY(1f).setDuration(440)
                 .setInterpolator(new OvershootInterpolator(.64f)).start();
             renderRewardList();
         });
