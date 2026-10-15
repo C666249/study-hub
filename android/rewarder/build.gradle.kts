@@ -14,8 +14,8 @@ android {
         applicationId = "io.github.c666249.rewarder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3.0"
+        versionCode = 5
+        versionName = "1.4.0"
     }
     if (stableSigned) {
         signingConfigs {
@@ -37,4 +37,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
+}
+
+// Live backdrop blur of the animated BlurTarget (Apache-2.0).
+dependencies {
+    implementation("com.github.Dimezis:BlurView:version-3.2.0")
 }
