@@ -21,13 +21,13 @@ import android.view.animation.OvershootInterpolator;
 import java.util.Locale;
 
 final class MotionViews {
-    static final int BG=Color.rgb(16,17,19);
-    static final int SURFACE=Color.rgb(26,27,29);
-    static final int SURFACE_2=Color.rgb(35,36,39);
-    static final int GOLD=Color.rgb(235,203,146);
-    static final int INK=Color.rgb(247,245,239);
-    static final int MUTED=Color.rgb(153,149,141);
-    static final int HAIRLINE=Color.rgb(51,51,52);
+    static final int BG=0xff101a18;
+    static final int SURFACE=0xB72B3B35;
+    static final int SURFACE_2=0xff32423B;
+    static final int GOLD=0xffEED3A3;
+    static final int INK=0xffF7F5EC;
+    static final int MUTED=0xffA9B7AB;
+    static final int HAIRLINE=0x55536A5D;
 
     static float dp(Context c,float n) {return n*c.getResources().getDisplayMetrics().density;}
     static float sp(Context c,float n) {return n*c.getResources().getDisplayMetrics().scaledDensity;}
@@ -144,14 +144,17 @@ final class MotionViews {
             paint.setShadowLayer(d(17),0,d(6),0x37000000);
             canvas.drawRoundRect(rect,radius,radius,paint);
             paint.clearShadowLayer();
+            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.85f));
+            paint.setColor(0x72C4D0BB);canvas.drawRoundRect(rect,radius,radius,paint);
+            paint.setStyle(Paint.Style.FILL);
             if(center<0) {center=mid(selected);thumbWidth=(getWidth()-d(14))/2f-d(4);}
             float th= getHeight()-d(12);
             rect.set(center-thumbWidth/2,d(6)+(th*(1-thumbScale))/2,
                 center+thumbWidth/2,getHeight()-d(6)-(th*(1-thumbScale))/2);
-            paint.setColor(0xff34302B);
+            paint.setColor(0xDF485C50);
             canvas.drawRoundRect(rect,th/2,th/2,paint);
             paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.65f));
-            paint.setColor(0xff625440);
+            paint.setColor(0xACB7C6B1);
             canvas.drawRoundRect(rect,th/2,th/2,paint);
             paint.setStyle(Paint.Style.FILL);
             paint.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
