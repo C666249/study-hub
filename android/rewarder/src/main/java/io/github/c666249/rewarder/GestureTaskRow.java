@@ -22,6 +22,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import eightbitlab.com.blurview.BlurTarget;
 
 /** Java port of personal-app-stack FMV 3.1 LedgerSwipeRow / LedgerDeleteFlight.
  * Finger thresholds are separate from bounded rubber translation.
@@ -29,6 +30,7 @@ import android.widget.TextView;
 final class GestureTaskRow extends FrameLayout {
     interface Handler { void run(); }
     final LinearLayout surface;
+    private final GlassMaterial.GlassShell movingGlass;
     private final FrameLayout underlay;
     private final TextView hint;
     private final int slop;
@@ -43,7 +45,7 @@ final class GestureTaskRow extends FrameLayout {
         b.setStroke(d(1),outline);
         return b;
     }
-    GestureTaskRow(Context context) {
+    GestureTaskRow(Context context, BlurTarget blurTarget) {
         super(context);
         slop=ViewConfiguration.get(context).getScaledTouchSlop();
         setClipChildren(false);setClipToPadding(false);
@@ -62,10 +64,12 @@ final class GestureTaskRow extends FrameLayout {
         surface.setOrientation(LinearLayout.HORIZONTAL);
         surface.setPadding(d(18),d(13),d(17),d(13));
         surface.setMinimumHeight(d(79));
-        surface.setBackground(bg(0xB82B3835,0x6BA8B8AA));
+        // The whole swipeable material samples the animated background.
+        // Keep surface itself completely clear so no opaque card masks the blur.
         surface.setClickable(true);
         surface.setOnClickListener(v->{if(!committed&&onEdit!=null)onEdit.run();});
-        addView(surface,new FrameLayout.LayoutParams(-1,-2));
+        movingGlass=GlassMaterial.floatingCard(context,blurTarget,surface,22);
+        addView(movingGlass,new FrameLayout.LayoutParams(-1,-2));
         setMinimumHeight(d(79));
     }
     private float rubber(float travel,float width){
@@ -80,10 +84,10 @@ final class GestureTaskRow extends FrameLayout {
             if(next>0){
                 performHapticFeedback(next==2?HapticFeedbackConstants.LONG_PRESS:HapticFeedbackConstants.CLOCK_TICK);
                 if(next==2){
-                    surface.animate().cancel();
-                    surface.animate().scaleX(1.018f).scaleY(.978f).setDuration(100)
+                    movingGlass.animate().cancel();
+                    movingGlass.animate().scaleX(1.018f).scaleY(.978f).setDuration(100)
                         .withEndAction(()->{
-                            if(!committed)surface.animate().scaleX(1).scaleY(1).setDuration(190)
+                            if(!committed)movingGlass.animate().scaleX(1).scaleY(1).setDuration(190)
                                 .setInterpolator(new OvershootInterpolator(.8f)).start();
                         }).start();
                     hint.setScaleX(.93f);hint.setScaleY(.93f);
@@ -127,7 +131,7 @@ final class GestureTaskRow extends FrameLayout {
                 float width=Math.max(getWidth(),d(200));
                 int next=travel>=Math.max(d(116),width*.37f)?2:
                     travel>=Math.max(d(52),width*.16f)?1:0;
-                surface.setTranslationX(-rubber(travel,width));
+                movingGlass.setTranslationX(-rubber(travel,width));
                 changeStage(next,travel,width);
                 return true;
             case MotionEvent.ACTION_UP:
@@ -145,8 +149,8 @@ final class GestureTaskRow extends FrameLayout {
         return super.onTouchEvent(e);
     }
     private void settle(Runnable done){
-        surface.animate().cancel();
-        surface.animate().translationX(0).scaleX(1).scaleY(1).setDuration(225)
+        movingGlass.animate().cancel();
+        movingGlass.animate().translationX(0).scaleX(1).scaleY(1).setDuration(225)
             .setInterpolator(new OvershootInterpolator(.9f)).withEndAction(done).start();
         hint.animate().alpha(0).setDuration(160).start();
     }
@@ -154,33 +158,33 @@ final class GestureTaskRow extends FrameLayout {
     private void launchDeletion(){
         if(onDelete==null){reset();return;}
         Handler callback=onDelete;
-        if(!ValueAnimator.areAnimatorsEnabled()||surface.getWidth()<2){callback.run();return;}
-        View root=surface.getRootView();
+        if(!ValueAnimator.areAnimatorsEnabled()||movingGlass.getWidth()<2){callback.run();return;}
+        View root=movingGlass.getRootView();
         if(!(root instanceof FrameLayout)){callback.run();return;}
         FrameLayout host=(FrameLayout)root;
         Bitmap pixels=null;
         ImageView ghost=null;
         try{
-            pixels=Bitmap.createBitmap(surface.getWidth(),surface.getHeight(),Bitmap.Config.ARGB_8888);
-            surface.draw(new Canvas(pixels));
+            pixels=Bitmap.createBitmap(movingGlass.getWidth(),movingGlass.getHeight(),Bitmap.Config.ARGB_8888);
+            movingGlass.draw(new Canvas(pixels));
             int[] a=new int[2],b=new int[2];
-            surface.getLocationOnScreen(a);host.getLocationOnScreen(b);
+            movingGlass.getLocationOnScreen(a);host.getLocationOnScreen(b);
             float sx=a[0]-b[0],sy=a[1]-b[1];
             ImageView sprite=new ImageView(getContext());
             sprite.setImageBitmap(pixels);sprite.setScaleType(ImageView.ScaleType.FIT_XY);
-            sprite.setElevation(d(20));sprite.setPivotX(surface.getWidth()*.5f);
-            sprite.setPivotY(surface.getHeight()*.5f);
-            host.addView(sprite,new FrameLayout.LayoutParams(surface.getWidth(),surface.getHeight()));
+            sprite.setElevation(d(20));sprite.setPivotX(movingGlass.getWidth()*.5f);
+            sprite.setPivotY(movingGlass.getHeight()*.5f);
+            host.addView(sprite,new FrameLayout.LayoutParams(movingGlass.getWidth(),movingGlass.getHeight()));
             sprite.setX(sx);sprite.setY(sy);sprite.bringToFront();
             ghost=sprite;
             setAlpha(0f);
-            float carry=Math.min(d(16),surface.getWidth()*.045f);
-            float ex=sx+Math.max(surface.getWidth()*.88f,d(300));
-            float ey=sy-Math.max(d(275),surface.getHeight()*3.5f);
+            float carry=Math.min(d(16),movingGlass.getWidth()*.045f);
+            float ex=sx+Math.max(movingGlass.getWidth()*.88f,d(300));
+            float ey=sy-Math.max(d(275),movingGlass.getHeight()*3.5f);
             Path path=new Path();
             path.moveTo(sx,sy);
             path.cubicTo(sx-carry*2.2f,sy-d(6),
-                sx+surface.getWidth()*.24f,sy-surface.getHeight()*1.95f,ex,ey);
+                sx+movingGlass.getWidth()*.24f,sy-movingGlass.getHeight()*1.95f,ex,ey);
             PathMeasure measure=new PathMeasure(path,false);
             float[] pos=new float[2];
             Bitmap capture=pixels;
