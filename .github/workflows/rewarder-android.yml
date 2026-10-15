@@ -20,12 +20,10 @@ jobs:
           java-version: '17'
       - name: Install Android SDK 35
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
-          echo "Using $SDKMANAGER"
           "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Build standalone Rewarder APK
+      - name: Build preview APK
         working-directory: android
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
@@ -34,11 +32,72 @@ jobs:
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
-      - name: Publish public APK download
-        continue-on-error: true
+      - name: Publish first preview APK (do not replace its signature later)
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.0.0-preview.apk
-          gh release view rewarder-v1.0.0-preview >/dev/null 2>&1 || gh release create rewarder-v1.0.0-preview --title "拾光奖励 Android v1.0 预览版" --notes "原生双 Tab 奖励器，测试签名版。未来要覆盖更新请配置独立长期签名。" --prerelease --latest=false
-          gh release upload rewarder-v1.0.0-preview Shiguang-Rewarder-v1.0.0-preview.apk --clobber
+          set -euo pipefail
+          tag=rewarder-v1.0.0-preview
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Preview release is frozen to protect users from silent signature changes."
+          else
+            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.0.0-preview.apk
+            gh release create "$tag" Shiguang-Rewarder-v1.0.0-preview.apk \
+              --title "拾光奖励 Android v1.0 预览版" \
+              --notes "原生双 Tab 奖励器，临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
+              --prerelease --latest=false
+          fi
+
+      # Optional long-term signing. Secrets are only read on trusted master runs.
+      - name: Check stable signing secrets
+        id: signing
+        env:
+          KS_B64: ${{ secrets.REWARDER_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.REWARDER_STORE_PASSWORD }}
+          ALIAS: ${{ secrets.REWARDER_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.REWARDER_KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          if [ -n "$KS_B64" ] && [ -n "$KS_PASS" ] && [ -n "$ALIAS" ] && [ -n "$KEY_PASS" ]; then
+            printf '%s' "$KS_B64" | base64 -d > "$RUNNER_TEMP/rewarder-signing.jks"
+            echo "configured=true" >> "$GITHUB_OUTPUT"
+            echo "keystore=$RUNNER_TEMP/rewarder-signing.jks" >> "$GITHUB_OUTPUT"
+          else
+            echo "configured=false" >> "$GITHUB_OUTPUT"
+            echo "Long-term signing secrets not set; preview is still available."
+          fi
+      - name: Build permanently signed APK
+        if: steps.signing.outputs.configured == 'true'
+        working-directory: android
+        env:
+          REWARDER_KEYSTORE_PATH: ${{ steps.signing.outputs.keystore }}
+          REWARDER_STORE_PASSWORD: ${{ secrets.REWARDER_STORE_PASSWORD }}
+          REWARDER_KEY_ALIAS: ${{ secrets.REWARDER_KEY_ALIAS }}
+          REWARDER_KEY_PASSWORD: ${{ secrets.REWARDER_KEY_PASSWORD }}
+        run: bash ./gradlew :rewarder:assembleRelease --stacktrace
+      - uses: actions/upload-artifact@v4
+        if: steps.signing.outputs.configured == 'true'
+        with:
+          name: Shiguang-Rewarder-1.0.0-stable
+          path: android/rewarder/build/outputs/apk/release/rewarder-release.apk
+          if-no-files-found: error
+          retention-days: 90
+      - name: Publish stable signed APK
+        if: steps.signing.outputs.configured == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=rewarder-v1.0.0-stable
+          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Shiguang-Rewarder-v1.0.0-stable.apk
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Stable v1.0.0 already published; refusing to silently replace an installed build."
+          else
+            gh release create "$tag" Shiguang-Rewarder-v1.0.0-stable.apk \
+              --title "拾光奖励 Android v1.0 正式签名版" \
+              --notes "独立签名永久版本。请安全保存你的 JKS 与密码，后续覆盖升级必须使用同一证书。" \
+              --latest=false
+          fi
+      - name: Remove signing material
+        if: always()
+        run: rm -f "$RUNNER_TEMP/rewarder-signing.jks"
