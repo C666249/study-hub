@@ -2,7 +2,6 @@ package io.github.c666249.rewarder;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.app.AlertDialog;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
@@ -405,14 +404,33 @@ public final class MainActivity extends Activity {
     }
 
     private void confirmDelete(RewardStore.Task task) {
-        new AlertDialog.Builder(this)
-            .setTitle("删除「"+task.title+"」？")
-            .setMessage("只删除任务，已获得的奖励金额和历史记录会保留。")
-            .setNegativeButton("取消",null)
-            .setPositiveButton("删除",(dialog,which)->{
-                if(store.deleteTask(task)){renderRewardList();renderSettingsList();}
-                else Toast.makeText(this,"删除失败",Toast.LENGTH_SHORT).show();
-            }).show();
+        Dialog sheet=new Dialog(this,R.style.RewardSheet);
+        LinearLayout body=column();
+        body.setPadding(d(24),d(27),d(24),d(28));
+        body.setBackground(shape(0xff202022,27,0xff49443C));
+        TextView title=text("删除这项任务？",21,INK,true);
+        body.addView(title,lp(-1,43));
+        TextView message=text("「"+task.title+"」将不再显示。已经获得的奖励金额和历史记录会完整保留。",13.5f,MUTED,false);
+        message.setLineSpacing(d(5),1);
+        LinearLayout.LayoutParams m=lp(-1,-2);m.bottomMargin=d(27);
+        body.addView(message,m);
+        LinearLayout actions=row();
+        TextView cancel=text("取消",15,INK,true);
+        cancel.setGravity(Gravity.CENTER);
+        cancel.setBackground(shape(SURFACE2,16,0));
+        actions.addView(cancel,new LinearLayout.LayoutParams(0,d(52),1));
+        touch(cancel);cancel.setOnClickListener(v->sheet.dismiss());
+        TextView remove=text("删除任务",15,0xffFFE1DA,true);
+        remove.setGravity(Gravity.CENTER);
+        remove.setBackground(shape(0xff74443E,16,0));
+        LinearLayout.LayoutParams rp=new LinearLayout.LayoutParams(0,d(52),1);rp.leftMargin=d(10);
+        actions.addView(remove,rp);touch(remove);
+        remove.setOnClickListener(v->{
+            if(store.deleteTask(task)){sheet.dismiss();renderRewardList();renderSettingsList();}
+            else Toast.makeText(this,"删除失败",Toast.LENGTH_SHORT).show();
+        });
+        body.addView(actions,lp(-1,-2));
+        showBottomSheet(sheet,body);
     }
 
     private TextView formLabel(String label) {
