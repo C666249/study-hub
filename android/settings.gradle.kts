@@ -16,3 +16,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "StudyHubAndroid"
 include(":app")
+include(":rewarder")
