@@ -51,6 +51,7 @@ public final class MainActivity extends Activity {
     private MotionViews.RollingAmount totalView;
     private MotionViews.RubberTabs tabs;
     private MotionViews.GoldFlight flight;
+    private MotionViews.ImpactRipple impact;
     private boolean rewarding=false;
     private long displayedCents=0;
     private int currentTab=0;
@@ -124,6 +125,8 @@ public final class MainActivity extends Activity {
 
         flight=new MotionViews.GoldFlight(this);
         rootFrame.addView(flight,fp(-1,-1,Gravity.FILL));
+        impact=new MotionViews.ImpactRipple(this);
+        rootFrame.addView(impact,fp(-1,-1,Gravity.FILL));
         renderRewardList();
         renderSettingsList();
         if(store.isReadOnly())Toast.makeText(this,"本地数据无法读取，已保护原始数据并禁用修改",Toast.LENGTH_LONG).show();
@@ -396,10 +399,25 @@ public final class MainActivity extends Activity {
             displayedCents=newTotal;
             miniBalance.setText(money(newTotal));
             totalView.roll(newTotal);
+            // One physical event: coin arrives -> diffuse water ripples,
+            // amount pill depresses then gently overshoots its resting size.
+            impact.burst(tx,ty);
+            miniBalance.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
             miniBalance.animate().cancel();
-            miniBalance.setScaleX(1.12f);miniBalance.setScaleY(1.12f);
-            miniBalance.animate().scaleX(1).scaleY(1).setDuration(420)
-                .setInterpolator(new OvershootInterpolator(.58f)).start();
+            miniBalance.setScaleX(1f);
+            miniBalance.setScaleY(1f);
+            miniBalance.animate().scaleX(.945f).scaleY(.91f).setDuration(105)
+                .setInterpolator(new DecelerateInterpolator(1.35f))
+                .withEndAction(()->miniBalance.animate()
+                    .scaleX(1f).scaleY(1f).setDuration(410)
+                    .setInterpolator(new OvershootInterpolator(1.12f)).start())
+                .start();
+            // The large ledger settles with the same subtle liquid inertia.
+            balancePanel.animate().cancel();
+            balancePanel.setScaleX(.988f);
+            balancePanel.setScaleY(.985f);
+            balancePanel.animate().scaleX(1f).scaleY(1f).setDuration(440)
+                .setInterpolator(new OvershootInterpolator(.64f)).start();
             renderRewardList();
         });
     }
