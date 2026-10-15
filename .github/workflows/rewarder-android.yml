@@ -28,7 +28,7 @@ jobs:
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: Shiguang-Rewarder-1.0.0-debug
+          name: Shiguang-Rewarder-1.1.0-debug
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
@@ -37,14 +37,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.0.0-preview
+          tag=rewarder-v1.1.0-preview
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Preview release is frozen to protect users from silent signature changes."
+            echo "This exact preview tag is already published and is kept immutable."
           else
-            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.0.0-preview.apk
-            gh release create "$tag" Shiguang-Rewarder-v1.0.0-preview.apk \
-              --title "拾光奖励 Android v1.0 预览版" \
-              --notes "原生双 Tab 奖励器，临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
+            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.1.0-preview.apk
+            gh release create "$tag" Shiguang-Rewarder-v1.1.0-preview.apk \
+              --title "拾光奖励 Android v1.1 预览版" \
+              --notes "原生双 Tab 奖励器：雾面流动玻璃、橡胶果冻 Tab、FMV 手势编辑与右上飞出删除、领取金额飞入。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
               --prerelease --latest=false
           fi
 
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.configured == 'true'
         with:
-          name: Shiguang-Rewarder-1.0.0-stable
+          name: Shiguang-Rewarder-1.1.0-stable
           path: android/rewarder/build/outputs/apk/release/rewarder-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -88,13 +88,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.0.0-stable
-          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Shiguang-Rewarder-v1.0.0-stable.apk
+          tag=rewarder-v1.1.0-stable
+          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Shiguang-Rewarder-v1.1.0-stable.apk
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Stable v1.0.0 already published; refusing to silently replace an installed build."
+            echo "Stable v1.1.0 already published; refusing to silently replace an installed build."
           else
-            gh release create "$tag" Shiguang-Rewarder-v1.0.0-stable.apk \
-              --title "拾光奖励 Android v1.0 正式签名版" \
+            gh release create "$tag" Shiguang-Rewarder-v1.1.0-stable.apk \
+              --title "拾光奖励 Android v1.1 正式签名版" \
               --notes "独立签名永久版本。请安全保存你的 JKS 与密码，后续覆盖升级必须使用同一证书。" \
               --latest=false
           fi
