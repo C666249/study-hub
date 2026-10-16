@@ -23,8 +23,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.0-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.0-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.1-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.1-stable`
 
 ### 长期签名：只需配置一次
 
