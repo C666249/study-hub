@@ -7,79 +7,142 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
-
 import eightbitlab.com.blurview.BlurTarget;
 import com.example.liquidglass.LiquidGlassView;
 
 /**
- * Clear, refracting glass for the existing Android View hierarchy.
+ * Real SDF glass with deliberately different optical personalities.
  *
- * Uses QWEA0/Liquid-Glass-Android (MIT) for a real SDF glass lens on API33+,
- * with graceful classic blur on older devices. Samples ONLY the separately
- * rendered moving color target, not children or sibling panes.
+ * Clear: short-range blur, focused refraction, light rim, unpainted centre.
+ * Frosted: subtle scattering and low-contrast rim for readable large cards.
  *
- * The previous painted double rim, fan-shaped arc glints, rough speckles and
- * opaque glass fill are intentionally gone. A tiny edge caustic is supplied
- * by the library's physical material itself.
+ * Based on the open-source QWEA0/Liquid-Glass-Android implementation (MIT).
+ * Never draw synthetic arcs, double-stroke frames or repeated noise over glass.
  */
 final class GlassMaterial {
     private GlassMaterial(){}
-    private static int d(Context c,float v){return Math.round(MotionViews.dp(c,v));}
+    private static int dp(Context c,float v){return Math.round(MotionViews.dp(c,v));}
+    private enum Finish { CLEAR, FROSTED, NAV }
 
     static final class GlassShell extends LiquidGlassView {
-        GlassShell(Context context,BlurTarget source,float radiusDp,boolean isPill,int tint) {
+        GlassShell(Context context,BlurTarget source,float radiusDp,Finish finish){
             super(context);
-            float r=d(context,radiusDp);
+            int r=dp(context,radiusDp);
             setCornerRadius(r);
             setBackdropSource(source);
             setEnableDynamicBackground(true);
-            setMaterial(com.example.liquidglass.GlassMaterial.CLEAR);
-            // Clear means optically visible moving background, not stained glass.
-            setGlassTint(tint);
-            setBlurAmount(isPill?.025f:.040f);
-            setSaturation(118f);
-            setRefractionHeight(d(context,isPill?7f:9f));
-            setBevelWidth(d(context,isPill?12f:18f));
-            setRefractionFalloff(2.65f);
-            setDispersionStrength(.055f);
+            setEnableChromaticAberration(false);
+            setEnableChromaticDispersion(false);
             setEnableSensorHighlight(false);
             setEnableAdaptiveTint(false);
             setEnableShadow(false);
             setEnablePressEffect(false);
             setEnableEdgeHighlight(true);
-            setEdgeHighlightOpacity(32f);
-            setEdgeHighlightBorderWidth(d(context,.75f));
-            setEnableChromaticAberration(false);
-            // Rounded foreground clipping: text and children remain crisp.
-            GradientDrawable outline=new GradientDrawable();
-            outline.setColor(Color.TRANSPARENT);
-            outline.setCornerRadius(r);
-            setBackground(outline);
+            setAdaptiveLensScale(true);
+            setGlobalDownsampleFactor(1f);
+            setEdgeSoftness(dp(context,1.8f));
+
+            if(finish==Finish.CLEAR){
+                // A thin iOS-like refractive lens. Transparent central region.
+                setMaterial(com.example.liquidglass.GlassMaterial.CLEAR);
+                setBlurAmount(.012f);
+                setSaturation(107f);
+                setGlassTint(0x08F5F7FA);
+                setBevelWidth(dp(context,14f));
+                setRefractionHeight(dp(context,15f));
+                setRefractionFalloff(1.65f);
+                setDispersionStrength(.11f);
+                setEdgeHighlightOpacity(46f);
+                setEdgeHighlightBorderWidth(dp(context,.74f));
+            } else if(finish==Finish.FROSTED) {
+                // Material diffusion is restrained: color still flows underneath.
+                setMaterial(com.example.liquidglass.GlassMaterial.REGULAR);
+                setBlurAmount(.047f);
+                setSaturation(109f);
+                setGlassTint(0x0EEAF1EF);
+                setBevelWidth(dp(context,12f));
+                setRefractionHeight(dp(context,6.8f));
+                setRefractionFalloff(2.45f);
+                setDispersionStrength(.025f);
+                setEdgeHighlightOpacity(16f);
+                setEdgeHighlightBorderWidth(dp(context,.55f));
+            } else {
+                setMaterial(com.example.liquidglass.GlassMaterial.REGULAR);
+                setBlurAmount(.024f);
+                setSaturation(110f);
+                setGlassTint(0x0ACBDCE0);
+                setBevelWidth(dp(context,11f));
+                setRefractionHeight(dp(context,4.5f));
+                setRefractionFalloff(2.5f);
+                setDispersionStrength(.02f);
+                setEdgeHighlightOpacity(17f);
+                setEdgeHighlightBorderWidth(dp(context,.5f));
+            }
+            GradientDrawable clip=new GradientDrawable();
+            clip.setColor(Color.TRANSPARENT);
+            clip.setCornerRadius(r);
+            setBackground(clip);
             setOutlineProvider(ViewOutlineProvider.BACKGROUND);
             setClipToOutline(true);
-            setClipChildren(false);
+            setClipChildren(true);
         }
     }
 
-    private static GlassShell create(Context c,BlurTarget target,View content,
-            float radius,int tint,int contentWidth,int contentHeight,boolean pill){
-        GlassShell shell=new GlassShell(c,target,radius,pill,tint);
-        FrameLayout.LayoutParams p=new FrameLayout.LayoutParams(
-            contentWidth,contentHeight,Gravity.CENTER);
-        shell.addView(content,p);
+    private static GlassShell wrap(Context c,BlurTarget source,View child,float radius,
+                                    Finish finish,int w,int h){
+        GlassShell shell=new GlassShell(c,source,radius,finish);
+        shell.addView(child,new FrameLayout.LayoutParams(w,h,Gravity.CENTER));
         return shell;
     }
 
-    static GlassShell panel(Context c,BlurTarget target,View content,float radius){
-        return create(c,target,content,radius,0x18DCEAE7,-1,-2,false);
+    static GlassShell panel(Context c,BlurTarget source,View child,float radius){
+        return wrap(c,source,child,radius,Finish.FROSTED,-1,-2);
     }
-    static GlassShell floatingCard(Context c,BlurTarget target,View content,float radius){
-        return create(c,target,content,radius,0x14E0E8E4,-1,-2,false);
+    static GlassShell floatingCard(Context c,BlurTarget source,View child,float radius){
+        return wrap(c,source,child,radius,Finish.FROSTED,-1,-2);
     }
-    static GlassShell pill(Context c,BlurTarget target,View content,float radius){
-        return create(c,target,content,radius,0x10EAF1EE,-2,-2,true);
+    static GlassShell pill(Context c,BlurTarget source,View child,float radius){
+        return wrap(c,source,child,radius,Finish.CLEAR,-2,-2);
     }
-    static GlassShell navigation(Context c,BlurTarget target,View content,float radius){
-        return create(c,target,content,radius,0x1BD9E6E9,-1,-1,true);
+
+    /**
+     * The selected segment is ANOTHER real clear-glass lens, not a tinted
+     * painted rectangle. RubberTabs still owns finger input and the exact
+     * FMV width/position physics; this view only mirrors its geometry.
+     */
+    static GlassShell navigation(Context c,BlurTarget source,MotionViews.RubberTabs tabs,float radius){
+        GlassShell outer=new GlassShell(c,source,radius,Finish.NAV);
+        FrameLayout stage=new FrameLayout(c);
+        stage.setClipChildren(false);
+        stage.setClipToPadding(false);
+        GlassShell selected=new GlassShell(c,source,radius-6f,Finish.CLEAR);
+        stage.addView(selected,new FrameLayout.LayoutParams(1,1,Gravity.TOP|Gravity.LEFT));
+        stage.addView(tabs,new FrameLayout.LayoutParams(-1,-1,Gravity.FILL));
+
+        stage.addOnLayoutChangeListener((v,left,top,right,bottom,ol,ot,or_,ob)->{
+            int width=right-left,height=bottom-top;
+            if(width<10||height<10)return;
+            int slotWidth=Math.max(1,Math.round((width-dp(c,14f))/2f-dp(c,4f)));
+            int slotHeight=Math.max(1,height-dp(c,12f));
+            FrameLayout.LayoutParams lp=(FrameLayout.LayoutParams)selected.getLayoutParams();
+            if(lp.width!=slotWidth||lp.height!=slotHeight){
+                lp.width=slotWidth;lp.height=slotHeight;
+                selected.setLayoutParams(lp);
+                selected.setPivotX(slotWidth*.5f);
+                selected.setPivotY(slotHeight*.5f);
+            }
+            tabs.reportThumb();
+        });
+
+        tabs.setThumbListener((center,width,scale)->{
+            int slot=selected.getLayoutParams().width;
+            if(slot<2)return;
+            selected.setX(center-slot*.5f);
+            selected.setY(dp(c,6f));
+            selected.setScaleX(width/slot);
+            selected.setScaleY(scale);
+        });
+        outer.addView(stage,new FrameLayout.LayoutParams(-1,-1,Gravity.FILL));
+        return outer;
     }
 }
