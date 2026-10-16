@@ -1,4 +1,13 @@
-# 拾光 · 玻璃光学实现记录（v1.7）
+# Aurea · GlassSurface 光学实现记录（v1.8）
+
+## v1.8 · 实际运行架构
+
+- React Bits 原生 WebGL2 光学移植位于 `src/main/assets/rewarder-glass.js`，使用 GlassSurface 的位移场 / RGB 分通道采样方法；不是网页导航、不是插图，不依赖 CDN。
+- `ReactBitsGlass.java` 只将 Android View 的圆角、大小、屏幕位置及裁剪信息传给单个离线 WebView；不发送奖励金额、任务名称或个人数据。
+- WebView 同时绘制底下的流动光场和各卡片的折射玻璃；原生 TextView、任务业务、FMV 阻力 / 飞出手势保留在前层。透明原生容器不再涂半透明灰白底。
+- `RewardStore.undo(Receipt)` 持久化删除特定账本记录，失败恢复；同步重算余额、记录次数及当期可领取状态。未删除任务。
+- 用 npm/React 框架本体会增加 APK 复杂度，因此仅把 React Bits 核心着色器与距离场实现为离线 WebGL2 脚本，原版权与 MIT + Commons Clause 条件见 `src/main/assets/REACT_BITS_LICENSE.txt`。
+- 原生 QWEA0 在 v1.7 曾使用；v1.8 不再使用其玻璃渲染依赖，以下内容为历史迁移记录。
 
 ## 目标
 
