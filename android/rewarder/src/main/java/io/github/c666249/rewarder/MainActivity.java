@@ -55,6 +55,9 @@ public final class MainActivity extends Activity {
     private MotionViews.RubberTabs tabs;
     private MotionViews.GoldFlight flight;
     private MotionViews.ImpactRipple impact;
+    private View createOrb;
+    private TextView createPlus;
+    private boolean createOpening=false;
     private boolean rewarding=false;
     private long displayedCents=0;
     private int currentTab=0;
@@ -134,6 +137,7 @@ public final class MainActivity extends Activity {
         rootFrame.addView(flight,fp(-1,-1,Gravity.FILL));
         impact=new MotionViews.ImpactRipple(this);
         rootFrame.addView(impact,fp(-1,-1,Gravity.FILL));
+        installCreateOrb();
         renderRewardList();
         renderSettingsList();
         if(store.isReadOnly())Toast.makeText(this,"本地数据无法读取，已保护原始数据并禁用修改",Toast.LENGTH_LONG).show();
@@ -224,12 +228,6 @@ public final class MainActivity extends Activity {
         LinearLayout top=row();
         TextView headline=text("任务管理",28,INK,true);
         top.addView(headline,new LinearLayout.LayoutParams(0,d(54),1));
-        TextView add=text("＋  新建",14,0xffF2E3C6,true);
-        add.setGravity(Gravity.CENTER);
-        add.setPadding(d(13),0,d(14),0);
-        add.setMinimumHeight(d(42));
-        top.addView(GlassMaterial.pill(this,blurTarget,add,21),lp(-2,42));
-        touch(add);add.setOnClickListener(v->openEditor(null));
         body.addView(top,lp(-1,57));
 
         TextView instruction=text("左滑编辑 · 继续左滑删除",12,0xffABB9AF,false);
@@ -430,9 +428,91 @@ public final class MainActivity extends Activity {
         });
     }
 
+
+    /**
+     * Settings-only floating glass orb, above the bottom rubber Tab.
+     * It is a genuine QWEA0 Clear lens against the existing moving backdrop,
+     * never a new solid colored drawable.
+     */
+    private void installCreateOrb(){
+        createPlus=text("＋",31,0xffF5E6C4,true);
+        createPlus.setGravity(Gravity.CENTER);
+        createPlus.setMinWidth(d(58));
+        createPlus.setMinHeight(d(58));
+        createPlus.setContentDescription("新建奖励任务");
+        createOrb=GlassMaterial.pill(this,blurTarget,createPlus,30);
+        FrameLayout.LayoutParams params=fp(58,58,Gravity.RIGHT|Gravity.BOTTOM);
+        params.rightMargin=d(25);
+        // Floating over settings content, 16dp above the 86dp nav area.
+        params.bottomMargin=d(104);
+        rootFrame.addView(createOrb,params);
+        createOrb.setElevation(d(14));
+        createOrb.setVisibility(View.GONE);
+        createOrb.setAlpha(0f);
+        touch(createOrb);
+        createOrb.setContentDescription("新建奖励任务");
+        createOrb.setOnClickListener(v->openFromOrb());
+        touch(createPlus);
+        createPlus.setOnClickListener(v->openFromOrb());
+    }
+
+    private void showCreateOrb(boolean visible){
+        if(createOrb==null)return;
+        createOrb.animate().cancel();
+        if(visible){
+            createOrb.setVisibility(View.VISIBLE);
+            if(!android.animation.ValueAnimator.areAnimatorsEnabled()){
+                createOrb.setTranslationY(0);
+                createOrb.setScaleX(1);createOrb.setScaleY(1);createOrb.setAlpha(1);
+                return;
+            }
+            createOrb.setTranslationY(d(16));
+            createOrb.setScaleX(.77f);createOrb.setScaleY(.77f);
+            createOrb.setAlpha(0f);
+            createOrb.animate().translationY(0).scaleX(1).scaleY(1).alpha(1f)
+                .setDuration(380).setInterpolator(new OvershootInterpolator(.83f)).start();
+        }else{
+            if(!android.animation.ValueAnimator.areAnimatorsEnabled()){
+                createOrb.setVisibility(View.GONE);
+                createOrb.setAlpha(0);return;
+            }
+            createOrb.animate().alpha(0).scaleX(.83f).scaleY(.83f)
+                .translationY(d(14)).setDuration(185)
+                .withEndAction(()->{if(currentTab!=1)createOrb.setVisibility(View.GONE);}).start();
+        }
+    }
+
+    private void openFromOrb(){
+        if(createOpening||currentTab!=1)return;
+        if(store.isReadOnly()){
+            Toast.makeText(this,"本地数据受保护，暂不能创建任务",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        createOpening=true;
+        createPlus.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+        createPlus.animate().cancel();
+        createPlus.animate().rotation(135f).scaleX(.88f).scaleY(.88f)
+            .setDuration(370).setInterpolator(new OvershootInterpolator(.56f)).start();
+        // Rotate the glass + first; then hand off to the native bottom-sheet.
+        createPlus.postDelayed(()->{
+            if(createOpening&&currentTab==1)openEditor(null);
+            else resetCreateOrb();
+        },140);
+    }
+
+    private void resetCreateOrb(){
+        createOpening=false;
+        if(createPlus==null)return;
+        createPlus.animate().cancel();
+        createPlus.animate().rotation(0f).scaleX(1f).scaleY(1f)
+            .setDuration(350).setInterpolator(new OvershootInterpolator(.56f)).start();
+    }
+
     private void switchTab(int index) {
         if(index==currentTab)return;
         currentTab=index;
+        if(index!=1&&createOpening)resetCreateOrb();
+        showCreateOrb(index==1);
         View shown=index==0?homeScroll:settingsScroll;
         View hidden=index==0?settingsScroll:homeScroll;
         hidden.animate().cancel();shown.animate().cancel();
@@ -472,6 +552,9 @@ public final class MainActivity extends Activity {
     private void openEditor(RewardStore.Task previous) {
         if(store.isReadOnly()){Toast.makeText(this,"本地数据已保护，不能修改",Toast.LENGTH_SHORT).show();return;}
         Dialog sheet=new Dialog(this,R.style.RewardSheet);
+        // Spinning + returns to its resting orientation on save, cancel,
+        // Android back, or tapping outside of the sheet.
+        if(previous==null)sheet.setOnDismissListener(dialog->resetCreateOrb());
         LinearLayout content=column();
         content.setPadding(d(24),d(27),d(24),d(30));
         content.setBackground(shape(0xff22302C,27,0xff758477));
@@ -492,25 +575,11 @@ public final class MainActivity extends Activity {
 
         LinearLayout.LayoutParams flabel=lp(-1,24);flabel.topMargin=d(17);
         content.addView(formLabel("奖励周期"),flabel);
-        LinearLayout segment=row();
-        segment.setPadding(d(4),d(4),d(4),d(4));
-        segment.setBackground(shape(0xff1B2826,18,0));
-        content.addView(segment,lp(-1,56));
         final String[] cadence={previous==null?RewardStore.DAILY:previous.cadence};
-        TextView daily=text("每天",14,INK,true),weekly=text("每周",14,INK,true);
-        daily.setGravity(Gravity.CENTER);weekly.setGravity(Gravity.CENTER);
-        segment.addView(daily,new LinearLayout.LayoutParams(0,-1,1));
-        segment.addView(weekly,new LinearLayout.LayoutParams(0,-1,1));
-        Runnable updateChoice=()->{
-            daily.setBackground(shape(RewardStore.DAILY.equals(cadence[0])?0xff4A564A:Color.TRANSPARENT,15,0));
-            weekly.setBackground(shape(RewardStore.WEEKLY.equals(cadence[0])?0xff4A564A:Color.TRANSPARENT,15,0));
-            daily.setTextColor(RewardStore.DAILY.equals(cadence[0])?GOLD:MUTED);
-            weekly.setTextColor(RewardStore.WEEKLY.equals(cadence[0])?GOLD:MUTED);
-        };
-        touch(daily);touch(weekly);
-        daily.setOnClickListener(v->{cadence[0]=RewardStore.DAILY;updateChoice.run();});
-        weekly.setOnClickListener(v->{cadence[0]=RewardStore.WEEKLY;updateChoice.run();});
-        updateChoice.run();
+        MotionViews.JellyCadence segment=new MotionViews.JellyCadence(
+            this,RewardStore.WEEKLY.equals(cadence[0])?1:0,
+            index->cadence[0]=index==0?RewardStore.DAILY:RewardStore.WEEKLY);
+        content.addView(segment,lp(-1,56));
 
         TextView error=text("",12,0xffFFAA97,false);
         error.setVisibility(View.GONE);
