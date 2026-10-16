@@ -3,6 +3,9 @@
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
+- **v1.7.2**：设置页「新建」改为右下角底部 Tab 上方的独立浮动透明 Liquid Glass 球，采用现有 QWEA0 HERO Clear 镜片；点击 ＋ 旋转后打开原生新建任务底部弹窗，关闭旋转复位。仅设置页显示。
+- 任务弹窗「每天 / 每周」改为与底部 Tab 同一类 FMV 橡胶果冻动画：移动拉伸、阻尼惯性、轻震动、收缩回弹；保留原金额校验和日/周任务周期数据结构。
+
 - **v1.7.1（原 v1.7.0 视觉基线）**：保留 v1.7.0 的 QWEA0 原生玻璃、背景、主页面、Tab 动画；应用名称改为 Aurea，包名和旧 SharedPreferences 键不变；奖励账本沿用 FMV 左滑橡胶阻尼 / 右上飞出删除，删除后重新统计金额、记录次数及当前任务已领取状态。未移植 React Bits/WebView。
 
 - v1.7：React Bits GlassSurface 的域扭曲光学思路（AGSL 原生改写）；QWEA0 玻璃色散通路真正启用、顶部金额独立清透镜片、背景加入可折射的细腻光影褶皱；记录见 [OPTICS.md](OPTICS.md)。
@@ -22,8 +25,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.1-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.1-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.2-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.2-stable`
 
 ### 长期签名：只需配置一次
 
