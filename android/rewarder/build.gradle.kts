@@ -9,13 +9,13 @@ val stableSigned = listOf(
 
 android {
     namespace = "io.github.c666249.rewarder"
-    compileSdk = 35
+    compileSdk = 36
     defaultConfig {
         applicationId = "io.github.c666249.rewarder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4.0"
+        versionCode = 6
+        versionName = "1.5.0"
     }
     if (stableSigned) {
         signingConfigs {
@@ -39,7 +39,8 @@ android {
     }
 }
 
-// Live backdrop blur of the animated BlurTarget (Apache-2.0).
+// Live backdrop target (Apache-2.0) and true SDF refractive glass (MIT).
 dependencies {
     implementation("com.github.Dimezis:BlurView:version-3.2.0")
+    implementation("com.github.QWEA0:liquidglass:v2.0.11")
 }
