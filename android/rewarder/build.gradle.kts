@@ -14,8 +14,8 @@ android {
         applicationId = "io.github.c666249.rewarder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 8
-        versionName = "1.7.0"
+        versionCode = 9
+        versionName = "1.8.0"
     }
     if (stableSigned) {
         signingConfigs {
@@ -42,5 +42,4 @@ android {
 // Live backdrop target (Apache-2.0) and true SDF refractive glass (MIT).
 dependencies {
     implementation("com.github.Dimezis:BlurView:version-3.2.0")
-    implementation("com.github.QWEA0:liquidglass:v2.0.11")
 }
