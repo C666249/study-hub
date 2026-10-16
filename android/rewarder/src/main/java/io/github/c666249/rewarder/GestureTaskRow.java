@@ -51,7 +51,8 @@ final class GestureTaskRow extends FrameLayout {
         slop=ViewConfiguration.get(context).getScaledTouchSlop();
         setClipChildren(false);setClipToPadding(false);
         underlay=new FrameLayout(context);
-        underlay.setBackground(bg(0x92302D28,0x3FE6D2AE));
+        // Remain truly clear until an actual swipe exposes the edit/delete layer.
+        underlay.setBackgroundColor(Color.TRANSPARENT);
         hint=new TextView(context);
         hint.setGravity(Gravity.RIGHT|Gravity.CENTER_VERTICAL);
         hint.setTextSize(12f);
@@ -98,7 +99,8 @@ final class GestureTaskRow extends FrameLayout {
                         .setInterpolator(new OvershootInterpolator(1.1f)).start();
                 }
             }
-            underlay.setBackground(bg(next==2?0xB0513437:0x983B382F,
+            if(next==0)underlay.setBackgroundColor(Color.TRANSPARENT);
+            else underlay.setBackground(bg(next==2?0xB0513437:0x983B382F,
                 next==2?0x99DA8990:0x6AE4C59C));
         }
         hint.setText(stage==2?"松手删除":stage==1?(deletionOnly?"继续左滑删除":"松手编辑"):"向左滑动");
@@ -152,6 +154,7 @@ final class GestureTaskRow extends FrameLayout {
         return super.onTouchEvent(e);
     }
     private void settle(Runnable done){
+        underlay.setBackgroundColor(Color.TRANSPARENT);
         movingGlass.animate().cancel();
         movingGlass.animate().translationX(0).scaleX(1).scaleY(1).setDuration(225)
             .setInterpolator(new OvershootInterpolator(.9f)).withEndAction(done).start();
@@ -169,7 +172,15 @@ final class GestureTaskRow extends FrameLayout {
         ImageView ghost=null;
         try{
             pixels=Bitmap.createBitmap(movingGlass.getWidth(),movingGlass.getHeight(),Bitmap.Config.ARGB_8888);
-            movingGlass.draw(new Canvas(pixels));
+            Canvas captureCanvas=new Canvas(pixels);
+            // With live WebGL behind native foreground, draw a soft temporary
+            // glass body only into the deletion ghost bitmap; the resting row
+            // stays fully clear so the fluid background remains unobstructed.
+            android.graphics.Paint glassGhost=new android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG);
+            glassGhost.setColor(0x45C8DEDF);
+            captureCanvas.drawRoundRect(0,0,pixels.getWidth(),pixels.getHeight(),
+                d(22),d(22),glassGhost);
+            movingGlass.draw(captureCanvas);
             int[] a=new int[2],b=new int[2];
             movingGlass.getLocationOnScreen(a);host.getLocationOnScreen(b);
             float sx=a[0]-b[0],sy=a[1]-b[1];
