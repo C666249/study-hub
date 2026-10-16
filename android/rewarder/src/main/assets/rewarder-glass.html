@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>拾光 · Glass Surface</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#182923;}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block;pointer-events:none;}
+#backdrop{z-index:0;}
+#glass{z-index:1;}
+</style>
+</head>
+<body>
+<canvas id="backdrop" aria-hidden="true"></canvas>
+<canvas id="glass" aria-hidden="true"></canvas>
+<script src="./rewarder-glass.js"></script>
+</body>
+</html>
