@@ -8,6 +8,8 @@ import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
+import android.graphics.RuntimeShader;
+import android.os.Build;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -32,6 +34,7 @@ final class GlassBackdrop extends View {
     private Shader background;
     private Shader dreamBackground;
     private Shader frost;
+    private OpticalFlow opticalFlow;
     private ValueAnimator ticker;
     private long epoch;
     private long lastDraw=0L;
@@ -43,6 +46,14 @@ final class GlassBackdrop extends View {
         setFocusable(false);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         createShaders();
+        if(Build.VERSION.SDK_INT>=33){
+            // Native AGSL adds a slowly refracted, low-contrast caustic field.
+            // A few broad gradients now have enough structure for SDF lenses
+            // to visibly bend, while the atmosphere remains calm.
+            try { opticalFlow=new OpticalFlow(); } catch(RuntimeException ignored) {
+                opticalFlow=null; // all older / unsupported devices retain color pools
+            }
+        }
     }
 
     private void createShaders() {
@@ -96,7 +107,7 @@ final class GlassBackdrop extends View {
      * screensaver look and yield visible drift over a few seconds.
      */
     private float colorBlend;
-    // 72 seconds for calm -> violet-blue -> calm, with a smooth derivative at
+    // 96 seconds for calm -> violet-blue -> calm, with a smooth derivative at
     // both ends. Both palettes share the same spatial movement / refraction.
     private void pool(Canvas canvas,int id,float cx,float cy,
                       float rx,float ry,float rotation) {
@@ -183,11 +194,62 @@ final class GlassBackdrop extends View {
             w*.38f,h*.20f,10f*(float)Math.sin(t*.44f));
 
         paint.setShader(null);
+        // React Bits-inspired domain warping under the glass. No repetitive
+        // noise texture, no crisp wave paths: only broad optical light folds.
+        if(opticalFlow!=null) opticalFlow.draw(canvas,w,h,t,colorBlend);
         // Stationary subtle satin pane: optical haze without rough noise.
         veil.setShader(frost);
         canvas.drawRect(0,0,w,h,veil);
         veil.setShader(null);
         // No bitmap noise layer. Frosting is optical, not a repeating texture.
+    }
+
+
+    /**
+     * A small AGSL illumination field, NOT a second glass filter.
+     * Real displacement and RGB spectral sampling remain in the QWEA0
+     * LiquidGlassView AGSL lens. This underlay supplies soft detail that
+     * its refractive edges can sample and magnify.
+     *
+     * Uses the WebGL GlassSurface principle of domain-warped coordinates,
+     * but avoids its 25x3 full-frame texture reads and readback overhead.
+     */
+    private static final class OpticalFlow {
+        private static final String SOURCE =
+            "uniform float2 uSize;\n" +
+            "uniform float uTime;\n" +
+            "uniform float uPalette;\n" +
+            "half4 main(float2 p) {\n" +
+            "  float2 uv=p/max(uSize,float2(1.0));\n" +
+            "  float t=uTime;\n" +
+            "  float2 warp=uv;\n" +
+            "  warp.x+=0.045*sin(uv.y*5.5+t*0.19)+0.023*sin(uv.y*10.0-t*0.25);\n" +
+            "  warp.y+=0.040*sin(uv.x*4.1-t*0.21);\n" +
+            "  float c1=warp.y-(0.29+0.087*sin(warp.x*4.2+t*0.16));\n" +
+            "  float c2=warp.x-(0.73+0.096*sin(warp.y*4.6-t*0.18));\n" +
+            "  float c3=warp.y-(0.80+0.075*sin(warp.x*6.8-t*0.22));\n" +
+            "  float band1=exp(-pow(c1/0.17,2.0))*exp(-pow((uv.x-0.48)/0.76,2.0));\n" +
+            "  float band2=exp(-pow(c2/0.21,2.0))*exp(-pow((uv.y-0.51)/0.85,2.0));\n" +
+            "  float band3=exp(-pow(c3/0.20,2.0))*exp(-pow((uv.x-0.33)/0.70,2.0));\n" +
+            "  float shimmer=0.83+0.17*sin(warp.x*8.1+warp.y*3.7+t*0.13);\n" +
+            "  float light=(0.14*band1+0.13*band2+0.075*band3)*shimmer;\n" +
+            "  float3 jade=float3(0.64,0.88,0.77);\n" +
+            "  float3 lilac=float3(0.67,0.69,0.98);\n" +
+            "  float3 rose=float3(0.94,0.65,0.79);\n" +
+            "  float3 tone=mix(jade,lilac,uPalette);\n" +
+            "  tone=mix(tone,rose,0.16*band3*uPalette);\n" +
+            "  return half4(half3(tone),half(clamp(light,0.0,0.19)));\n" +
+            "}\n";
+        private final RuntimeShader shader=new RuntimeShader(SOURCE);
+        private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG|Paint.DITHER_FLAG);
+        OpticalFlow(){paint.setShader(shader);}
+        void draw(Canvas canvas,float w,float h,float seconds,float palette){
+            if(!canvas.isHardwareAccelerated())return;
+            shader.setFloatUniform("uSize",w,h);
+            shader.setFloatUniform("uTime",seconds);
+            shader.setFloatUniform("uPalette",palette);
+            canvas.drawRect(0,0,w,h,paint);
+        }
     }
 
     private void start(){
