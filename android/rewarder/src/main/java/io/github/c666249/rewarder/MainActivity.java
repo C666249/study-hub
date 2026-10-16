@@ -105,11 +105,9 @@ public final class MainActivity extends Activity {
 
         rootFrame=new FrameLayout(this);
         rootFrame.setBackgroundColor(BG);
-        // Target is ONLY the live fluid background; glass views stay outside of it
-        // to prevent recursion and preserve legible foreground contents.
-        blurTarget=new BlurTarget(this);
-        blurTarget.addView(new GlassBackdrop(this),fp(-1,-1,Gravity.FILL));
-        rootFrame.addView(blurTarget,fp(-1,-1,Gravity.FILL));
+        // One offline WebGL scene owns BOTH light and refractive glass pixels.
+        rootFrame.addView(ReactBitsGlass.install(this),fp(-1,-1,Gravity.FILL));
+        blurTarget=new BlurTarget(this); // compatibility only, never drawn
         LinearLayout stack=column();
         rootFrame.addView(stack,fp(-1,-1,Gravity.FILL));
         setContentView(rootFrame);
@@ -612,6 +610,17 @@ public final class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         if(taskList!=null && !rewarding)renderRewardList();
+        ReactBitsGlass.resume();
+    }
+
+    @Override protected void onPause() {
+        ReactBitsGlass.pause();
+        super.onPause();
+    }
+
+    @Override protected void onDestroy() {
+        ReactBitsGlass.release();
+        super.onDestroy();
     }
 
     @Override public void onBackPressed() {
