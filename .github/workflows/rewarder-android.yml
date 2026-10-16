@@ -23,14 +23,12 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           "$SDKMANAGER" "platforms;android-36" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
-      - name: Validate embedded React Bits GlassSurface JS
-        run: node --check android/rewarder/src/main/assets/rewarder-glass.js
       - name: Build preview APK
         working-directory: android
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: Aurea-1.8.1-debug
+          name: Aurea-1.7.1-debug
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
@@ -39,14 +37,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.8.1-preview
+          tag=rewarder-v1.7.1-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "This exact preview tag is already published and is kept immutable."
           else
-            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Aurea-v1.8.1-preview.apk
-            gh release create "$tag" Aurea-v1.8.1-preview.apk \
-              --title "Aurea Android v1.8.1 预览版" \
-              --notes "原生双 Tab 奖励器：React Bits WebGL2 折射玻璃、流动背景、原生奖励记录和 FMV 账本深滑删除；累计金额与领取次数同步更新。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
+            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Aurea-v1.7.1-preview.apk
+            gh release create "$tag" Aurea-v1.7.1-preview.apk \
+              --title "Aurea Android v1.7.1 预览版" \
+              --notes "原生双 Tab 奖励器：恢复 v1.7.0 原生玻璃与动画，只更名 Aurea、给奖励账本加入 FMV 橡胶左滑、斜飞删除及累计金额同步。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
               --prerelease --latest=false
           fi
 
@@ -80,7 +78,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.configured == 'true'
         with:
-          name: Aurea-1.8.1-stable
+          name: Aurea-1.7.1-stable
           path: android/rewarder/build/outputs/apk/release/rewarder-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -90,13 +88,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.8.1-stable
-          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Aurea-v1.8.1-stable.apk
+          tag=rewarder-v1.7.1-stable
+          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Aurea-v1.7.1-stable.apk
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Stable v1.8.1 already published; refusing to silently replace an installed build."
+            echo "Stable v1.7.1 already published; refusing to silently replace an installed build."
           else
-            gh release create "$tag" Aurea-v1.8.1-stable.apk \
-              --title "Aurea Android v1.8.1 正式签名版" \
+            gh release create "$tag" Aurea-v1.7.1-stable.apk \
+              --title "Aurea Android v1.7.1 正式签名版" \
               --notes "独立签名永久版本。请安全保存你的 JKS 与密码，后续覆盖升级必须使用同一证书。" \
               --latest=false
           fi

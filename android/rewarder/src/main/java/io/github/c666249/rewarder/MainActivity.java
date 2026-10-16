@@ -105,9 +105,11 @@ public final class MainActivity extends Activity {
 
         rootFrame=new FrameLayout(this);
         rootFrame.setBackgroundColor(BG);
-        // One offline WebGL scene owns BOTH light and refractive glass pixels.
-        rootFrame.addView(ReactBitsGlass.install(this),fp(-1,-1,Gravity.FILL));
-        blurTarget=new BlurTarget(this); // compatibility only, never drawn
+        // Target is ONLY the live fluid background; glass views stay outside of it
+        // to prevent recursion and preserve legible foreground contents.
+        blurTarget=new BlurTarget(this);
+        blurTarget.addView(new GlassBackdrop(this),fp(-1,-1,Gravity.FILL));
+        rootFrame.addView(blurTarget,fp(-1,-1,Gravity.FILL));
         LinearLayout stack=column();
         rootFrame.addView(stack,fp(-1,-1,Gravity.FILL));
         setContentView(rootFrame);
@@ -563,90 +565,84 @@ public final class MainActivity extends Activity {
         }
     }
 
-    /**
-     * Real persisted receipt deletion through the same FMV LedgerSwipeRow /
-     * LedgerDeleteFlight physics as task management. Each deletion revokes
-     * only the specific receipt, leaving its task definition untouched.
-     * All totals derive again from RewardStore; no speculative UI subtraction.
-     */
-    private void renderHistoryRows(LinearLayout content,TextView summary,ScrollView scroll){
-        int restore=scroll.getScrollY();
-        Map<String,Float> positions=new HashMap<>();
+    // The v1.7.0 home screen and optical rendering are untouched.
+    // Only receipt rows reuse the same FMV rubber resistance and upper-right
+    // deletion flight as the existing task management list.
+    private void renderHistoryRows(LinearLayout content,TextView summary,ScrollView sc){
+        int oldScroll=sc.getScrollY();
+        Map<String,Float> oldY=new HashMap<>();
         for(int i=0;i<content.getChildCount();i++){
-            View child=content.getChildAt(i);
-            if(child.getTag() instanceof String)
-                positions.put((String)child.getTag(),child.getY());
+            View v=content.getChildAt(i);
+            if(v.getTag() instanceof String)oldY.put((String)v.getTag(),v.getY());
         }
         content.removeAllViews();
         summary.setText(money(store.balance())+"  ·  共 "+store.count()+" 次");
-        List<RewardStore.Receipt> items=store.receipts();
-        if(items.isEmpty()){
-            TextView empty=text("暂无奖励记录",13,MUTED,false);
+        List<RewardStore.Receipt> entries=store.receipts();
+        if(entries.isEmpty()){
+            TextView empty=text("尚无奖励记录。第一次领取后会出现在这里。",13,MUTED,false);
             empty.setGravity(Gravity.CENTER);
-            empty.setPadding(0,d(35),0,d(41));
+            empty.setPadding(0,d(37),0,d(40));
             content.addView(empty,lp(-1,-2));
-        } else {
+        }else{
             SimpleDateFormat fmt=new SimpleDateFormat("MM.dd  HH:mm",Locale.CHINA);
-            for(int i=items.size()-1;i>=0;i--){
-                RewardStore.Receipt receipt=items.get(i);
+            for(int i=entries.size()-1;i>=0;i--){
+                RewardStore.Receipt receipt=entries.get(i);
                 GestureTaskRow row=new GestureTaskRow(this,blurTarget);
                 row.setDeletionOnly(true);
                 row.setTag(receipt.id);
-                row.setContentDescription(receipt.title+" 奖励 "+money(receipt.cents)+"，向左深滑删除这条领取记录");
-                LinearLayout info=column();
-                info.setGravity(Gravity.CENTER_VERTICAL);
+                row.setContentDescription(receipt.title+"，"+money(receipt.cents)+"，深度左滑后松手删除该奖励记录");
+                LinearLayout labels=column();
+                labels.setGravity(Gravity.CENTER_VERTICAL);
                 TextView title=text(receipt.title,14.5f,INK,true);
                 title.setMaxLines(1);
                 title.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                info.addView(title,lp(-1,25));
-                TextView time=text(fmt.format(new Date(receipt.timestamp)),11.5f,MUTED,false);
-                info.addView(time,lp(-1,23));
-                row.surface.addView(info,new LinearLayout.LayoutParams(0,-2,1));
+                labels.addView(title,lp(-1,25));
+                labels.addView(text(fmt.format(new Date(receipt.timestamp)),11.5f,MUTED,false),lp(-1,23));
+                row.surface.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
                 TextView amount=text("+"+money(receipt.cents),14,GOLD,true);
-                amount.setGravity(Gravity.CENTER_VERTICAL);
                 row.surface.addView(amount,lp(-2,-1));
                 row.onDelete=()->{
+                    // Existing RewardStore.undo() atomically removes a receipt
+                    // by id and rolls it back if saving fails. Task stays intact.
                     if(!store.undo(receipt)){
-                        Toast.makeText(this,"删除失败，原始记录已保留",Toast.LENGTH_SHORT).show();
-                        renderHistoryRows(content,summary,scroll);
+                        Toast.makeText(this,"删除失败，原有奖励记录已保留",Toast.LENGTH_SHORT).show();
+                        renderHistoryRows(content,summary,sc);
                         return;
                     }
-                    // No task deletion: removing the receipt also unlocks its
-                    // daily/weekly claim again if it belonged to this period.
-                    displayedCents=store.balance();
-                    miniBalance.setText(money(displayedCents));
-                    totalView.roll(displayedCents);
+                    long newBalance=store.balance();
+                    displayedCents=newBalance;
+                    miniBalance.setText(money(newBalance));
+                    totalView.roll(newBalance);
                     miniBalance.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
-                    renderRewardList();
-                    renderHistoryRows(content,summary,scroll);
+                    renderRewardList(); // Re-evaluate today/week claim status.
+                    renderHistoryRows(content,summary,sc);
                     summary.animate().cancel();
-                    summary.setScaleX(.965f);summary.setScaleY(.965f);
-                    summary.animate().scaleX(1f).scaleY(1f).setDuration(360)
-                        .setInterpolator(new OvershootInterpolator(.65f)).start();
+                    summary.setScaleX(.97f);
+                    summary.setScaleY(.97f);
+                    summary.animate().scaleX(1).scaleY(1).setDuration(330)
+                        .setInterpolator(new OvershootInterpolator(.6f)).start();
                 };
-                LinearLayout.LayoutParams rowParams=lp(-1,-2);
-                rowParams.bottomMargin=d(9);
-                content.addView(row,rowParams);
+                LinearLayout.LayoutParams rlp=lp(-1,-2);
+                rlp.bottomMargin=d(9);
+                content.addView(row,rlp);
             }
         }
-        // The bottom sheet stays put: preserve scroll and spring surviving
-        // entries into the deleted row's previous vertical position.
-        scroll.post(()->scroll.scrollTo(0,restore));
-        if(!positions.isEmpty()&&android.animation.ValueAnimator.areAnimatorsEnabled()){
-            ViewTreeObserver observer=content.getViewTreeObserver();
-            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
+        sc.post(()->sc.scrollTo(0,oldScroll));
+        if(!oldY.isEmpty()&&android.animation.ValueAnimator.areAnimatorsEnabled()){
+            ViewTreeObserver tree=content.getViewTreeObserver();
+            tree.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
                 @Override public boolean onPreDraw(){
-                    if(observer.isAlive())observer.removeOnPreDrawListener(this);
+                    if(tree.isAlive())tree.removeOnPreDrawListener(this);
                     for(int i=0;i<content.getChildCount();i++){
-                        View child=content.getChildAt(i);
-                        if(!(child.getTag() instanceof String))continue;
-                        Float before=positions.get((String)child.getTag());
+                        View v=content.getChildAt(i);
+                        if(!(v.getTag() instanceof String))continue;
+                        Float before=oldY.get((String)v.getTag());
                         if(before==null)continue;
-                        float delta=before-child.getTop();
+                        float delta=before-v.getTop();
                         if(Math.abs(delta)<1f)continue;
-                        child.setTranslationY(delta);
-                        child.animate().translationY(0).setDuration(390)
-                            .setInterpolator(new PathInterpolator(.20f,.77f,.22f,1f)).start();
+                        v.setTranslationY(delta);
+                        v.animate().translationY(0).setDuration(390)
+                            .setInterpolator(new PathInterpolator(.20f,.76f,.23f,1f)).start();
                     }
                     return true;
                 }
@@ -666,17 +662,16 @@ public final class MainActivity extends Activity {
         heading.addView(close,lp(40,40));
         close.setOnClickListener(v->sheet.dismiss());
         shell.addView(heading,lp(-1,43));
-
         TextView summary=text("",14,GOLD,true);
-        LinearLayout.LayoutParams sm=lp(-1,37);sm.bottomMargin=d(2);
+        LinearLayout.LayoutParams sm=lp(-1,37);
+        sm.bottomMargin=d(6);
         shell.addView(summary,sm);
-        TextView help=text("左滑有阻尼 · 深滑后松手删除",11.5f,MUTED,false);
-        shell.addView(help,lp(-1,32));
-
+        TextView help=text("左滑有阻力 · 深滑后松手删除",11.5f,MUTED,false);
+        shell.addView(help,lp(-1,27));
         ScrollView listScroll=scroll();
         LinearLayout content=column();
         listScroll.addView(content,new ScrollView.LayoutParams(-1,-2));
-        shell.addView(listScroll,lp(-1,Math.min(432,Math.max(104,store.count()*88))));
+        shell.addView(listScroll,lp(-1,Math.min(438,Math.max(100,store.count()*90))));
         renderHistoryRows(content,summary,listScroll);
         showBottomSheet(sheet,shell);
     }
@@ -684,17 +679,6 @@ public final class MainActivity extends Activity {
     @Override protected void onResume() {
         super.onResume();
         if(taskList!=null && !rewarding)renderRewardList();
-        ReactBitsGlass.resume();
-    }
-
-    @Override protected void onPause() {
-        ReactBitsGlass.pause();
-        super.onPause();
-    }
-
-    @Override protected void onDestroy() {
-        ReactBitsGlass.release();
-        super.onDestroy();
     }
 
     @Override public void onBackPressed() {

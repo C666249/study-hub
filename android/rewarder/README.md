@@ -1,11 +1,10 @@
-# Aurea · Android
+# Aurea · Native Android (v1.7.0 optical baseline)
 
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
-- v1.8 使用 React Bits GlassSurface 的 WebGL2 位移贴图及 RGB 独立背景采样，真正整合本地离线 WebView 光学图层。背景与玻璃共用一个渲染场景，Android 原生任务、数据与手势位于其上；不依赖任何远程 CDN。
-- 账本奖励记录可深度左滑后松手删除，复用 FMV 橡胶阻尼、触觉反馈、右上斜飞和列表回弹，调用 RewardStore.undo 原子持久化，并同步顶部金额、累计奖励、记录条数与当期可领取状态。
-- 显示品牌改为 Aurea；applicationId 和 SharedPreferences 旧快照键保持不变。React Bits 原项目许可见 assets/REACT_BITS_LICENSE.txt（MIT + Commons Clause，允许作为应用一部分使用，不能单独销售组件）。
+- **v1.7.1（原 v1.7.0 视觉基线）**：保留 v1.7.0 的 QWEA0 原生玻璃、背景、主页面、Tab 动画；应用名称改为 Aurea，包名和旧 SharedPreferences 键不变；奖励账本沿用 FMV 左滑橡胶阻尼 / 右上飞出删除，删除后重新统计金额、记录次数及当前任务已领取状态。未移植 React Bits/WebView。
+
 - v1.7：React Bits GlassSurface 的域扭曲光学思路（AGSL 原生改写）；QWEA0 玻璃色散通路真正启用、顶部金额独立清透镜片、背景加入可折射的细腻光影褶皱；记录见 [OPTICS.md](OPTICS.md)。
 - v1.6：Clear 小胶囊／Frosted 大面板材质分层；底部选中 Tab 跟随橡胶动效移动的真实透明玻璃镜片。背景改为更大局部着色器取样、去掉重复颗粒，96 秒色彩往返循环。
 - v1.5：采用 MIT 开源 QWEA0/Liquid-Glass-Android Android View 版本的真实 SDF 折射与 Clear 材质（API33+）；环境光从青绿暖金出发，经96秒渐进变为蓝紫暖红再返回青绿；去掉先前的粗颗粒与装饰弧线。
@@ -23,8 +22,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.1-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.8.1-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.1-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.1-stable`
 
 ### 长期签名：只需配置一次
 
