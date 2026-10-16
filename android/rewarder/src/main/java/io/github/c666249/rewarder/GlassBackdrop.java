@@ -106,11 +106,11 @@ final class GlassBackdrop extends View {
         canvas.scale(rx/512f,ry/512f);
         paint.setAlpha(Math.max(0,Math.round(255*(1f-colorBlend))));
         paint.setShader(calmLights[id]);
-        canvas.drawCircle(0f,0f,1f,paint);
+        canvas.drawCircle(0f,0f,512f,paint);
         if(colorBlend>.001f){
             paint.setAlpha(Math.min(255,Math.round(255*colorBlend)));
             paint.setShader(lights[id]);
-            canvas.drawCircle(0f,0f,1f,paint);
+            canvas.drawCircle(0f,0f,512f,paint);
         }
         paint.setAlpha(255);
         canvas.restore();
