@@ -22,7 +22,7 @@ import com.example.liquidglass.LiquidGlassView;
 final class GlassMaterial {
     private GlassMaterial(){}
     private static int dp(Context c,float v){return Math.round(MotionViews.dp(c,v));}
-    private enum Finish { CLEAR, FROSTED, NAV }
+    private enum Finish { HERO, CLEAR, FROSTED, NAV }
 
     static final class GlassShell extends LiquidGlassView {
         GlassShell(Context context,BlurTarget source,float radiusDp,Finish finish){
@@ -31,46 +31,69 @@ final class GlassMaterial {
             setCornerRadius(r);
             setBackdropSource(source);
             setEnableDynamicBackground(true);
+            // The v1.6 implementation disabled BOTH dispersion gates, so
+            // setDispersionStrength had no effect in its AGSL lens. Intentionally
+            // enable only on clear lenses; the renderer does RGB channel sampling
+            // in one shader pass, without separate CPU texture uploads.
             setEnableChromaticAberration(false);
-            setEnableChromaticDispersion(false);
+            setEnableChromaticDispersion(finish==Finish.HERO || finish==Finish.CLEAR);
             setEnableSensorHighlight(false);
             setEnableAdaptiveTint(false);
             setEnableShadow(false);
             setEnablePressEffect(false);
             setEnableEdgeHighlight(true);
-            setAdaptiveLensScale(true);
+            // The default small-control cap reduces refraction by minDim/110dp.
+            // Use explicit calibrated optical distances for 40dp glass pills,
+            // and retain adaptive clipping on larger cards.
+            setAdaptiveLensScale(finish==Finish.FROSTED || finish==Finish.NAV);
             setGlobalDownsampleFactor(1f);
             setEdgeSoftness(dp(context,1.8f));
 
-            if(finish==Finish.CLEAR){
-                // A thin iOS-like refractive lens. Transparent central region.
+            if(finish==Finish.HERO){
+                // React Bits GlassSurface lesson: make actual edge displacement
+                // visible instead of painting a fake white stroke. Use a short,
+                // clearly refractive shoulder with an almost unblurred centre.
+                setMaterial(com.example.liquidglass.GlassMaterial.CLEAR);
+                setBlurAmount(.008f);
+                setSaturation(112f);
+                setGlassTint(0x06EFF5F1);
+                setBevelWidth(dp(context,18f));
+                setRefractionHeight(dp(context,24f));
+                setRefractionFalloff(1.35f);
+                setEdgeSoftness(dp(context,2.8f));
+                setDispersionStrength(.11f);
+                setEdgeHighlightOpacity(55f);
+                setEdgeHighlightBorderWidth(dp(context,.78f));
+                setRefractionOutward(false);
+            } else if(finish==Finish.CLEAR){
                 setMaterial(com.example.liquidglass.GlassMaterial.CLEAR);
                 setBlurAmount(.012f);
-                setSaturation(107f);
-                setGlassTint(0x08F5F7FA);
+                setSaturation(109f);
+                setGlassTint(0x06EDF4F0);
                 setBevelWidth(dp(context,14f));
-                setRefractionHeight(dp(context,15f));
-                setRefractionFalloff(1.65f);
-                setDispersionStrength(.11f);
-                setEdgeHighlightOpacity(46f);
-                setEdgeHighlightBorderWidth(dp(context,.74f));
+                setRefractionHeight(dp(context,17f));
+                setRefractionFalloff(1.75f);
+                setEdgeSoftness(dp(context,2.2f));
+                setDispersionStrength(.068f);
+                setEdgeHighlightOpacity(37f);
+                setEdgeHighlightBorderWidth(dp(context,.66f));
             } else if(finish==Finish.FROSTED) {
                 // Material diffusion is restrained: color still flows underneath.
                 setMaterial(com.example.liquidglass.GlassMaterial.REGULAR);
                 setBlurAmount(.047f);
                 setSaturation(109f);
-                setGlassTint(0x0EEAF1EF);
+                setGlassTint(0x07EAF1EF);
                 setBevelWidth(dp(context,12f));
                 setRefractionHeight(dp(context,6.8f));
                 setRefractionFalloff(2.45f);
                 setDispersionStrength(.025f);
-                setEdgeHighlightOpacity(16f);
+                setEdgeHighlightOpacity(13f);
                 setEdgeHighlightBorderWidth(dp(context,.55f));
             } else {
                 setMaterial(com.example.liquidglass.GlassMaterial.REGULAR);
                 setBlurAmount(.024f);
                 setSaturation(110f);
-                setGlassTint(0x0ACBDCE0);
+                setGlassTint(0x07CBDCE0);
                 setBevelWidth(dp(context,11f));
                 setRefractionHeight(dp(context,4.5f));
                 setRefractionFalloff(2.5f);
@@ -103,6 +126,9 @@ final class GlassMaterial {
     }
     static GlassShell pill(Context c,BlurTarget source,View child,float radius){
         return wrap(c,source,child,radius,Finish.CLEAR,-2,-2);
+    }
+    static GlassShell balancePill(Context c,BlurTarget source,View child,float radius){
+        return wrap(c,source,child,radius,Finish.HERO,-2,-2);
     }
 
     /**
