@@ -48,6 +48,7 @@ final class ReactBitsGlass {
     private static boolean ready;
     private static boolean running;
     private static int nextId=1;
+    private static String lastGeometry="";
     private static final int[] nativeOrigin=new int[2];
     private static final int[] glassOrigin=new int[2];
     private static final Rect nativeClip=new Rect();
@@ -57,7 +58,7 @@ final class ReactBitsGlass {
 
     static View install(Activity activity) {
         release();
-        lenses.clear();nextId=1;
+        lenses.clear();nextId=1;lastGeometry="";
         WebView w=new WebView(activity);
         w.setBackgroundColor(Color.TRANSPARENT);
         w.setLayerType(View.LAYER_TYPE_HARDWARE,null);
@@ -105,7 +106,8 @@ final class ReactBitsGlass {
             for(int i=lenses.size()-1;i>=0;i--){
                 View v=lenses.get(i).view.get();
                 if(v==null||!v.isAttachedToWindow())lenses.remove(i);
-                else if(v.isShown() && v.getWidth()>2 && v.getHeight()>2 && v.getGlobalVisibleRect(nativeClip))
+                else if(v.getRootView()==w.getRootView() && v.isShown()
+                    && v.getWidth()>2 && v.getHeight()>2 && v.getGlobalVisibleRect(nativeClip))
                     visible.add(lenses.get(i));
             }
             // Outer lens before nested claim/selected lens, so the latter wins.
@@ -140,8 +142,11 @@ final class ReactBitsGlass {
             // JSON is generated from owned numeric geometry only. No user text,
             // filenames, secrets or reward data ever enters the WebView.
             final String json=arr.toString();
-            w.evaluateJavascript("window.GlassScene&&GlassScene.setLenses("+json+")",null);
-            handler.postDelayed(this,75);
+            if(!json.equals(lastGeometry)){
+                lastGeometry=json;
+                w.evaluateJavascript("window.GlassScene&&GlassScene.setLenses("+json+")",null);
+            }
+            handler.postDelayed(this,34);
         }
     };
 
@@ -160,7 +165,7 @@ final class ReactBitsGlass {
         }
     }
     static void release(){
-        running=false;ready=false;
+        running=false;ready=false;lastGeometry="";
         handler.removeCallbacks(tick);
         if(web!=null){
             final WebView old=web;web=null;
