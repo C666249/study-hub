@@ -130,6 +130,11 @@ final class GlassMaterial {
     static GlassShell balancePill(Context c,BlurTarget source,View child,float radius){
         return wrap(c,source,child,radius,Finish.HERO,-2,-2);
     }
+    static GlassShell orb(Context c,BlurTarget source,View child,float radius){
+        // Stronger clear optical refraction than ordinary pills: a floating
+        // transparent glass bead that reveals the animated backdrop.
+        return wrap(c,source,child,radius,Finish.HERO,-2,-2);
+    }
 
     /**
      * The selected segment is ANOTHER real clear-glass lens, not a tinted
