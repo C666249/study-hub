@@ -143,7 +143,7 @@ public final class MainActivity extends Activity {
         emblem.setGravity(Gravity.CENTER);
         emblem.setBackground(shape(0xA22D3933,15,0x8DACAA94));
         bar.addView(emblem,lp(40,40));
-        TextView name=text("拾光",18,INK,true);
+        TextView name=text("Aurea",18,INK,true);
         LinearLayout.LayoutParams nm=lp(-2,40);nm.leftMargin=d(11);
         bar.addView(name,nm);
         View spacer=new View(this);bar.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
