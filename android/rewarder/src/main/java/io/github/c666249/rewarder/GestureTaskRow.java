@@ -36,6 +36,7 @@ final class GestureTaskRow extends FrameLayout {
     private final int slop;
     private float downX,downY;
     private boolean tracking=false,committed=false;
+    private boolean deletionOnly=false;
     private int stage=0;
     Handler onEdit,onDelete;
     private int d(float n){return Math.round(MotionViews.dp(getContext(),n));}
@@ -72,6 +73,8 @@ final class GestureTaskRow extends FrameLayout {
         addView(movingGlass,new FrameLayout.LayoutParams(-1,-2));
         setMinimumHeight(d(79));
     }
+    void setDeletionOnly(boolean value){deletionOnly=value;}
+
     private float rubber(float travel,float width){
         float knee=width*.17f,cap=width*.34f,base=knee*.81f;
         if(travel<=knee)return Math.min(cap,travel*.81f);
@@ -98,7 +101,7 @@ final class GestureTaskRow extends FrameLayout {
             underlay.setBackground(bg(next==2?0xB0513437:0x983B382F,
                 next==2?0x99DA8990:0x6AE4C59C));
         }
-        hint.setText(stage==2?"松手删除":stage==1?"松手编辑":"向左滑动");
+        hint.setText(stage==2?"松手删除":stage==1?(deletionOnly?"继续左滑删除":"松手编辑"):"向左滑动");
         hint.setTextColor(stage==2?0xffffb5b9:0xffebd6b2);
         hint.setAlpha(Math.min(1f,.12f+distance/Math.max(1f,width*.19f)));
     }
@@ -139,7 +142,7 @@ final class GestureTaskRow extends FrameLayout {
                 tracking=false;getParent().requestDisallowInterceptTouchEvent(false);
                 if(dragged&&action==2){
                     committed=true;launchDeletion();
-                } else if(dragged&&action==1){
+                } else if(dragged&&action==1&&!deletionOnly){
                     committed=true;settle(()->{committed=false;stage=0;if(onEdit!=null)onEdit.run();});
                 } else reset();
                 return true;
