@@ -155,7 +155,7 @@ public final class MainActivity extends Activity {
         miniBalance.setMinimumHeight(d(40));
         miniBalance.setContentDescription("查看累计奖励与领取记录");
         touch(miniBalance);miniBalance.setOnClickListener(v->showHistory());
-        bar.addView(GlassMaterial.pill(this,blurTarget,miniBalance,23),lp(-2,40));
+        bar.addView(GlassMaterial.balancePill(this,blurTarget,miniBalance,23),lp(-2,40));
         return bar;
     }
 
