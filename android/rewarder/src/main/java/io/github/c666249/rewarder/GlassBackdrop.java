@@ -31,8 +31,10 @@ final class GlassBackdrop extends View {
     private final Paint veil=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
     private final Paint grainPaint=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Shader[] lights=new Shader[8];
+    private final Shader[] calmLights=new Shader[8];
     private Bitmap grain;
     private Shader background;
+    private Shader dreamBackground;
     private Shader frost;
     private ValueAnimator ticker;
     private long epoch;
@@ -59,6 +61,17 @@ final class GlassBackdrop extends View {
         // Glints are broad luminous volumes, not sparkles or visible lines.
         lights[6]=light(0x428BC0FC,0x2B718DC8,0x0B4C6F9A);
         lights[7]=light(0x4FDFA2B5,0x2AAB7A98,0x0A5A5C71);
+
+        // Start in the warm jade/bronze atmosphere of the earlier glass build.
+        // The blue/violet/rose colors are NOT shown directly at launch.
+        calmLights[0]=light(0x956FACA3,0x4F558A81,0x15366360);
+        calmLights[1]=light(0x898DAF87,0x515F8873,0x183C564D);
+        calmLights[2]=light(0x9AAB8664,0x5B8A7055,0x183E4034);
+        calmLights[3]=light(0x897DC7AF,0x51429B87,0x164A7568);
+        calmLights[4]=light(0x6763A799,0x374E867D,0x13325359);
+        calmLights[5]=light(0x7187B39D,0x3E628778,0x0B394B4D);
+        calmLights[6]=light(0x428FD4BA,0x2B6D9A84,0x08446D62);
+        calmLights[7]=light(0x50D3AE83,0x2A968567,0x0B5A594C);
     }
 
     private static Shader light(int center,int inner,int outer) {
@@ -74,7 +87,8 @@ final class GlassBackdrop extends View {
         int seed=0x2877A5;
         for(int i=0;i<pixels.length;i++){
             seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
-            int alpha=2+((seed>>>24)&7);
+            // Subpixel optical diffusion only. Old 2..9 alpha grain looked rough.
+            int alpha=(seed>>>24)&1;
             pixels[i]=Color.argb(alpha,248,248,249);
         }
         grain.setPixels(pixels,0,side,0,0,side,side);
@@ -85,10 +99,13 @@ final class GlassBackdrop extends View {
         super.onSizeChanged(w,h,ow,oh);
         if(w<=0||h<=0)return;
         background=new LinearGradient(0,0,w,h,
-            new int[]{0xff101528,0xff111520,0xff0c1521,0xff17121f},
+            new int[]{0xff152322,0xff182c29,0xff172523,0xff242821},
+            new float[]{0f,.29f,.68f,1f},Shader.TileMode.CLAMP);
+        dreamBackground=new LinearGradient(0,0,w,h,
+            new int[]{0xff11162a,0xff191b33,0xff141c31,0xff231b2c},
             new float[]{0f,.29f,.68f,1f},Shader.TileMode.CLAMP);
         frost=new LinearGradient(0,0,w,h,
-            new int[]{0x13E6E9F5,0x04B5B9DC,0x0CE8D7E5,0x14C9D5E8},
+            new int[]{0x10EDF4E8,0x08DAE7DB,0x09DCE5EC,0x16E6E3D6},
             new float[]{0f,.30f,.67f,1f},Shader.TileMode.CLAMP);
     }
 
@@ -97,14 +114,24 @@ final class GlassBackdrop extends View {
      * Canvas transforms. Different oscillation periods avoid a synchronized
      * screensaver look and yield visible drift over a few seconds.
      */
+    private float colorBlend;
+    // 72 seconds for calm -> violet-blue -> calm, with a smooth derivative at
+    // both ends. Both palettes share the same spatial movement / refraction.
     private void pool(Canvas canvas,int id,float cx,float cy,
                       float rx,float ry,float rotation) {
         canvas.save();
         canvas.translate(cx,cy);
         canvas.rotate(rotation);
         canvas.scale(rx,ry);
-        paint.setShader(lights[id]);
+        paint.setAlpha(Math.max(0,Math.round(255*(1f-colorBlend))));
+        paint.setShader(calmLights[id]);
         canvas.drawCircle(0f,0f,1f,paint);
+        if(colorBlend>.001f){
+            paint.setAlpha(Math.min(255,Math.round(255*colorBlend)));
+            paint.setShader(lights[id]);
+            canvas.drawCircle(0f,0f,1f,paint);
+        }
+        paint.setAlpha(255);
         canvas.restore();
     }
 
@@ -113,10 +140,20 @@ final class GlassBackdrop extends View {
         final float w=getWidth(),h=getHeight();
         if(w<2||h<2)return;
         if(background==null)onSizeChanged((int)w,(int)h,0,0);
+        // At t=0 the old teal, leaf green and warm amber dominate. The
+        // chromatic layer blooms very gradually and then recedes in a loop.
+        float t=seconds;
+        colorBlend=(.5f-.5f*(float)Math.cos(t*(float)(Math.PI*2/72f)));
+        colorBlend=colorBlend*colorBlend*(3f-2f*colorBlend); // smoothstep
+        paint.setAlpha(255);
         paint.setShader(background);
         canvas.drawRect(0,0,w,h,paint);
-
-        float t=seconds;
+        if(colorBlend>.001f){
+            paint.setAlpha(Math.min(255,Math.round(255*colorBlend)));
+            paint.setShader(dreamBackground);
+            canvas.drawRect(0,0,w,h,paint);
+        }
+        paint.setAlpha(255);
         // A broad blue current rising from the left and folding back.
         pool(canvas,0,
             w*(.22f+.24f*(float)Math.sin(t*.37f+.38f)),
@@ -165,11 +202,13 @@ final class GlassBackdrop extends View {
             w*.38f,h*.20f,10f*(float)Math.sin(t*.44f));
 
         paint.setShader(null);
-        // Stationary matte pane on TOP of the moving color; no line motifs.
+        // Stationary subtle satin pane: optical haze without rough noise.
         veil.setShader(frost);
         canvas.drawRect(0,0,w,h,veil);
         veil.setShader(null);
-        if(grain!=null)canvas.drawRect(0,0,w,h,grainPaint);
+        // Avoid artificial film grain on live glass; the dynamic field itself
+        // provides the material depth.
+        // No grain compositing here (kept as a negligible optional asset).
     }
 
     private void start(){
