@@ -440,7 +440,7 @@ public final class MainActivity extends Activity {
         createPlus.setMinWidth(d(58));
         createPlus.setMinHeight(d(58));
         createPlus.setContentDescription("新建奖励任务");
-        createOrb=GlassMaterial.pill(this,blurTarget,createPlus,30);
+        createOrb=GlassMaterial.orb(this,blurTarget,createPlus,30);
         FrameLayout.LayoutParams params=fp(58,58,Gravity.RIGHT|Gravity.BOTTOM);
         params.rightMargin=d(25);
         // Floating over settings content, 16dp above the 86dp nav area.
