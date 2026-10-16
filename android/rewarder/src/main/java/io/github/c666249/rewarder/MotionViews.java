@@ -236,6 +236,127 @@ final class MotionViews {
         void select(int index) {animateTo(index);}
     }
 
+
+    /**
+     * FMV JellyCadence: the same rubber-width, inertial travel and tactile
+     * settle principle as RubberTabs, adapted to the daily/weekly bottom sheet.
+     * Draws its selection natively so it remains smooth over modal dimming.
+     */
+    interface CadenceCallback {void selected(int index);}
+    static final class JellyCadence extends View {
+        private final Paint bg=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint thumb=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint text=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final RectF rect=new RectF();
+        private final CadenceCallback callback;
+        private ValueAnimator movement;
+        private int chosen;
+        private float center=-1f, thumbWidth=-1f, thumbScale=1f;
+
+        JellyCadence(Context context,int initial,CadenceCallback cb){
+            super(context);
+            chosen=initial==1?1:0;
+            callback=cb;
+            text.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
+            text.setTextSize(sp(context,14.5f));
+            text.setTextAlign(Paint.Align.CENTER);
+            setClickable(true);
+            setFocusable(true);
+            setContentDescription(chosen==0?"奖励周期：每天":"奖励周期：每周");
+        }
+        private float d(float value){return dp(getContext(),value);}
+        private float middle(int i){return getWidth()*(i+.5f)/2f;}
+        @Override protected void onSizeChanged(int w,int h,int oldw,int oldh){
+            super.onSizeChanged(w,h,oldw,oldh);
+            if(w>0&&(oldw!=w || center<0)){
+                center=middle(chosen);thumbWidth=w/2f-d(9);
+            }
+        }
+        @Override protected void onDraw(Canvas canvas){
+            super.onDraw(canvas);
+            float w=getWidth(),h=getHeight();
+            if(w<2||h<2)return;
+            float rad=h/2f;
+            bg.setStyle(Paint.Style.FILL);
+            bg.setColor(0xff1B2826);
+            rect.set(0,0,w,h);
+            canvas.drawRoundRect(rect,rad,rad,bg);
+            bg.setStyle(Paint.Style.STROKE);
+            bg.setStrokeWidth(d(.7f));
+            bg.setColor(0x506F8A83);
+            rect.inset(d(.5f),d(.5f));
+            canvas.drawRoundRect(rect,rad,rad,bg);
+            bg.setStyle(Paint.Style.FILL);
+
+            if(center<0){center=middle(chosen);thumbWidth=w/2f-d(9);}
+            float hh=(h-d(9))*thumbScale;
+            float r=hh/2f;
+            rect.set(center-thumbWidth/2f,(h-hh)/2f,center+thumbWidth/2f,(h+hh)/2f);
+            thumb.setStyle(Paint.Style.FILL);
+            thumb.setColor(0x9E64776A);
+            canvas.drawRoundRect(rect,r,r,thumb);
+            thumb.setStyle(Paint.Style.STROKE);
+            thumb.setStrokeWidth(d(.85f));
+            thumb.setColor(0x8EC9DDC9);
+            canvas.drawRoundRect(rect,r,r,thumb);
+            thumb.setStyle(Paint.Style.FILL);
+
+            float baseline=h/2f-(text.ascent()+text.descent())/2f;
+            for(int i=0;i<2;i++){
+                text.setColor(i==chosen?GOLD:0xffB1BDB3);
+                canvas.drawText(i==0?"每天":"每周",middle(i),baseline,text);
+            }
+        }
+        private void choose(int target){
+            if(target==chosen)return;
+            if(movement!=null)movement.cancel();
+            float from=center<0?middle(chosen):center;
+            float startW=thumbWidth<0?getWidth()/2f-d(9):thumbWidth;
+            float to=middle(target),endW=getWidth()/2f-d(9);
+            float distance=to-from;
+            chosen=target;
+            setContentDescription(chosen==0?"奖励周期：每天":"奖励周期：每周");
+            performHapticFeedback(android.view.HapticFeedbackConstants.CLOCK_TICK);
+            if(callback!=null)callback.selected(target);
+            if(!ValueAnimator.areAnimatorsEnabled()){
+                center=to;thumbWidth=endW;thumbScale=1f;invalidate();return;
+            }
+            final ValueAnimator animator=ValueAnimator.ofFloat(0f,1f);
+            movement=animator;
+            animator.setDuration(440);
+            animator.addUpdateListener(a->{
+                float p=(float)a.getAnimatedValue();
+                float ease=1f-(float)Math.pow(1f-p,3f);
+                float recoil=(float)Math.sin(Math.PI*2*p)*(1-p)*distance*.047f;
+                center=from+distance*ease+recoil;
+                thumbWidth=startW+(endW-startW)*ease
+                    +(float)Math.sin(Math.PI*p)*Math.min(d(29),Math.abs(distance)*.23f);
+                thumbScale=1f-.058f*(float)Math.sin(Math.PI*p);
+                invalidate();
+            });
+            animator.addListener(new AnimatorListenerAdapter(){
+                @Override public void onAnimationEnd(Animator a){
+                    if(movement==animator){center=to;thumbWidth=endW;thumbScale=1f;invalidate();}
+                }
+            });
+            animator.start();
+        }
+        @Override public boolean onTouchEvent(MotionEvent e){
+            if(e.getActionMasked()==MotionEvent.ACTION_DOWN)return true;
+            if(e.getActionMasked()==MotionEvent.ACTION_UP){
+                performClick();
+                choose(e.getX()>=getWidth()/2f?1:0);
+                return true;
+            }
+            return true;
+        }
+        @Override public boolean performClick(){super.performClick();return true;}
+        @Override protected void onDetachedFromWindow(){
+            if(movement!=null){movement.cancel();movement=null;}
+            super.onDetachedFromWindow();
+        }
+    }
+
     /**
      * Two translucent, elliptical water rings bloom from the landing balance.
      * Drawn in the window overlay; no clipping to the rounded capsule.
