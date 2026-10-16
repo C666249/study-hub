@@ -23,6 +23,8 @@ jobs:
           SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | head -n 1)"
           "$SDKMANAGER" "platforms;android-36" "build-tools;35.0.0"
       - uses: gradle/actions/setup-gradle@v4
+      - name: Validate embedded React Bits GlassSurface JS
+        run: node --check android/rewarder/src/main/assets/rewarder-glass.js
       - name: Build preview APK
         working-directory: android
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
