@@ -2,8 +2,6 @@ package io.github.c666249.rewarder;
 
 import android.animation.ValueAnimator;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapShader;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.LinearGradient;
@@ -29,10 +27,8 @@ final class GlassBackdrop extends View {
     private static final long FRAME_MS=33L;
     private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG | Paint.DITHER_FLAG);
     private final Paint veil=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DITHER_FLAG);
-    private final Paint grainPaint=new Paint(Paint.ANTI_ALIAS_FLAG | Paint.FILTER_BITMAP_FLAG);
     private final Shader[] lights=new Shader[8];
     private final Shader[] calmLights=new Shader[8];
-    private Bitmap grain;
     private Shader background;
     private Shader dreamBackground;
     private Shader frost;
@@ -47,7 +43,6 @@ final class GlassBackdrop extends View {
         setFocusable(false);
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
         createShaders();
-        createGrain();
     }
 
     private void createShaders() {
@@ -75,24 +70,10 @@ final class GlassBackdrop extends View {
     }
 
     private static Shader light(int center,int inner,int outer) {
-        return new RadialGradient(0f,0f,1f,
+        // Large local shader domain avoids precision artifacts from magnifying a 1px gradient.
+        return new RadialGradient(0f,0f,512f,
             new int[]{center,inner,outer,Color.TRANSPARENT},
             new float[]{0f,.30f,.63f,1f},Shader.TileMode.CLAMP);
-    }
-
-    private void createGrain(){
-        int side=96;
-        grain=Bitmap.createBitmap(side,side,Bitmap.Config.ARGB_8888);
-        int[] pixels=new int[side*side];
-        int seed=0x2877A5;
-        for(int i=0;i<pixels.length;i++){
-            seed^=seed<<13;seed^=seed>>>17;seed^=seed<<5;
-            // Subpixel optical diffusion only. Old 2..9 alpha grain looked rough.
-            int alpha=(seed>>>24)&1;
-            pixels[i]=Color.argb(alpha,248,248,249);
-        }
-        grain.setPixels(pixels,0,side,0,0,side,side);
-        grainPaint.setShader(new BitmapShader(grain,Shader.TileMode.REPEAT,Shader.TileMode.REPEAT));
     }
 
     @Override protected void onSizeChanged(int w,int h,int ow,int oh){
@@ -122,7 +103,7 @@ final class GlassBackdrop extends View {
         canvas.save();
         canvas.translate(cx,cy);
         canvas.rotate(rotation);
-        canvas.scale(rx,ry);
+        canvas.scale(rx/512f,ry/512f);
         paint.setAlpha(Math.max(0,Math.round(255*(1f-colorBlend))));
         paint.setShader(calmLights[id]);
         canvas.drawCircle(0f,0f,1f,paint);
@@ -143,7 +124,7 @@ final class GlassBackdrop extends View {
         // At t=0 the old teal, leaf green and warm amber dominate. The
         // chromatic layer blooms very gradually and then recedes in a loop.
         float t=seconds;
-        colorBlend=(.5f-.5f*(float)Math.cos(t*(float)(Math.PI*2/72f)));
+        colorBlend=(.5f-.5f*(float)Math.cos(t*(float)(Math.PI*2/96f)));
         colorBlend=colorBlend*colorBlend*(3f-2f*colorBlend); // smoothstep
         paint.setAlpha(255);
         paint.setShader(background);
@@ -206,9 +187,7 @@ final class GlassBackdrop extends View {
         veil.setShader(frost);
         canvas.drawRect(0,0,w,h,veil);
         veil.setShader(null);
-        // Avoid artificial film grain on live glass; the dynamic field itself
-        // provides the material depth.
-        // No grain compositing here (kept as a negligible optional asset).
+        // No bitmap noise layer. Frosting is optical, not a repeating texture.
     }
 
     private void start(){
@@ -241,7 +220,6 @@ final class GlassBackdrop extends View {
     }
     @Override protected void onDetachedFromWindow(){
         stop();
-        if(grain!=null){grain.recycle();grain=null;}
         super.onDetachedFromWindow();
     }
 }
