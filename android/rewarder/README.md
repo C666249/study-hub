@@ -3,6 +3,7 @@
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
+- v1.7：React Bits GlassSurface 的域扭曲光学思路（AGSL 原生改写）；QWEA0 玻璃色散通路真正启用、顶部金额独立清透镜片、背景加入可折射的细腻光影褶皱；记录见 [OPTICS.md](OPTICS.md)。
 - v1.6：Clear 小胶囊／Frosted 大面板材质分层；底部选中 Tab 跟随橡胶动效移动的真实透明玻璃镜片。背景改为更大局部着色器取样、去掉重复颗粒，96 秒色彩往返循环。
 - v1.5：采用 MIT 开源 QWEA0/Liquid-Glass-Android Android View 版本的真实 SDF 折射与 Clear 材质（API33+）；环境光从青绿暖金出发，经96秒渐进变为蓝紫暖红再返回青绿；去掉先前的粗颗粒与装饰弧线。
 - 真正的背景模糊：使用 BlurView 3.2.0 / BlurTarget，采样持续运动的蓝紫玫红光色场，玻璃高光与折射边缘不遮挡内容。采用 JitPack 依赖（Apache-2.0）。
@@ -19,8 +20,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.6.0-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.6.0-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.0-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.0-stable`
 
 ### 长期签名：只需配置一次
 
