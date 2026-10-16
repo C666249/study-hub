@@ -563,6 +563,97 @@ public final class MainActivity extends Activity {
         }
     }
 
+    /**
+     * Real persisted receipt deletion through the same FMV LedgerSwipeRow /
+     * LedgerDeleteFlight physics as task management. Each deletion revokes
+     * only the specific receipt, leaving its task definition untouched.
+     * All totals derive again from RewardStore; no speculative UI subtraction.
+     */
+    private void renderHistoryRows(LinearLayout content,TextView summary,ScrollView scroll){
+        int restore=scroll.getScrollY();
+        Map<String,Float> positions=new HashMap<>();
+        for(int i=0;i<content.getChildCount();i++){
+            View child=content.getChildAt(i);
+            if(child.getTag() instanceof String)
+                positions.put((String)child.getTag(),child.getY());
+        }
+        content.removeAllViews();
+        summary.setText(money(store.balance())+"  ·  共 "+store.count()+" 次");
+        List<RewardStore.Receipt> items=store.receipts();
+        if(items.isEmpty()){
+            TextView empty=text("暂无奖励记录",13,MUTED,false);
+            empty.setGravity(Gravity.CENTER);
+            empty.setPadding(0,d(35),0,d(41));
+            content.addView(empty,lp(-1,-2));
+        } else {
+            SimpleDateFormat fmt=new SimpleDateFormat("MM.dd  HH:mm",Locale.CHINA);
+            for(int i=items.size()-1;i>=0;i--){
+                RewardStore.Receipt receipt=items.get(i);
+                GestureTaskRow row=new GestureTaskRow(this,blurTarget);
+                row.setDeletionOnly(true);
+                row.setTag(receipt.id);
+                row.setContentDescription(receipt.title+" 奖励 "+money(receipt.cents)+"，向左深滑删除这条领取记录");
+                LinearLayout info=column();
+                info.setGravity(Gravity.CENTER_VERTICAL);
+                TextView title=text(receipt.title,14.5f,INK,true);
+                title.setMaxLines(1);
+                title.setEllipsize(android.text.TextUtils.TruncateAt.END);
+                info.addView(title,lp(-1,25));
+                TextView time=text(fmt.format(new Date(receipt.timestamp)),11.5f,MUTED,false);
+                info.addView(time,lp(-1,23));
+                row.surface.addView(info,new LinearLayout.LayoutParams(0,-2,1));
+                TextView amount=text("+"+money(receipt.cents),14,GOLD,true);
+                amount.setGravity(Gravity.CENTER_VERTICAL);
+                row.surface.addView(amount,lp(-2,-1));
+                row.onDelete=()->{
+                    if(!store.undo(receipt)){
+                        Toast.makeText(this,"删除失败，原始记录已保留",Toast.LENGTH_SHORT).show();
+                        renderHistoryRows(content,summary,scroll);
+                        return;
+                    }
+                    // No task deletion: removing the receipt also unlocks its
+                    // daily/weekly claim again if it belonged to this period.
+                    displayedCents=store.balance();
+                    miniBalance.setText(money(displayedCents));
+                    totalView.roll(displayedCents);
+                    miniBalance.performHapticFeedback(HapticFeedbackConstants.CLOCK_TICK);
+                    renderRewardList();
+                    renderHistoryRows(content,summary,scroll);
+                    summary.animate().cancel();
+                    summary.setScaleX(.965f);summary.setScaleY(.965f);
+                    summary.animate().scaleX(1f).scaleY(1f).setDuration(360)
+                        .setInterpolator(new OvershootInterpolator(.65f)).start();
+                };
+                LinearLayout.LayoutParams rowParams=lp(-1,-2);
+                rowParams.bottomMargin=d(9);
+                content.addView(row,rowParams);
+            }
+        }
+        // The bottom sheet stays put: preserve scroll and spring surviving
+        // entries into the deleted row's previous vertical position.
+        scroll.post(()->scroll.scrollTo(0,restore));
+        if(!positions.isEmpty()&&android.animation.ValueAnimator.areAnimatorsEnabled()){
+            ViewTreeObserver observer=content.getViewTreeObserver();
+            observer.addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener(){
+                @Override public boolean onPreDraw(){
+                    if(observer.isAlive())observer.removeOnPreDrawListener(this);
+                    for(int i=0;i<content.getChildCount();i++){
+                        View child=content.getChildAt(i);
+                        if(!(child.getTag() instanceof String))continue;
+                        Float before=positions.get((String)child.getTag());
+                        if(before==null)continue;
+                        float delta=before-child.getTop();
+                        if(Math.abs(delta)<1f)continue;
+                        child.setTranslationY(delta);
+                        child.animate().translationY(0).setDuration(390)
+                            .setInterpolator(new PathInterpolator(.20f,.77f,.22f,1f)).start();
+                    }
+                    return true;
+                }
+            });
+        }
+    }
+
     private void showHistory() {
         Dialog sheet=new Dialog(this,R.style.RewardSheet);
         LinearLayout shell=column();
@@ -572,38 +663,21 @@ public final class MainActivity extends Activity {
         TextView title=text("奖励账本",21,INK,true);
         heading.addView(title,new LinearLayout.LayoutParams(0,d(42),1));
         TextView close=iconButton("×");
-        heading.addView(close,lp(40,40));close.setOnClickListener(v->sheet.dismiss());
+        heading.addView(close,lp(40,40));
+        close.setOnClickListener(v->sheet.dismiss());
         shell.addView(heading,lp(-1,43));
-        TextView summary=text(money(store.balance())+"  ·  共 "+store.count()+" 次",14,GOLD,true);
-        LinearLayout.LayoutParams sm=lp(-1,37);sm.bottomMargin=d(8);
+
+        TextView summary=text("",14,GOLD,true);
+        LinearLayout.LayoutParams sm=lp(-1,37);sm.bottomMargin=d(2);
         shell.addView(summary,sm);
+        TextView help=text("左滑有阻尼 · 深滑后松手删除",11.5f,MUTED,false);
+        shell.addView(help,lp(-1,32));
+
         ScrollView listScroll=scroll();
         LinearLayout content=column();
-        List<RewardStore.Receipt> items=store.receipts();
-        if(items.isEmpty()){
-            TextView empty=text("尚无奖励记录。第一次领取后会出现在这里。",13,MUTED,false);
-            empty.setGravity(Gravity.CENTER);empty.setPadding(0,d(40),0,d(42));
-            content.addView(empty,lp(-1,-2));
-        }else{
-            SimpleDateFormat fmt=new SimpleDateFormat("MM.dd  HH:mm",Locale.CHINA);
-            for(int i=items.size()-1;i>=0;i--){
-                RewardStore.Receipt r=items.get(i);
-                LinearLayout item=row();item.setMinimumHeight(d(64));
-                LinearLayout labels=column();labels.setGravity(Gravity.CENTER_VERTICAL);
-                TextView n=text(r.title,14.5f,INK,true);
-                n.setMaxLines(1);n.setEllipsize(android.text.TextUtils.TruncateAt.END);
-                labels.addView(n,lp(-1,25));
-                TextView time=text(fmt.format(new Date(r.timestamp)),11.5f,MUTED,false);
-                labels.addView(time,lp(-1,23));
-                item.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
-                TextView amount=text("+"+money(r.cents),14,GOLD,true);
-                item.addView(amount,lp(-2,-1));
-                content.addView(item,lp(-1,-2));
-                if(i>0)content.addView(line(),lp(-1,1));
-            }
-        }
         listScroll.addView(content,new ScrollView.LayoutParams(-1,-2));
-        shell.addView(listScroll,lp(-1,Math.min(438,100+items.size()*65)));
+        shell.addView(listScroll,lp(-1,Math.min(432,Math.max(104,store.count()*88))));
+        renderHistoryRows(content,summary,listScroll);
         showBottomSheet(sheet,shell);
     }
 
