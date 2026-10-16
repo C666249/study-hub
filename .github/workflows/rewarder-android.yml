@@ -28,7 +28,7 @@ jobs:
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: Shiguang-Rewarder-1.7.0-debug
+          name: Aurea-1.8.0-debug
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
@@ -37,14 +37,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.7.0-preview
+          tag=rewarder-v1.8.0-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "This exact preview tag is already published and is kept immutable."
           else
-            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Shiguang-Rewarder-v1.7.0-preview.apk
-            gh release create "$tag" Shiguang-Rewarder-v1.7.0-preview.apk \
-              --title "拾光奖励 Android v1.7 预览版" \
-              --notes "原生双 Tab 奖励器：React Bits 位移思路 + QWEA0 AGSL 光学折射、真正开启 RGB 色散、顶部金额 Hero 透明镜片、细腻柔光褶皱和96秒缓慢变色、FMV 手势。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
+            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Aurea-v1.8.0-preview.apk
+            gh release create "$tag" Aurea-v1.8.0-preview.apk \
+              --title "Aurea Android v1.8 预览版" \
+              --notes "原生双 Tab 奖励器：React Bits WebGL2 折射玻璃、流动背景、原生奖励记录和 FMV 账本深滑删除；累计金额与领取次数同步更新。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
               --prerelease --latest=false
           fi
 
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.configured == 'true'
         with:
-          name: Shiguang-Rewarder-1.7.0-stable
+          name: Aurea-1.8.0-stable
           path: android/rewarder/build/outputs/apk/release/rewarder-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -88,13 +88,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.7.0-stable
-          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Shiguang-Rewarder-v1.7.0-stable.apk
+          tag=rewarder-v1.8.0-stable
+          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Aurea-v1.8.0-stable.apk
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Stable v1.7.0 already published; refusing to silently replace an installed build."
+            echo "Stable v1.8.0 already published; refusing to silently replace an installed build."
           else
-            gh release create "$tag" Shiguang-Rewarder-v1.7.0-stable.apk \
-              --title "拾光奖励 Android v1.7 正式签名版" \
+            gh release create "$tag" Aurea-v1.8.0-stable.apk \
+              --title "Aurea Android v1.8 正式签名版" \
               --notes "独立签名永久版本。请安全保存你的 JKS 与密码，后续覆盖升级必须使用同一证书。" \
               --latest=false
           fi
