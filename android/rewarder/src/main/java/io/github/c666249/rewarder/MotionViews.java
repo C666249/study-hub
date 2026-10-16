@@ -120,6 +120,7 @@ final class MotionViews {
     }
 
     interface TabCallback {void selected(int index);}
+    interface ThumbListener {void onGeometry(float center,float width,float scaleY);}
     static final class RubberTabs extends View {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         private final RectF rect=new RectF();
@@ -127,6 +128,7 @@ final class MotionViews {
         private float center=-1, thumbWidth=-1,thumbScale=1;
         private ValueAnimator moving;
         private TabCallback callback;
+        private ThumbListener thumbListener;
         RubberTabs(Context c,TabCallback callback) {
             super(c);
             this.callback=callback;
@@ -136,6 +138,19 @@ final class MotionViews {
         }
         private float d(float x){return dp(getContext(),x);}
         private float mid(int n){return d(7)+(getWidth()-d(14))*(n+.5f)/2;}
+        void setThumbListener(ThumbListener listener) {
+            thumbListener=listener;
+            post(this::reportThumb);
+        }
+        void reportThumb() {
+            if(thumbListener==null||getWidth()<10)return;
+            if(center<0f){center=mid(selected);thumbWidth=(getWidth()-d(14))/2f-d(4);}
+            thumbListener.onGeometry(center,thumbWidth,thumbScale);
+        }
+        @Override protected void onSizeChanged(int w,int h,int oldw,int oldh) {
+            super.onSizeChanged(w,h,oldw,oldh);
+            if(w>0&&w!=oldw){center=mid(selected);thumbWidth=(w-d(14))/2f-d(4);post(this::reportThumb);}
+        }
         @Override protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
             float radius=getHeight()/2f;
@@ -150,11 +165,7 @@ final class MotionViews {
             float th= getHeight()-d(12);
             rect.set(center-thumbWidth/2,d(6)+(th*(1-thumbScale))/2,
                 center+thumbWidth/2,getHeight()-d(6)-(th*(1-thumbScale))/2);
-            paint.setColor(0x4D9BB6CF);
-            canvas.drawRoundRect(rect,th/2,th/2,paint);
-            paint.setStyle(Paint.Style.STROKE);paint.setStrokeWidth(d(.65f));
-            paint.setColor(0xA0ECF4FF);
-            canvas.drawRoundRect(rect,th/2,th/2,paint);
+            // Selection is a refractive clear-glass child behind these labels.
             paint.setStyle(Paint.Style.FILL);
             paint.setTypeface(Typeface.create("sans-serif-medium",Typeface.NORMAL));
             paint.setTextAlign(Paint.Align.CENTER);
@@ -201,7 +212,7 @@ final class MotionViews {
             float distance=end-from;
             selected=target;
             if(callback!=null)callback.selected(target);
-            if(!ValueAnimator.areAnimatorsEnabled()){center=end;thumbWidth=endW;thumbScale=1;invalidate();return;}
+            if(!ValueAnimator.areAnimatorsEnabled()){center=end;thumbWidth=endW;thumbScale=1;reportThumb();invalidate();return;}
             moving=ValueAnimator.ofFloat(0,1);
             moving.setDuration(420);
             moving.addUpdateListener(a->{
@@ -212,11 +223,12 @@ final class MotionViews {
                 thumbWidth=startW+(endW-startW)*ease
                     +(float)Math.sin(Math.PI*p)*Math.min(d(28),Math.abs(distance)*.24f);
                 thumbScale=1-.045f*(float)Math.sin(Math.PI*p);
+                reportThumb();
                 invalidate();
             });
             moving.addListener(new AnimatorListenerAdapter(){
                 @Override public void onAnimationEnd(Animator a) {
-                    if(a==moving) {center=mid(selected);thumbWidth=endW;thumbScale=1;invalidate();}
+                    if(a==moving) {center=mid(selected);thumbWidth=endW;thumbScale=1;reportThumb();invalidate();}
                 }
             });
             moving.start();
