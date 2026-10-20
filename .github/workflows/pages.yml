@@ -43,6 +43,19 @@ jobs:
               test -s study-atelier/index.html
             fi
           fi
+      - name: Apply Study Atelier v0.2 knowledge and practice upgrade
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -d study-atelier-overrides ]; then
+            test -s study-atelier/index.html
+            cp -a study-atelier-overrides/. study-atelier/
+            test -s study-atelier/quiz-data.js
+            test -s study-atelier/chapter-data.js
+            test -s study-atelier/upgrade.js
+            rm -rf study-atelier-overrides
+            echo 'Study Atelier v0.2 upgrade applied'
+          fi
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:
