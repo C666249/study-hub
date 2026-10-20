@@ -1,0 +1,17 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>准备原始 PDF · 知序</title><style>body{margin:0;background:#f7f5f0;color:#25392d;font:16px -apple-system,BlinkMacSystemFont,"PingFang SC",sans-serif;display:grid;place-items:center;min-height:100svh}.panel{margin:24px;max-width:500px;padding:30px;border-radius:20px;background:white;box-shadow:0 12px 40px #14302512}h1{font-size:22px;margin:0 0 12px}p{line-height:1.8;color:#667568}button{border:0;background:#355e4a;color:white;border-radius:12px;padding:12px 22px;font-weight:700;cursor:pointer}</style></head><body><div class="panel"><h1>正在准备原始 PDF</h1><p id="status">正在提取无损压缩的原始资料，完成后自动保存到本机。</p><button id="retry" hidden>重新尝试</button></div><script>
+const name="操作题参考答案（操作题是重点，如果今年题目一样或类似，这个是重点）.pdf";
+async function run(){
+ const el=document.querySelector('#status'),btn=document.querySelector('#retry');btn.hidden=true;
+ try{
+  if(typeof DecompressionStream==='undefined')throw new Error('当前浏览器不支持压缩解包，请使用新版 Chrome 浏览器。');
+  const r=await fetch('sources/16.pdf.gz',{cache:'force-cache'});
+  if(!r.ok)throw new Error('文件下载失败，HTTP '+r.status);
+  const bytes=await new Response(r.body.pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+  const u=URL.createObjectURL(new Blob([bytes],{type:'application/pdf'}));
+  const a=document.createElement('a');a.href=u;a.download=name;document.body.append(a);a.click();a.remove();
+  el.textContent='已启动 PDF 下载。如浏览器没有自动保存，请允许此网站下载文件。';
+  setTimeout(()=>URL.revokeObjectURL(u),60000);
+ }catch(e){el.textContent='下载失败：'+e.message;btn.hidden=false;}
+}
+document.querySelector('#retry').addEventListener('click',run);run();
+</script></body></html>
