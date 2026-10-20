@@ -18,19 +18,30 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
-      - name: Unpack Study Atelier release without changing other study sites
+      - name: Restore and verify complete Study Atelier release
         shell: bash
         run: |
           set -euo pipefail
-          latest=$(find . -maxdepth 1 -type f -name 'StudyAtelier-Mobile-v*.zip' -print | sort -V | tail -n 1)
-          if [ -n "$latest" ]; then
+          archive="$RUNNER_TEMP/StudyAtelier-Mobile-v0.1.zip"
+          if [ -d .atelier-parts ]; then
+            cat .atelier-parts/p*.bin > "$archive"
+            printf '%s  %s\n' '3f64016d6937c1ffa98b5a344118a950af14c4b93f83d67608a2a272c652f8b6' "$archive" | sha256sum -c -
             mkdir -p study-atelier
-            unzip -oq "$latest" -d study-atelier
+            unzip -oq "$archive" -d study-atelier
+            test -s study-atelier/index.html
+            test -s study-atelier/data.js
+            test -d study-atelier/originals
             touch study-atelier/.nojekyll
-            test -f study-atelier/index.html
-            echo "Study Atelier included at /study-hub/study-atelier/"
+            rm -rf .atelier-parts
+            echo "Study Atelier verified at /study-hub/study-atelier/"
           else
-            echo "No Study Atelier ZIP found yet; existing GitHub Pages contents remain unchanged."
+            latest=$(find . -maxdepth 1 -type f -name 'StudyAtelier-Mobile-v*.zip' -print | sort -V | tail -n 1)
+            if [ -n "$latest" ]; then
+              mkdir -p study-atelier
+              unzip -oq "$latest" -d study-atelier
+              touch study-atelier/.nojekyll
+              test -s study-atelier/index.html
+            fi
           fi
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
