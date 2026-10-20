@@ -18,6 +18,20 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+      - name: Unpack Study Atelier release without changing other study sites
+        shell: bash
+        run: |
+          set -euo pipefail
+          latest=$(find . -maxdepth 1 -type f -name 'StudyAtelier-Mobile-v*.zip' -print | sort -V | tail -n 1)
+          if [ -n "$latest" ]; then
+            mkdir -p study-atelier
+            unzip -oq "$latest" -d study-atelier
+            touch study-atelier/.nojekyll
+            test -f study-atelier/index.html
+            echo "Study Atelier included at /study-hub/study-atelier/"
+          else
+            echo "No Study Atelier ZIP found yet; existing GitHub Pages contents remain unchanged."
+          fi
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with:
