@@ -55,6 +55,7 @@ public final class MainActivity extends Activity {
     private MotionViews.RubberTabs tabs;
     private MotionViews.GoldFlight flight;
     private MotionViews.ImpactRipple impact;
+    private MotionViews.DaggerFlight daggerFlight;
     private View createOrb;
     private TextView createPlus;
     private boolean createOpening=false;
@@ -137,6 +138,8 @@ public final class MainActivity extends Activity {
         rootFrame.addView(flight,fp(-1,-1,Gravity.FILL));
         impact=new MotionViews.ImpactRipple(this);
         rootFrame.addView(impact,fp(-1,-1,Gravity.FILL));
+        daggerFlight=new MotionViews.DaggerFlight(this);
+        rootFrame.addView(daggerFlight,fp(-1,-1,Gravity.FILL));
         installCreateOrb();
         renderRewardList();
         renderSettingsList();
@@ -268,34 +271,54 @@ public final class MainActivity extends Activity {
             taskList.addView(GlassMaterial.floatingCard(this,blurTarget,empty,25),lp(-1,-2));return;
         }
         for(RewardStore.Task task:all) {
-            boolean claimed=store.alreadyClaimed(task);
+            final int state=store.resolution(task);
             LinearLayout item=row();
-            item.setPadding(d(18),d(13),d(14),d(13));
+            item.setPadding(d(17),d(13),d(13),d(13));
             item.setMinimumHeight(d(83));
-            // Foreground must remain sharp, while the live background shines through.
             LinearLayout content=column();
             content.setGravity(Gravity.CENTER_VERTICAL);
             TextView name=text(task.title,16.5f,INK,true);
             name.setMaxLines(2);
             name.setEllipsize(android.text.TextUtils.TruncateAt.END);
             content.addView(name,lp(-1,-2));
-            TextView meta=text((RewardStore.WEEKLY.equals(task.cadence)?"每周":"每天")
-                +"  ·  "+money(task.cents),12.5f,0xffADBEB0,false);
+            String info=(RewardStore.WEEKLY.equals(task.cadence)?"每周":"每天")
+                +"  ·  "+money(task.cents);
+            TextView meta=text(info,12.5f,0xffADBEB0,false);
             LinearLayout.LayoutParams mp=lp(-1,25);mp.topMargin=d(5);
             content.addView(meta,mp);
             item.addView(content,new LinearLayout.LayoutParams(0,-2,1));
-            TextView claim=text(claimed?"✓ 完成":"奖励",13.5f,
-                claimed?0xffAFBEAE:0xffF3DDB8,true);
-            claim.setGravity(Gravity.CENTER);
-            claim.setMinimumWidth(d(claimed?74:67));
-            claim.setMinimumHeight(d(42));
-            LinearLayout.LayoutParams cl=lp(claimed?74:67,42);cl.leftMargin=d(8);
-            item.addView(GlassMaterial.pill(this,blurTarget,claim,16),cl);
-            touch(claim);
-            claim.setEnabled(!claimed&&!rewarding&&!store.isReadOnly());
-            claim.setContentDescription(claimed?"当前周期已领取 "+task.title:"领取 "+task.title+" 奖励 "+money(task.cents));
-            claim.setOnClickListener(v->collect(task,claim));
-            LinearLayout.LayoutParams card=lp(-1,-2);card.bottomMargin=d(11);
+
+            // Two compact native clear-glass lenses: warm champagne reward
+            // and restrained pale-silver penalty. Never alter the parent card.
+            LinearLayout actions=row();
+            actions.setGravity(Gravity.CENTER_VERTICAL);
+            boolean locked=state!=0||rewarding||store.isReadOnly();
+            TextView plus=text(state>0?"✓":"＋",23,
+                state>0?0xffAFC2B1:0xffF1D29B,true);
+            plus.setGravity(Gravity.CENTER);
+            plus.setContentDescription(state>0?"本周期已奖励":state<0?"本周期已惩罚":"领取 "+task.title+" 奖励");
+            plus.setAlpha(state==0?1f:.52f);
+            touch(plus);
+            plus.setEnabled(!locked);
+            plus.setOnClickListener(v->collect(task,plus));
+            actions.addView(GlassMaterial.pill(this,blurTarget,plus,19),lp(43,43));
+
+            TextView minus=text(state<0?"✓":"−",23,
+                state<0?0xffAFC2B1:0xffCAD1D1,true);
+            minus.setGravity(Gravity.CENTER);
+            minus.setContentDescription(state<0?"本周期已惩罚":state>0?"本周期已奖励":"对 "+task.title+" 记一次惩罚");
+            minus.setAlpha(state==0?1f:.52f);
+            touch(minus);
+            minus.setEnabled(!locked);
+            minus.setOnClickListener(v->punish(task,minus));
+            LinearLayout.LayoutParams penaltyLp=lp(43,43);
+            penaltyLp.leftMargin=d(8);
+            actions.addView(GlassMaterial.pill(this,blurTarget,minus,19),penaltyLp);
+            LinearLayout.LayoutParams buttons=lp(-2,43);buttons.leftMargin=d(9);
+            item.addView(actions,buttons);
+
+            LinearLayout.LayoutParams card=lp(-1,-2);
+            card.bottomMargin=d(11);
             taskList.addView(GlassMaterial.floatingCard(this,blurTarget,item,22),card);
         }
     }
@@ -307,7 +330,7 @@ public final class MainActivity extends Activity {
         List<RewardStore.Task> tasks=store.tasks();
         settingsCount.setText(tasks.size()+" 项");
         if(tasks.isEmpty()) {
-            TextView hint=text("点击右上角，创建一个想坚持的目标。",13,MUTED,false);
+            TextView hint=text("点击右下角 ＋，创建一个想坚持的目标。",13,MUTED,false);
             hint.setGravity(Gravity.CENTER);
             hint.setPadding(d(12),d(29),d(12),d(29));
             // Empty-state is a frosted glass pane, not an opaque tile.
@@ -379,6 +402,53 @@ public final class MainActivity extends Activity {
         TextView icon=text(character,22,0xffC7C0B6,true);
         icon.setGravity(Gravity.CENTER);icon.setBackground(shape(SURFACE2,16,0));
         touch(icon);return icon;
+    }
+
+    private void punish(RewardStore.Task task,View source) {
+        if(rewarding||store.isReadOnly())return;
+        if(store.alreadyClaimed(task)){
+            Toast.makeText(this,"本周期已经完成记录",Toast.LENGTH_SHORT).show();
+            renderRewardList();return;
+        }
+        if(store.balance()<=0){
+            Toast.makeText(this,"当前余额为 ¥0.00，无法继续扣减",Toast.LENGTH_SHORT).show();
+            return;
+        }
+        RewardStore.Receipt penalty=store.penalize(task);
+        if(penalty==null){
+            Toast.makeText(this,"惩罚记录保存失败，请重试",Toast.LENGTH_SHORT).show();
+            renderRewardList();return;
+        }
+        rewarding=true;
+        source.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
+        int[] from=new int[2],to=new int[2],origin=new int[2];
+        source.getLocationOnScreen(from);
+        totalView.getLocationOnScreen(to);
+        rootFrame.getLocationOnScreen(origin);
+        float sx=from[0]-origin[0]+source.getWidth()*.5f;
+        float sy=from[1]-origin[1]+source.getHeight()*.5f;
+        float tx=to[0]-origin[0]+Math.min(totalView.getWidth()*.52f,d(135));
+        float ty=to[1]-origin[1]+totalView.getHeight()*.5f;
+        source.setEnabled(false);
+        daggerFlight.launch(sx,sy,tx,ty,()->{
+            long balance=store.balance();
+            displayedCents=balance;
+            totalView.roll(balance);
+            miniBalance.setText(money(balance));
+            totalView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+            balanceGlass.animate().cancel();
+            balanceGlass.setTranslationX(-d(4));
+            balanceGlass.setScaleX(.987f);
+            balanceGlass.setScaleY(.989f);
+            balanceGlass.animate().translationX(0).scaleX(1f).scaleY(1f)
+                .setDuration(450).setInterpolator(new OvershootInterpolator(.75f)).start();
+            miniBalance.animate().cancel();
+            miniBalance.setScaleX(.96f);miniBalance.setScaleY(.95f);
+            miniBalance.animate().scaleX(1).scaleY(1).setDuration(320)
+                .setInterpolator(new OvershootInterpolator(.62f)).start();
+            rewarding=false;
+            renderRewardList();
+        });
     }
 
     private void collect(RewardStore.Task task,View source) {
@@ -659,7 +729,7 @@ public final class MainActivity extends Activity {
                 GestureTaskRow row=new GestureTaskRow(this,blurTarget);
                 row.setDeletionOnly(true);
                 row.setTag(receipt.id);
-                row.setContentDescription(receipt.title+"，"+money(receipt.cents)+"，深度左滑后松手删除该奖励记录");
+                row.setContentDescription(receipt.title+"，"+(receipt.cents<0?"惩罚 ":"奖励 ")+money(Math.abs(receipt.cents))+"，深度左滑后松手删除该账本记录");
                 LinearLayout labels=column();
                 labels.setGravity(Gravity.CENTER_VERTICAL);
                 TextView title=text(receipt.title,14.5f,INK,true);
@@ -668,7 +738,7 @@ public final class MainActivity extends Activity {
                 labels.addView(title,lp(-1,25));
                 labels.addView(text(fmt.format(new Date(receipt.timestamp)),11.5f,MUTED,false),lp(-1,23));
                 row.surface.addView(labels,new LinearLayout.LayoutParams(0,-2,1));
-                TextView amount=text("+"+money(receipt.cents),14,GOLD,true);
+                TextView amount=text((receipt.cents<0?"−":"+")+money(Math.abs(receipt.cents)),14,receipt.cents<0?0xffC9B0B0:GOLD,true);
                 row.surface.addView(amount,lp(-2,-1));
                 row.onDelete=()->{
                     // Existing RewardStore.undo() atomically removes a receipt

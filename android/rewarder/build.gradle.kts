@@ -14,8 +14,8 @@ android {
         applicationId = "io.github.c666249.rewarder"
         minSdk = 26
         targetSdk = 34
-        versionCode = 12
-        versionName = "1.7.2"
+        versionCode = 13
+        versionName = "1.7.3"
     }
     if (stableSigned) {
         signingConfigs {

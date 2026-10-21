@@ -73,11 +73,18 @@ final class RewardStore {
     List<Receipt> receipts() { return new ArrayList<>(receipts); }
 
     long balance() {
+        // Positive historical receipts are unchanged. v1.7.3 introduces a
+        // signed negative cents delta for penalties, stored in the same JSON
+        // schema for full backwards compatibility.
         long sum=0L;
         for (Receipt receipt: receipts) {
-            if (receipt.cents > 0 && Long.MAX_VALUE-sum >= receipt.cents) sum += receipt.cents;
+            long v=receipt.cents;
+            if(v>0 && sum>Long.MAX_VALUE-v)sum=Long.MAX_VALUE;
+            else if(v<0 && sum<Long.MIN_VALUE-v)sum=Long.MIN_VALUE;
+            else sum+=v;
         }
-        return sum;
+        // Never display a negative reward balance.
+        return Math.max(0L,sum);
     }
 
     int count() { return receipts.size(); }
@@ -91,12 +98,15 @@ final class RewardStore {
         return "D:" + date.toString();
     }
 
-    boolean alreadyClaimed(Task task) {
-        String period = periodKey(task);
-        for (Receipt receipt: receipts)
-            if (receipt.taskId.equals(task.id) && receipt.period.equals(period)) return true;
-        return false;
+    int resolution(Task task) {
+        String period=periodKey(task);
+        for(Receipt receipt:receipts)
+            if(receipt.taskId.equals(task.id)&&receipt.period.equals(period))
+                return receipt.cents<0?-1:1;
+        return 0;
     }
+
+    boolean alreadyClaimed(Task task) {return resolution(task)!=0;}
 
     Receipt claim(Task task) {
         if (readOnly || alreadyClaimed(task)) return null;
@@ -104,6 +114,17 @@ final class RewardStore {
             periodKey(task), task.cents, System.currentTimeMillis());
         receipts.add(entry);
         if (!persist()) { receipts.remove(receipts.size()-1); return null; }
+        return entry;
+    }
+
+    Receipt penalize(Task task) {
+        if(readOnly||alreadyClaimed(task))return null;
+        long amount=Math.min(balance(),task.cents);
+        if(amount<=0L)return null;
+        Receipt entry=new Receipt(UUID.randomUUID().toString(),task.id,task.title,
+            periodKey(task),-amount,System.currentTimeMillis());
+        receipts.add(entry);
+        if(!persist()){receipts.remove(receipts.size()-1);return null;}
         return entry;
     }
 

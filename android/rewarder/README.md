@@ -3,6 +3,9 @@
 原生 Android Java 实现。与旧版 `/rewarder/` 网页没有依赖，也不读取网页的 IndexedDB。
 
 ## UI 和数据
+- **v1.7.3**：原生玻璃任务卡右侧添加香槟金「＋」奖励和淡灰色「−」惩罚。奖励继续使用旧版金币飞入；惩罚使用匕首飞向大额数字、暗红液滴扩散回卷、数字滚动扣减和轻震动。日/周每周期只能奖励或惩罚一次，删除对应账本记录可解除状态。
+- 账本以 +/− 符号和金色/灰红色区分；惩罚金额以任务金额或当前剩余余额两者较小值记录（最低余额 ¥0.00，余额为 0 时不可惩罚）。原 JSON snapshot 结构兼容旧版，删除奖励或惩罚后所有统计重算。
+
 - **v1.7.2**：设置页「新建」改为右下角底部 Tab 上方的独立浮动透明 Liquid Glass 球，采用现有 QWEA0 HERO Clear 镜片；点击 ＋ 旋转后打开原生新建任务底部弹窗，关闭旋转复位。仅设置页显示。
 - 任务弹窗「每天 / 每周」改为与底部 Tab 同一类 FMV 橡胶果冻动画：移动拉伸、阻尼惯性、轻震动、收缩回弹；保留原金额校验和日/周任务周期数据结构。
 
@@ -25,8 +28,8 @@
 
 下载入口：
 
-- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.2-preview`
-- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.2-stable`
+- 预览版：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.3-preview`
+- 长期签名版（需配置以下 secrets 才会发布）：`https://github.com/C666249/study-hub/releases/tag/rewarder-v1.7.3-stable`
 
 ### 长期签名：只需配置一次
 

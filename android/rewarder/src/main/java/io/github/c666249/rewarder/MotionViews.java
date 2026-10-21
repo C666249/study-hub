@@ -453,6 +453,136 @@ final class MotionViews {
         }
     }
 
+
+    /**
+     * A restrained, stylised dagger glides into the large balance number,
+     * followed by a dark-crimson ink splash. After expansion its droplets
+     * curve back toward the impact, like a brief liquid recoil.
+     * The signed ledger is persisted before launch; UI rolls at impact.
+     */
+    static final class DaggerFlight extends View {
+        private final Paint ink=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Paint shine=new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Path route=new Path();
+        private final PathMeasure measure=new PathMeasure();
+        private final Path blade=new Path();
+        private final float[] pos=new float[2];
+        private final float[] tangent=new float[2];
+        private ValueAnimator animator;
+        private float fraction;
+        private float hitX,hitY;
+        private Runnable onImpact;
+        private boolean didImpact;
+        DaggerFlight(Context c){
+            super(c);
+            setVisibility(GONE);
+            setClickable(false);
+            setFocusable(false);
+            setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_NO);
+        }
+        private float d(float n){return dp(getContext(),n);}
+        void launch(float sx,float sy,float tx,float ty,Runnable landed){
+            if(animator!=null){animator.cancel();animator=null;}
+            hitX=tx;hitY=ty;onImpact=landed;didImpact=false;fraction=0;
+            if(!ValueAnimator.areAnimatorsEnabled()){
+                setVisibility(GONE);
+                didImpact=true;if(onImpact!=null)onImpact.run();
+                return;
+            }
+            route.reset();route.moveTo(sx,sy);
+            route.cubicTo(sx-d(18),sy-d(75),tx+d(55),ty-d(60),tx,ty);
+            measure.setPath(route,false);
+            setVisibility(VISIBLE);
+            animator=ValueAnimator.ofFloat(0f,1f);
+            animator.setDuration(880L);
+            animator.setInterpolator(new android.view.animation.LinearInterpolator());
+            animator.addUpdateListener(a->{
+                fraction=(float)a.getAnimatedValue();
+                if(!didImpact && fraction>=.49f){
+                    didImpact=true;
+                    if(onImpact!=null)onImpact.run();
+                }
+                invalidate();
+            });
+            animator.addListener(new AnimatorListenerAdapter(){
+                @Override public void onAnimationEnd(Animator animation){
+                    if(animator==animation){
+                        if(!didImpact){didImpact=true;if(onImpact!=null)onImpact.run();}
+                        setVisibility(GONE);animator=null;onImpact=null;
+                    }
+                }
+                @Override public void onAnimationCancel(Animator animation){
+                    if(!didImpact){didImpact=true;if(onImpact!=null)onImpact.run();}
+                    setVisibility(GONE);
+                }
+            });
+            animator.start();
+        }
+        @Override protected void onDraw(Canvas canvas){
+            if(getVisibility()!=VISIBLE)return;
+            if(fraction<.49f){
+                float t=1-(float)Math.pow(1-fraction/.49f,2.4);
+                measure.getPosTan(measure.getLength()*t,pos,tangent);
+                float angle=(float)Math.toDegrees(Math.atan2(tangent[1],tangent[0]))+90f;
+                for(int i=1;i<=5;i++){
+                    float tail=Math.max(0,t-i*.038f);
+                    float[] trailing=new float[2];
+                    measure.getPosTan(measure.getLength()*tail,trailing,null);
+                    ink.setColor(0xBB794E53);ink.setAlpha((int)(70f*(1-i/6f)));
+                    canvas.drawCircle(trailing[0],trailing[1],d(3.4f),ink);
+                }
+                canvas.save();canvas.translate(pos[0],pos[1]);canvas.rotate(angle);
+                // Metallic pointed blade.
+                blade.reset();
+                blade.moveTo(0,-d(27));blade.lineTo(-d(5),-d(7));
+                blade.lineTo(0,d(4));blade.lineTo(d(5),-d(7));blade.close();
+                ink.setShader(new LinearGradient(-d(6),0,d(6),0,
+                    0xffC8CCCE,0xff555A5E,Shader.TileMode.CLAMP));
+                canvas.drawPath(blade,ink);ink.setShader(null);
+                ink.setColor(0xff2D3538);
+                canvas.drawRoundRect(-d(13),d(3),d(13),d(7),d(2),d(2),ink);
+                ink.setColor(0xffA17D75);
+                canvas.drawRoundRect(-d(3),d(5),d(3),d(19),d(2),d(2),ink);
+                ink.setColor(0xffD5B1A0);
+                canvas.drawCircle(0,d(19),d(3),ink);
+                canvas.restore();
+                return;
+            }
+            float p=Math.min(1f,(fraction-.49f)/.51f);
+            float bloom=(float)Math.sin(Math.PI*Math.min(1f,p*1.06f));
+            if(bloom<0) bloom=0;
+            float radius=d(23)*(1f+p);
+            shine.setShader(new RadialGradient(hitX,hitY,radius,
+                new int[]{Color.argb((int)(115*bloom),140,32,49),
+                    Color.argb((int)(57*bloom),98,17,33),Color.TRANSPARENT},
+                new float[]{0,.40f,1f},Shader.TileMode.CLAMP));
+            canvas.drawCircle(hitX,hitY,radius,shine);
+            shine.setShader(null);
+            // Expanded ink droplets retract toward the center and drift down.
+            for(int i=0;i<19;i++){
+                float angle=i*2.39996f;
+                float speed=.62f+(i%6)*.15f;
+                float expand=(float)Math.sin(Math.PI*p);
+                float travel=d(47)*speed*expand;
+                float xx=hitX+(float)Math.cos(angle)*travel;
+                float yy=hitY+(float)Math.sin(angle)*travel+d(14)*p*p;
+                float size=d(.9f+(i%4)*.85f)*(1f-.55f*p);
+                int alpha=(int)(178*(1-p)*(i%3==0?.95f:.7f));
+                ink.setColor(Color.argb(alpha,135+(i%3)*14,34+(i%4)*5,51+(i%3)*6));
+                canvas.drawCircle(xx,yy,Math.max(d(.35f),size),ink);
+            }
+            ink.setStyle(Paint.Style.STROKE);
+            ink.setStrokeWidth(d(1.5f)*(1-p)+d(.5f));
+            ink.setColor(Color.argb((int)(125*(1-p)),169,53,67));
+            canvas.drawCircle(hitX,hitY,d(12)+d(25)*bloom,ink);
+            ink.setStyle(Paint.Style.FILL);
+        }
+        @Override protected void onDetachedFromWindow(){
+            if(animator!=null){animator.cancel();animator=null;}
+            super.onDetachedFromWindow();
+        }
+    }
+
     static final class GoldFlight extends View {
         private final Paint paint=new Paint(Paint.ANTI_ALIAS_FLAG);
         private final Paint trail=new Paint(Paint.ANTI_ALIAS_FLAG);
