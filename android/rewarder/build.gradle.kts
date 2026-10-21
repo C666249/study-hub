@@ -11,11 +11,11 @@ android {
     namespace = "io.github.c666249.rewarder"
     compileSdk = 36
     defaultConfig {
-        applicationId = "io.github.c666249.rewarder"
+        applicationId = "io.github.c666249.aurea.dual"
         minSdk = 26
         targetSdk = 34
-        versionCode = 13
-        versionName = "1.7.3"
+        versionCode = 14
+        versionName = "1.7.4"
     }
     if (stableSigned) {
         signingConfigs {

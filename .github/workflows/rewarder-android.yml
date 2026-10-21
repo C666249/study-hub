@@ -28,7 +28,7 @@ jobs:
         run: bash ./gradlew :rewarder:assembleDebug --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: Aurea-1.7.3-debug
+          name: Aurea-Dual-1.7.4-debug
           path: android/rewarder/build/outputs/apk/debug/rewarder-debug.apk
           if-no-files-found: error
           retention-days: 30
@@ -37,14 +37,14 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.7.3-preview
+          tag=rewarder-v1.7.4-dual-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "This exact preview tag is already published and is kept immutable."
           else
-            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Aurea-v1.7.3-preview.apk
-            gh release create "$tag" Aurea-v1.7.3-preview.apk \
-              --title "Aurea Android v1.7.3 预览版" \
-              --notes "原生双 Tab 奖励器：保留 v1.7 原生玻璃；主页面原生金色奖励＋与淡灰惩罚−双按钮、匕首飞向金额并触发暗红液滴回流动画、账本正负记账与删除后金额同步。保留设置页液态悬浮球、果冻日周切换与 FMV 手势。。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
+            cp android/rewarder/build/outputs/apk/debug/rewarder-debug.apk Aurea-Dual-v1.7.4-preview.apk
+            gh release create "$tag" Aurea-Dual-v1.7.4-preview.apk \
+              --title "Aurea Dual Android v1.7.4 预览版" \
+              --notes "原生双 Tab 奖励器：保留 v1.7 原生玻璃；主页面原生金色奖励＋与淡灰惩罚−双按钮、匕首飞向金额并触发暗红液滴回流动画、账本正负记账与删除后金额同步。保留设置页液态悬浮球、果冻日周切换与 FMV 手势。新 applicationId io.github.c666249.aurea.dual 与旧 Aurea 共存，旧应用数据原封不动。。临时调试签名。不保证可用后续签名覆盖安装；正式长期使用请配置 GitHub Secrets 发布 stable。" \
               --prerelease --latest=false
           fi
 
@@ -78,7 +78,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: steps.signing.outputs.configured == 'true'
         with:
-          name: Aurea-1.7.3-stable
+          name: Aurea-Dual-1.7.4-stable
           path: android/rewarder/build/outputs/apk/release/rewarder-release.apk
           if-no-files-found: error
           retention-days: 90
@@ -88,13 +88,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=rewarder-v1.7.3-stable
-          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Aurea-v1.7.3-stable.apk
+          tag=rewarder-v1.7.4-dual-stable
+          cp android/rewarder/build/outputs/apk/release/rewarder-release.apk Aurea-Dual-v1.7.4-stable.apk
           if gh release view "$tag" >/dev/null 2>&1; then
-            echo "Stable v1.7.3 already published; refusing to silently replace an installed build."
+            echo "Stable v1.7.4 already published; refusing to silently replace an installed build."
           else
-            gh release create "$tag" Aurea-v1.7.3-stable.apk \
-              --title "Aurea Android v1.7.3 正式签名版" \
+            gh release create "$tag" Aurea-Dual-v1.7.4-stable.apk \
+              --title "Aurea Dual Android v1.7.4 正式签名版" \
               --notes "独立签名永久版本。请安全保存你的 JKS 与密码，后续覆盖升级必须使用同一证书。" \
               --latest=false
           fi
