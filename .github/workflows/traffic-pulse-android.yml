@@ -1,7 +1,7 @@
 name: Traffic Pulse · Android Preview APK
 on:
   push:
-    branches: ['feature/traffic-pulse-v01']
+    branches: ['feature/traffic-pulse-v02']
     paths:
       - 'android/trafficpulse/**'
       - 'android/settings.gradle.kts'
@@ -36,6 +36,8 @@ jobs:
           x=Path('android/trafficpulse/src/main/AndroidManifest.xml').read_text()
           assert 'android.permission.INTERNET' not in x
           assert 'android.permission.ACCESS_NETWORK_STATE' in x
+          assert 'android.permission.PACKAGE_USAGE_STATS' in x
+          assert 'android.permission.INTERNET' not in x
           assert 'android:foregroundServiceType="specialUse"' in x
           assert 'FOREGROUND_SERVICE_SPECIAL_USE' in x
           assert 'android.permission.SYSTEM_ALERT_WINDOW' in x
@@ -52,12 +54,12 @@ jobs:
           mkdir -p dist
           apk=android/trafficpulse/build/outputs/apk/debug/trafficpulse-debug.apk
           test -s "$apk"
-          cp "$apk" dist/TrafficPulse-v0.1.0-preview.apk
+          cp "$apk" dist/TrafficPulse-v0.2.0-preview.apk
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          "$SIGNER" verify --verbose dist/TrafficPulse-v0.1.0-preview.apk
-          "$AAPT" dump badging dist/TrafficPulse-v0.1.0-preview.apk | grep -F "package: name='io.github.c666249.trafficpulse' versionCode='1' versionName='0.1.0'"
-          "$AAPT" dump permissions dist/TrafficPulse-v0.1.0-preview.apk > /tmp/perms.txt
+          "$SIGNER" verify --verbose dist/TrafficPulse-v0.2.0-preview.apk
+          "$AAPT" dump badging dist/TrafficPulse-v0.2.0-preview.apk | grep -F "package: name='io.github.c666249.trafficpulse' versionCode='2' versionName='0.2.0'"
+          "$AAPT" dump permissions dist/TrafficPulse-v0.2.0-preview.apk > /tmp/perms.txt
           if grep -q 'android.permission.INTERNET' /tmp/perms.txt; then
             echo "Unexpected Internet permission detected!"; exit 1
           fi
@@ -73,12 +75,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=traffic-pulse-v0.1.0-preview
+          tag=traffic-pulse-v0.2.0-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Preview tag already exists; refusing to silently replace binary"
           else
-            gh release create "$tag" dist/TrafficPulse-v0.1.0-preview.apk dist/SHA256SUMS.txt \
-              --title "流速 Pulse v0.1.0 · Android 实时网络测速" \
+            gh release create "$tag" dist/TrafficPulse-v0.2.0-preview.apk dist/SHA256SUMS.txt \
+              --title "流速 Pulse v0.2.0 · Android 实时网络测速" \
               --target "$GITHUB_SHA" --prerelease --latest=false \
-              --notes "原生 Android 测速：上下行速率、60秒走势图、当前网络类型、监控期间的流量累计、后台通知和可选拖动悬浮窗。系统 TrafficStats 统计，不请求 INTERNET，不上传数据。需用户主动启用，悬浮窗需系统额外授权。测试版使用临时 GitHub CI Debug 签名，后续更新可能需要先卸载；不保证同签名覆盖升级。尚未完成荣耀 MagicOS 真机测试；后台省电设置可能导致服务中止。"
+              --notes "原生 Android 测速 + 套餐剩余估算：上下行速率、60秒走势图、当前网络类型、监控期间流量累计、可设置每月130GB等套餐额度和账期日，并从 Android 历史蜂窝网络用量估算剩余GB；后台通知和可选拖动悬浮窗。系统 TrafficStats 统计，不请求 INTERNET，不上传数据。历史流量查询需使用情况访问权限（PACKAGE_USAGE_STATS）；不要求持续运行后台服务。需用户主动启用实时测速，悬浮窗需系统额外授权。月度余额是所有SIM合计的本机估算，非中国移动官方计费余额。测试版使用临时 GitHub CI Debug 签名，后续更新可能需要先卸载；不保证同签名覆盖升级。尚未完成荣耀 MagicOS 真机测试；后台省电设置可能导致服务中止。"
           fi
