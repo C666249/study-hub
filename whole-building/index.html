@@ -36,37 +36,37 @@
 
 /* 全剧缩略导航：指示点按整份剧本的真实内容高度投影，不遮挡正文。 */
 .script-rail{
-  position:fixed;z-index:28;top:50%;right:max(3px,calc((100vw - 800px)/2 + 3px));
-  width:27px;height:clamp(154px,34dvh,258px);transform:translateY(-50%);
+  position:fixed;z-index:28;top:50%;right:max(0px,calc((100vw - 800px)/2 + 1px));
+  width:19px;height:clamp(154px,34dvh,258px);transform:translateY(-50%);
   opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .75s ease,visibility 0s linear .75s;
   touch-action:none;user-select:none;-webkit-user-select:none;
 }
 .script-rail.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .75s ease,visibility 0s}
 .rail-track{position:absolute;inset:0;touch-action:none}
-.rail-spine{position:absolute;width:1.5px;height:calc(100% - 12px);top:6px;left:13px;border-radius:4px;background:#a6b9aa70;pointer-events:none}
-.rail-milestone{position:absolute;left:12px;width:4px;height:1.5px;background:#9bad9caa;transform:translateY(-50%);pointer-events:none}
-.rail-tick{position:absolute;left:0;display:flex;align-items:center;justify-content:center;width:27px;height:10px;
+.rail-spine{position:absolute;width:1.5px;height:calc(100% - 12px);top:6px;left:9px;border-radius:4px;background:#a6b9aa70;pointer-events:none}
+.rail-milestone{position:absolute;left:8px;width:4px;height:1.5px;background:#9bad9caa;transform:translateY(-50%);pointer-events:none}
+.rail-tick{position:absolute;left:0;display:flex;align-items:center;justify-content:center;width:19px;height:10px;
  border:0;padding:0;background:transparent;transform:translateY(-50%);touch-action:none}
 .rail-tick:before{content:"";height:2.5px;width:5px;border-radius:8px;background:#9bad9eaa;box-shadow:0 0 0 .5px #fff9;transition:width .15s,background .15s}
 .rail-tick.role-mark:before{width:9px;height:3.5px;background:#3f8063;box-shadow:0 0 0 .65px #ffffffbc}
 .rail-tick.merged:before{width:11px;height:4px;border-radius:7px}
 .rail-tick:focus-visible:before,.rail-tick:active:before{width:13px;background:#204f38}
-.rail-now{position:absolute;left:6px;top:6px;width:15px;height:5px;background:#225b43;
+.rail-now{position:absolute;left:2px;top:6px;width:15px;height:5px;background:#225b43;
  border-radius:4px;transform:translateY(-50%);pointer-events:none;
  box-shadow:0 0 0 1.5px #f8faf6,0 1px 5px #21493650;transition:top .095s linear}
-.rail-hint{position:absolute;right:31px;top:50%;transform:translateY(-50%) scale(.97);
+.rail-hint{position:absolute;right:24px;top:50%;transform:translateY(-50%) scale(.97);
  width:max-content;max-width:min(200px,52vw);border:1px solid #dbe7dc;
  border-radius:10px;padding:6px 9px;background:#fcfdfaf0;
  box-shadow:0 4px 18px #18382a1a;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
  color:#466254;font-size:11px;line-height:1.5;opacity:0;pointer-events:none;
  transition:opacity .18s ease,transform .18s ease}
 .script-rail.dragging .rail-hint{opacity:1;transform:translateY(-50%) scale(1)}
-@media(max-width:450px){.script-rail{right:2px;width:26px}}
+@media(max-width:450px){.script-rail{right:0;width:19px}}
 @media(prefers-reduced-motion:reduce){.script-rail,.rail-hint{transition-duration:.01ms!important}}
 </style></head><body>
 <div class="wrap">
-<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V0.2 · 讨论版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
+<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.5 · 全文导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
 <main>
 <section class="panel" id="storyPanel">
 <div class="story-lead"><div class="eyebrow">THE STORY / 剧情导读</div><h2>一个抓奸现场，三种截然不同的真相。</h2>
