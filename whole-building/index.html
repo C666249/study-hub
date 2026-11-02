@@ -67,18 +67,18 @@
 
 .rail-spine,.rail-milestone{display:none!important}
 .rail-silhouette{position:absolute;inset:0;width:19px;height:100%;pointer-events:none}
-.rail-lobe{fill:#9daea1;opacity:.55;transition:fill .3s,opacity .3s}
-.rail-lobe.current{fill:#3d7756;opacity:.94}
-.rail-joint{fill:#8ca997;opacity:.75}
+.rail-lobe,.rail-lobe.current{fill:#bacbbd;opacity:.64;transition:none}
+.rail-joint{fill:#a7bcae;opacity:.73}
 .rail-tick{left:0;width:19px;height:11px;z-index:1}
-.rail-tick:before,.rail-tick.merged:before{width:3.3px;height:3.3px;border-radius:50%;background:#799783;box-shadow:0 0 0 1px #fff9}
-.rail-tick.role-mark:before{width:4px;height:4px;border-radius:50%;background:#2b7a4f}
-.rail-tick:active:before{width:5px;height:5px;background:#22593a}
-.rail-now{left:6px;width:7px;height:7px;border-radius:50%;background:#205b3d;box-shadow:0 0 0 1px #fff,0 0 6px #2c6e4c60;transition:top .1s linear}
+.rail-tick:before,.rail-tick.merged:before{width:5px;height:2.4px;border-radius:4px;background:#2e7a50;box-shadow:0 0 0 .4px #e9f1e9;transition:background .15s}
+.rail-tick.role-mark:before{width:5px;height:2.4px;border-radius:4px;background:#24744a}
+.rail-tick:active:before,.rail-tick:focus-visible:before{width:5.5px;height:2.6px;background:#165a35}
+.rail-now{left:4.8px;width:9.4px;height:3.8px;border-radius:5px;background:#fffdfc;
+ box-shadow:0 0 0 1px #618a71,0 0 5px #315f4650;transition:top .1s linear}
 @media(max-height:430px){.script-rail{height:152px}}
 </style></head><body>
 <div class="wrap">
-<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.6 · 沙漏导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
+<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.7 · 细柱形导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
 <main>
 <section class="panel" id="storyPanel">
 <div class="story-lead"><div class="eyebrow">THE STORY / 剧情导读</div><h2>一个抓奸现场，三种截然不同的真相。</h2>
@@ -408,17 +408,25 @@ function hideScriptRail(immediately){
   if(immediately)$("#railHint").textContent="";
 }
 function shapeSvg(bounds,current){
- var cx=9.5,out=[];
+ // Visual-only update: each chapter is a slender, mostly uniform capsule.
+ // Its final/first 12% gently neck down to a hairline join. The body does not
+ // change color for the active chapter; the white progress dash shows position.
+ var cx=9.5,out=[],wide=3.15,neck=.68;
+ function p(x,y){return x.toFixed(2)+" "+y.toFixed(2)}
  for(var i=0;i<4;i++){
-  var a=bounds[i],b=bounds[i+1],d=b-a,r=Math.min(2.5,Math.max(1.05,d*.08));
-  // Smooth lens with sharpened points at both ends; each adjacent lobe meets at one point.
-  function p(x,y){return x.toFixed(2)+" "+y.toFixed(2)}
-  var path="M"+p(cx,a)+" C"+p(cx+r*.55,a+d*.16)+" "+p(cx+r,a+d*.3)+" "+p(cx+r,a+d*.5)+
-  " C"+p(cx+r,a+d*.7)+" "+p(cx+r*.55,a+d*.84)+" "+p(cx,b)+
-  " C"+p(cx-r*.55,a+d*.84)+" "+p(cx-r,a+d*.7)+" "+p(cx-r,a+d*.5)+
-  " C"+p(cx-r,a+d*.3)+" "+p(cx-r*.55,a+d*.16)+" "+p(cx,a)+"Z";
-  out.push('<path class="rail-lobe'+(i===current?' current':'')+'" data-scene="'+i+'" d="'+path+'"/>');
-  if(i<3)out.push('<circle class="rail-joint" cx="'+cx+'" cy="'+b.toFixed(2)+'" r=".55"/>');
+  var a=bounds[i],b=bounds[i+1],d=b-a;
+  var approach=Math.min(d*.12,7.5),s=a+approach,e=b-approach;
+  var left=cx-wide,right=cx+wide;
+  var shape="M"+p(cx-neck,a)+
+   " C"+p(cx-wide*.47,a+approach*.36)+" "+p(left,a+approach*.66)+" "+p(left,s)+
+   " L"+p(left,e)+
+   " C"+p(left,b-approach*.66)+" "+p(cx-wide*.47,b-approach*.36)+" "+p(cx-neck,b)+
+   " L"+p(cx+neck,b)+
+   " C"+p(cx+wide*.47,b-approach*.36)+" "+p(right,b-approach*.66)+" "+p(right,e)+
+   " L"+p(right,s)+
+   " C"+p(right,a+approach*.66)+" "+p(cx+wide*.47,a+approach*.36)+" "+p(cx+neck,a)+"Z";
+  out.push('<path class="rail-lobe'+(i===current?' current':'')+'" data-scene="'+i+'" d="'+shape+'"/>');
+  if(i<3)out.push('<circle class="rail-joint" cx="'+cx+'" cy="'+b.toFixed(2)+'" r=".68"/>');
  }
  return out.join("");
 }
