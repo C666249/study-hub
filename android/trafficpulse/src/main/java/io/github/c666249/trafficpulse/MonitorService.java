@@ -23,9 +23,11 @@ public final class MonitorService extends Service {
     private boolean active=false;
     private int ticks;
     private NotificationManager notifications;
-    private WindowManager wm;
-    private TextView floating;
-    private WindowManager.LayoutParams floatingParams;
+    private LiquidPillOverlay floating;
+    private final java.util.concurrent.ExecutorService quotaExecutor =
+        java.util.concurrent.Executors.newSingleThreadExecutor();
+    private boolean quotaQueryInFlight=false;
+    private long lastQuotaQuery=0;
 
     private final Runnable sampler=new Runnable(){
         @Override public void run(){
@@ -33,7 +35,8 @@ public final class MonitorService extends Service {
             SpeedState.I.sample();
             SpeedState.Snapshot s=SpeedState.I.get();
             if((++ticks)%2==0)notifications.notify(NOTICE_ID,notification(s));
-            if(floating!=null)floating.setText("↓ "+SpeedState.rate(s.down)+"\n↑ "+SpeedState.rate(s.up));
+            if(floating!=null)floating.speeds(s);
+            if(ticks==1 || ticks%60==0) updateOverlayQuota();
             handler.postDelayed(this,1000);
         }
     };
@@ -42,7 +45,7 @@ public final class MonitorService extends Service {
         super.onCreate();
         handler=new Handler(Looper.getMainLooper());
         notifications=(NotificationManager)getSystemService(NOTIFICATION_SERVICE);
-        NotificationChannel channel=new NotificationChannel(CHANNEL,"流速 Pulse · 实时测速",NotificationManager.IMPORTANCE_LOW);
+        NotificationChannel channel=new NotificationChannel(CHANNEL,"PulseFlow · Live Traffic",NotificationManager.IMPORTANCE_LOW);
         channel.setDescription("显示设备网络的实时上传和下载速度");
         channel.enableVibration(false);
         notifications.createNotificationChannel(channel);
@@ -82,75 +85,47 @@ public final class MonitorService extends Service {
         return new Notification.Builder(this,CHANNEL)
           .setSmallIcon(R.drawable.ic_stat)
           .setContentTitle("↓ "+SpeedState.rate(s.down)+"   ↑ "+SpeedState.rate(s.up))
-          .setContentText("流速 Pulse · 全设备实时监测")
+          .setContentText("PulseFlow · Live network speed")
           .setOngoing(true).setOnlyAlertOnce(true).setShowWhen(false)
           .setContentIntent(tap)
           .addAction(android.R.drawable.ic_media_pause,"停止监控",serviceIntent(STOP,11))
           .build();
     }
-    private int dp(float v){return Math.round(v*getResources().getDisplayMetrics().density);}
-    private GradientDrawable bg(){
-        GradientDrawable d=new GradientDrawable();
-        d.setColor(Color.argb(246,13,24,32));d.setCornerRadius(dp(17));
-        d.setStroke(dp(1),0xFF35554F);return d;
-    }
     private void refreshFloating(){
         boolean requested=getSharedPreferences("settings",MODE_PRIVATE).getBoolean("overlay",false);
         if(!active||!requested||!Settings.canDrawOverlays(this)){removeFloating();return;}
-        if(floating!=null)return;
-        wm=(WindowManager)getSystemService(WINDOW_SERVICE);
-        floating=new TextView(this);
-        floating.setText("↓ 0 B/s\n↑ 0 B/s");
-        floating.setTextColor(0xFF8CF4D8);
-        floating.setTextSize(12.5f);
-        floating.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
-        floating.setPadding(dp(17),dp(11),dp(17),dp(11));
-        floating.setBackground(bg());floating.setElevation(dp(8));
-        floating.setGravity(Gravity.CENTER_VERTICAL);
-        floatingParams=new WindowManager.LayoutParams(
-          WindowManager.LayoutParams.WRAP_CONTENT,WindowManager.LayoutParams.WRAP_CONTENT,
-          WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-          WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE|WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-          PixelFormat.TRANSLUCENT);
-        floatingParams.gravity=Gravity.TOP|Gravity.RIGHT;
-        floatingParams.x=dp(13);floatingParams.y=dp(100);
-        floating.setOnTouchListener(new View.OnTouchListener(){
-            float downX,downY;int ox,oy;boolean moved;
-            @Override public boolean onTouch(View view,android.view.MotionEvent e){
-                switch(e.getActionMasked()){
-                    case android.view.MotionEvent.ACTION_DOWN:
-                        downX=e.getRawX();downY=e.getRawY();ox=floatingParams.x;oy=floatingParams.y;moved=false;return true;
-                    case android.view.MotionEvent.ACTION_MOVE:
-                        float dx=e.getRawX()-downX,dy=e.getRawY()-downY;
-                        if(Math.abs(dx)>dp(5)||Math.abs(dy)>dp(5))moved=true;
-                        if(moved&&wm!=null){
-                            floatingParams.x=Math.max(0,ox-Math.round(dx));
-                            floatingParams.y=Math.max(0,oy+Math.round(dy));
-                            try{wm.updateViewLayout(floating,floatingParams);}catch(Exception ignored){}
-                        }
-                        return true;
-                    case android.view.MotionEvent.ACTION_UP:
-                        if(!moved){
-                            Intent open=new Intent(MonitorService.this,MainActivity.class);
-                            open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_SINGLE_TOP);
-                            startActivity(open);
-                        }
-                        return true;
-                }
-                return true;
-            }
-        });
-        try{wm.addView(floating,floatingParams);}
-        catch(RuntimeException e){floating=null;floatingParams=null;wm=null;}
+        if(floating==null){
+            floating=new LiquidPillOverlay(this);
+            floating.attach();
+            updateOverlayQuota();
+        }
+        floating.speeds(SpeedState.I.get());
     }
+
+    /** Usage history is expensive; never execute on the main/animation thread. */
+    private void updateOverlayQuota(){
+        if(!active || floating==null || quotaQueryInFlight) return;
+        long now=android.os.SystemClock.elapsedRealtime();
+        if(now-lastQuotaQuery<55000L && lastQuotaQuery!=0L)return;
+        lastQuotaQuery=now;quotaQueryInFlight=true;
+        quotaExecutor.execute(()->{
+            QuotaUsage.Result q=QuotaUsage.query(getApplicationContext());
+            handler.post(()->{
+                quotaQueryInFlight=false;
+                if(active && floating!=null)floating.quota(q);
+            });
+        });
+    }
+
     private void removeFloating(){
-        if(floating!=null && wm!=null){try{wm.removeView(floating);}catch(Exception ignored){}}
-        floating=null;floatingParams=null;wm=null;
+        if(floating!=null)floating.detach();
+        floating=null;
     }
     @Override public void onDestroy(){
         active=false;
         handler.removeCallbacks(sampler);
         removeFloating();
+        quotaExecutor.shutdownNow();
         SpeedState.I.stop();
         getSharedPreferences("settings",MODE_PRIVATE).edit().putBoolean("active",false).apply();
         super.onDestroy();
