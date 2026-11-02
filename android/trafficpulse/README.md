@@ -1,37 +1,23 @@
-# 流速 Pulse v0.2.0 — 安卓实时流量监控
+# PulseFlow v0.3.0 · Android 实时速度与套餐估算
 
-独立原生 Android APK（Java + Android View），直接读取 Android `TrafficStats` 系统累计计数器，计算每秒速度，**无需 INTERNET 权限，无数据上传，没有服务器**。
+Android View 原生独立应用。没有网络通信权限、没有后台上传数据，不用 VPN/root，不读取短信。
 
-## 主要能力
-- 每约 1 秒更新下载/上传速率，速率单位自动适配 B/s、KB/s、MB/s。
-- 最近 60 个采样点曲线；当前默认网络 Wi-Fi、蜂窝、VPN、以太网识别。
-- 本次监控启动以来的下载/上传累计量，不是按天、按月运营商账单。
-- **月度套餐余额估算：** 用户自定流量总额（默认130GB）和每月账期日，读取系统历史手机移动网络累计量后计算剩余值；不要求实时监控服务在后台持续存活。
-- 用户显式启动前台 Service，持续显示通知栏速率；从通知一键停止。
-- 可选悬浮窗：系统“显示在其他应用上层”授权后开启；长按拖动位置，轻点返回应用。
-- 不申请 Root、VPN 接管、Accessibility，也不申请互联网权限。月度统计需要用户主动开启系统“使用情况访问权限”（Usage Access / PACKAGE_USAGE_STATS），实时测速和余量估算相互独立。
+## 已实现
+- 全英文 PulseFlow 品牌。首页顺序：紧凑 VPN/网络 + 上下行速率 → 130GB 套餐余量卡（可更改总量和每月账期）→ Used/Plan 两块紧凑统计 → 60秒速度曲线 → 操作按钮。
+- 悬浮窗采用独立的 `LiquidPillOverlay`：默认 136dp × 42dp 的白色半透明横向胶囊，只显示剩余量；轻点展开到最多350dp，同一行显示「剩余/已用/↓/↑」；长按约490ms 逆向收起；手指拖动并保存位置。420ms 以**同一窗口同一对象**宽度连续变化，输入可中断。
+- 动态速率来自 Android TrafficStats；套餐余量来自 NetworkStatsManager 使用情况权限。后台计算套餐余量，不阻塞动画。历史用量不代表运营商官方计费额。
+- “白色液态玻璃”使用原生渐变、高光描边与半透明材质；**并不读取或折射其他 App 底图**，不索取屏幕录制权限。这是性能/权限兼容优先的 FMV 语义实现，非已认证的 FMV 原版光学 Backdrop。
+- 包名 `io.github.c666249.pulseflow`，与旧版 `io.github.c666249.trafficpulse` 并行安装，用户需要重新开启使用情况与悬浮窗权限。
 
-## Android 限制
-- TrafficStats 统计网络层、所有网络接口（VPN 环境可能出现计数偏差），不能据此做精确网络账单或分 app 统计。
-- NetworkStatsManager 根据用户设定账期读取 Android 历史蜂窝网络消耗，默认统计所有 SIM 的合计量；不能准确区分广西移动 SIM 套餐计费、运营商免流、结转套餐和共享套餐。历史数据可用性以设备系统为准，读取失败时不会显示虚构的余额。
-- **不需要整月后台常驻**来维护套餐计数；系统会持续记录网络使用数据，重新打开 App 查询即可。后台服务只用于实时速度通知和悬浮窗。
-- 以前 v0.1.0 采用临时 CI Debug 证书，安装 v0.2.0 如果出现签名冲突需要先卸载旧版（版本0.1没有需要保留的套餐配置）。
-- 采用 `specialUse` 前台服务，合法性需要具体发布渠道审核；Play 商店发布须履行 FGS 类型申报流程。
-- 用户可以手动停止；系统、ROM 省电策略可能终止后台服务，特别是在部分 MagicOS 设备上。
-- 本构建是临时 CI Debug 签名测试版；不要用于覆盖原有 Stable。
-- 测试设备目标为 Android 8+；仍需在荣耀 Android 17 设备上真机验证前台服务、通知和悬浮权限。
+## 使用
+点 Start 开启前台通知测速，点 Glass Pill 开启悬浮条；若缺少权限请按系统提示设置。悬浮条首次默认位于屏幕顶部靠中位置，可自由拖动；点击横向伸展，长按逆向收起。
 
-## 构建
-在 Android Studio 打开项目的 `android` 目录（JDK 17，SDK 35），运行：
-
+## 本地构建
 ```bash
 bash android/gradlew -p android :trafficpulse:assembleDebug
 ```
+JDK17 / SDK35。CI 自动编译、检验签名/包名/无 INTERNET 权限，发布公开预览包。
+代码仅在 `feature/pulseflow-v03` 分支，未修改 study-hub master。
 
-预览 APK 在 `android/trafficpulse/build/outputs/apk/debug/`。
-
-## 发布
-独立分支 `feature/traffic-pulse-v02` 触发 `.github/workflows/traffic-pulse-android.yml`。构建检查源码、APK 包名、签名和网络权限，发布公开 GitHub Release。此分支不改动 study-hub master，也不影响现有其他 App。
-
-## 后续计划
-正式版采用持久化独立签名证书，加入更可靠的应用前后台状态恢复与适配荣耀设备的实测。
+## 局限
+系统访问授权可能因 MagicOS、VPN、多 SIM、运营商免流而统计偏差；后台服务可能被省电策略停止。公开 CI APK 用临时 Debug 签名，不能保证后续覆盖升级。尚未真机验证液态胶囊拖拽、手势与震感；不要标记 verified。

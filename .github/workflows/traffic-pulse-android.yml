@@ -1,7 +1,7 @@
-name: Traffic Pulse · Android Preview APK
+name: PulseFlow · Android Preview APK
 on:
   push:
-    branches: ['feature/traffic-pulse-v02']
+    branches: ['feature/pulseflow-v03']
     paths:
       - 'android/trafficpulse/**'
       - 'android/settings.gradle.kts'
@@ -45,6 +45,26 @@ jobs:
           assert 'android:allowBackup="false"' in x
           print("Permissions, privacy, and foreground-service declarations verified")
           PY
+      - name: Ensure liquid pill motion and privacy contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          root=Path('android/trafficpulse/src/main/java/io/github/c666249/trafficpulse')
+          src=(root/'LiquidPillOverlay.java').read_text()
+          assert 'ValueAnimator.ofInt(from,target)' in src
+          assert 'setDuration(420L)' in src
+          assert 'postDelayed(longPress,490)' in src
+          assert 'Math.min(dp(350)' in src
+          assert 'collapsedText.setText' in src
+          assert 'windowManager.updateViewLayout' in src
+          assert 'MediaProjection' not in src
+          main=(root/'MainActivity.java').read_text()
+          assert main.index('quotaRemaining=label') < main.index('graph=new SpeedGraph')
+          assert 'PulseFlow' in main
+          print('Overlay motion, privacy and quota-first layout contract verified.')
+          PY
       - name: Compile Android Debug APK
         run: bash android/gradlew -p android --no-daemon :trafficpulse:assembleDebug --stacktrace
       - name: Verify APK contents, package and debug signature
@@ -54,19 +74,19 @@ jobs:
           mkdir -p dist
           apk=android/trafficpulse/build/outputs/apk/debug/trafficpulse-debug.apk
           test -s "$apk"
-          cp "$apk" dist/TrafficPulse-v0.2.0-preview.apk
+          cp "$apk" dist/PulseFlow-v0.3.0-preview.apk
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          "$SIGNER" verify --verbose dist/TrafficPulse-v0.2.0-preview.apk
-          "$AAPT" dump badging dist/TrafficPulse-v0.2.0-preview.apk | grep -F "package: name='io.github.c666249.trafficpulse' versionCode='2' versionName='0.2.0'"
-          "$AAPT" dump permissions dist/TrafficPulse-v0.2.0-preview.apk > /tmp/perms.txt
+          "$SIGNER" verify --verbose dist/PulseFlow-v0.3.0-preview.apk
+          "$AAPT" dump badging dist/PulseFlow-v0.3.0-preview.apk | grep -F "package: name='io.github.c666249.pulseflow' versionCode='3' versionName='0.3.0'"
+          "$AAPT" dump permissions dist/PulseFlow-v0.3.0-preview.apk > /tmp/perms.txt
           if grep -q 'android.permission.INTERNET' /tmp/perms.txt; then
             echo "Unexpected Internet permission detected!"; exit 1
           fi
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
-          name: TrafficPulse-Android-Preview
+          name: PulseFlow-Android-Preview-v0.3.0
           path: dist/
           if-no-files-found: error
           retention-days: 30
@@ -75,12 +95,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=traffic-pulse-v0.2.0-preview
+          tag=pulseflow-v0.3.0-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Preview tag already exists; refusing to silently replace binary"
           else
-            gh release create "$tag" dist/TrafficPulse-v0.2.0-preview.apk dist/SHA256SUMS.txt \
-              --title "流速 Pulse v0.2.0 · Android 实时网络测速" \
+            gh release create "$tag" dist/PulseFlow-v0.3.0-preview.apk dist/SHA256SUMS.txt \
+              --title "PulseFlow v0.3.0 · Compact Glass Pill" \
               --target "$GITHUB_SHA" --prerelease --latest=false \
-              --notes "原生 Android 测速 + 套餐剩余估算：上下行速率、60秒走势图、当前网络类型、监控期间流量累计、可设置每月130GB等套餐额度和账期日，并从 Android 历史蜂窝网络用量估算剩余GB；后台通知和可选拖动悬浮窗。系统 TrafficStats 统计，不请求 INTERNET，不上传数据。历史流量查询需使用情况访问权限（PACKAGE_USAGE_STATS）；不要求持续运行后台服务。需用户主动启用实时测速，悬浮窗需系统额外授权。月度余额是所有SIM合计的本机估算，非中国移动官方计费余额。测试版使用临时 GitHub CI Debug 签名，后续更新可能需要先卸载；不保证同签名覆盖升级。尚未完成荣耀 MagicOS 真机测试；后台省电设置可能导致服务中止。"
+              --notes "PulseFlow v0.3.0: new compact quota-first dashboard (the approved design), single-row VPN/network and RX/TX, 60s graph last, dark minimalist plan dialog. Compact translucent white horizontal overlay pill: collapsed remaining data, tap expands continuously to remaining/used/download/upload, long-press reverses, drag to move. Native code uses Android TrafficStats + NetworkStatsManager, no INTERNET permission. System overlay uses translucent white gradient fallback rather than screen capture or claiming optical backdrop refraction. Package io.github.c666249.pulseflow (independent from old Traffic Pulse); usage-access and draw-over-apps permissions must be granted again. Signed with ephemeral CI debug certificate; no in-place signature continuity guarantee. Android hardware performance and MagicOS permissions not yet device-verified."
           fi

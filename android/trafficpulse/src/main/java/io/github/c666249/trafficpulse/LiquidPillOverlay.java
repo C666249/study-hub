@@ -125,8 +125,7 @@ public final class LiquidPillOverlay {
         int initialY=dp(75);
         params=new WindowManager.LayoutParams(
             collapsedWidth,height,WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL |
-              WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT);
         params.gravity=Gravity.TOP | Gravity.LEFT;
         params.x=limit(sp.getInt("x",initialX),dp(2),Math.max(dp(2),screenWidth-collapsedWidth-dp(2)));
