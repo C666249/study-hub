@@ -33,6 +33,37 @@
 .chapter-camera[open] summary:after{transform:rotate(180deg)}
 .chapter-camera .camline{font-size:12px;padding:8px 12px;line-height:1.7;color:#65766b;border-top:1px solid #eef1ed}
 @media(max-width:450px){.read-quote{font-size:15px}.read-speaker{font-size:13px}.chapter-title h2{font-size:19px}}
+
+/* 全剧缩略导航：指示点按整份剧本的真实内容高度投影，不遮挡正文。 */
+.script-rail{
+  position:fixed;z-index:28;top:50%;right:max(3px,calc((100vw - 800px)/2 + 3px));
+  width:27px;height:clamp(154px,34dvh,258px);transform:translateY(-50%);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .75s ease,visibility 0s linear .75s;
+  touch-action:none;user-select:none;-webkit-user-select:none;
+}
+.script-rail.show{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .75s ease,visibility 0s}
+.rail-track{position:absolute;inset:0;touch-action:none}
+.rail-spine{position:absolute;width:1.5px;height:calc(100% - 12px);top:6px;left:13px;border-radius:4px;background:#a6b9aa70;pointer-events:none}
+.rail-milestone{position:absolute;left:12px;width:4px;height:1.5px;background:#9bad9caa;transform:translateY(-50%);pointer-events:none}
+.rail-tick{position:absolute;left:0;display:flex;align-items:center;justify-content:center;width:27px;height:10px;
+ border:0;padding:0;background:transparent;transform:translateY(-50%);touch-action:none}
+.rail-tick:before{content:"";height:2.5px;width:5px;border-radius:8px;background:#9bad9eaa;box-shadow:0 0 0 .5px #fff9;transition:width .15s,background .15s}
+.rail-tick.role-mark:before{width:9px;height:3.5px;background:#3f8063;box-shadow:0 0 0 .65px #ffffffbc}
+.rail-tick.merged:before{width:11px;height:4px;border-radius:7px}
+.rail-tick:focus-visible:before,.rail-tick:active:before{width:13px;background:#204f38}
+.rail-now{position:absolute;left:6px;top:6px;width:15px;height:5px;background:#225b43;
+ border-radius:4px;transform:translateY(-50%);pointer-events:none;
+ box-shadow:0 0 0 1.5px #f8faf6,0 1px 5px #21493650;transition:top .095s linear}
+.rail-hint{position:absolute;right:31px;top:50%;transform:translateY(-50%) scale(.97);
+ width:max-content;max-width:min(200px,52vw);border:1px solid #dbe7dc;
+ border-radius:10px;padding:6px 9px;background:#fcfdfaf0;
+ box-shadow:0 4px 18px #18382a1a;backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);
+ color:#466254;font-size:11px;line-height:1.5;opacity:0;pointer-events:none;
+ transition:opacity .18s ease,transform .18s ease}
+.script-rail.dragging .rail-hint{opacity:1;transform:translateY(-50%) scale(1)}
+@media(max-width:450px){.script-rail{right:2px;width:26px}}
+@media(prefers-reduced-motion:reduce){.script-rail,.rail-hint{transition-duration:.01ms!important}}
 </style></head><body>
 <div class="wrap">
 <header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V0.2 · 讨论版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
@@ -72,6 +103,11 @@
 </section>
 </main></div>
 <nav class="bottom" aria-label="主要导航"><div class="bottom-inner" id="bottomTabs"><div class="bottom-thumb" id="bottomThumb"></div><button class="navbtn active" data-tab="story" aria-current="page"><span class="symbol">◈</span>剧情</button><button class="navbtn" data-tab="script"><span class="symbol">☰</span>台词</button><button class="navbtn" data-tab="cast"><span class="symbol">♧</span>人物</button></div></nav>
+
+<aside class="script-rail" id="scriptRail" aria-label="完整剧本缩略导航" aria-hidden="true">
+  <div class="rail-track" id="railTrack"><span class="rail-spine"></span><div id="railMilestones"></div><div id="railTicks"></div><span class="rail-now" id="railNow"></span></div>
+  <div class="rail-hint" id="railHint"></div>
+</aside>
 <div class="overlay" id="sheetOverlay" aria-hidden="true"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><span class="grabber"></span><div class="sheettop"><strong id="sheetTitle">高亮谁的台词？</strong><button class="sheetclose" id="sheetClose" aria-label="关闭">×</button></div><div class="sheetlist" id="sheetRoles"></div></div></div>
 <div class="toast" id="toast" aria-live="polite"></div>
 <script>
@@ -270,6 +306,7 @@ function thumbGo(track,thumb,button){
 
 function updateBottom(animate){var b=$('.navbtn[data-tab="'+selectedTab+'"]');all(".navbtn").forEach(function(n){var on=n===b;n.classList.toggle("active",on);if(on)n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});if(animate)thumbGo($("#bottomTabs"),$("#bottomThumb"),b);else{var th=$("#bottomThumb");th.style.left=b.offsetLeft+"px";th.style.width=b.offsetWidth+"px"}}
 function switchTab(tab,chapterToJump){
+  hideScriptRail(true);
   selectedTab=tab;
   $("#storyPanel").hidden=tab!=="story";
   $("#scriptPanel").hidden=tab!=="script";
@@ -277,7 +314,7 @@ function switchTab(tab,chapterToJump){
   updateBottom(true);
   if(tab==="script"){
     renderScript();
-    requestAnimationFrame(function(){updateSceneThumb(false);if(Number.isInteger(chapterToJump))jumpToChapter(chapterToJump)});
+    requestAnimationFrame(function(){updateSceneThumb(false);buildScriptRail();if(Number.isInteger(chapterToJump))jumpToChapter(chapterToJump)});
   }
   window.scrollTo({top:0,behavior:"instant"});
 }
@@ -285,7 +322,7 @@ all(".navbtn").forEach(function(b){b.addEventListener("click",function(e){ripple
 all(".plot-item").forEach(function(b){b.addEventListener("click",function(e){ripple(b.querySelector(".plot-content"),e,false);vibrate(11);activeScene=+b.dataset.scene;switchTab("script",activeScene)})});
 function updateSceneThumb(animate){var b=$('.scene-btn[data-scene="'+activeScene+'"]');all(".scene-btn").forEach(function(n){n.classList.toggle("active",n===b);n.setAttribute("aria-pressed",String(n===b))});var el=$("#sceneThumb");if(animate)thumbGo($("#sceneSwitch"),el,b);else{el.style.left=b.offsetLeft+"px";el.style.width=b.offsetWidth+"px"}}
 all(".scene-btn").forEach(function(b){b.onclick=function(e){ripple(b,e,false);vibrate(8);jumpToChapter(+b.dataset.scene)}});
-window.addEventListener("resize",function(){updateBottom(false);updateSceneThumb(false)});
+window.addEventListener("resize",function(){updateBottom(false);updateSceneThumb(false);if(selectedTab==="script")requestAnimationFrame(buildScriptRail)});
 function currentScene(){return scenes[activeScene]}
 
 function rowHtml(item){
@@ -308,6 +345,7 @@ function renderScript(){
       '<details class="chapter-camera"><summary>本场镜头与动作参考</summary>'+cam+'</details></section>';
   }).join("");
   updateSceneThumb(false);
+  if(selectedTab==="script")requestAnimationFrame(buildScriptRail);
 }
 function jumpToChapter(index){
   activeScene=index;
@@ -319,12 +357,161 @@ function jumpToChapter(index){
   var y=target.getBoundingClientRect().top+window.scrollY-offset;
   window.scrollTo({top:Math.max(0,y),behavior:motion?"smooth":"instant"});
 }
+
+var railState={entries:[],clusters:[],start:0,end:1,length:1,dragging:false};
+var railHideTimer=null,railBuildQueued=false;
+var railLastCluster=-1,railLastAt=0,railClusterChoice=0;
+function railClamp(a,min,max){return Math.max(min,Math.min(max,a))}
+function railTop(el){return el.getBoundingClientRect().top+window.scrollY}
+function railVisible(){
+  if(selectedTab!=="script"||$("#sheetOverlay").classList.contains("open"))return;
+  var nav=$("#scriptRail");
+  nav.classList.add("show");nav.setAttribute("aria-hidden","false");
+  clearTimeout(railHideTimer);
+  if(!railState.dragging){
+    railHideTimer=setTimeout(function(){
+      if(!railState.dragging){
+        nav.classList.remove("show");
+        nav.setAttribute("aria-hidden","true");
+      }
+    },135);
+  }
+}
+function hideScriptRail(immediately){
+  clearTimeout(railHideTimer);
+  var el=$("#scriptRail");
+  railState.dragging=false;
+  el.classList.remove("dragging","show");
+  el.setAttribute("aria-hidden","true");
+  if(immediately)$("#railHint").textContent="";
+}
+function buildScriptRail(){
+  if(selectedTab!=="script"||railBuildQueued)return;
+  railBuildQueued=true;
+  requestAnimationFrame(function(){
+    railBuildQueued=false;
+    if(selectedTab!=="script")return;
+    var container=$("#fullScript"),rail=$("#scriptRail");
+    var rect=rail.getBoundingClientRect();
+    if(rect.height<1)return;
+    var available=rect.height-12;
+    var start=railTop(container);
+    var end=start+container.getBoundingClientRect().height;
+    var span=Math.max(1,end-start);
+    var nodes=Array.from(container.querySelectorAll(".read-dialogue"));
+    // 'all' shows a subtle whole-script map; character chosen shows that character's positions.
+    if(readRole!=="all")nodes=nodes.filter(function(n){return n.classList.contains("is-highlight")});
+    var entries=nodes.map(function(n,i){
+      var ch=n.closest(".script-chapter"),chapter=ch?Number(ch.id.replace("chapter-","")):0;
+      var relative=railClamp((railTop(n)+n.offsetHeight*.35-start)/span,0,1);
+      return {node:n,index:i,chapter:chapter,word:n.querySelector(".read-quote")?.textContent||"",
+        y:6+relative*available};
+    });
+    // A 9px display budget merges adjacent marks; actual dialogue targets remain independent.
+    var clusters=[];
+    for(var i=0;i<entries.length;i++){
+      var ent=entries[i],prev=clusters[clusters.length-1];
+      if(prev&&ent.y-prev.lastY<9){
+        prev.entries.push(ent);prev.lastY=ent.y;
+        prev.y=prev.entries.reduce(function(v,x){return v+x.y},0)/prev.entries.length;
+      }else clusters.push({y:ent.y,lastY:ent.y,entries:[ent]});
+    }
+    railState.entries=entries;railState.clusters=clusters;railState.start=start;railState.end=end;railState.length=available;
+    $("#railTicks").innerHTML=clusters.map(function(grp,i){
+      var n=grp.entries.length;
+      var roleMark=readRole!=="all";
+      var tip=roleMark?readRole+" · ":"全剧 · ";
+      return '<button type="button" class="rail-tick'+(roleMark?' role-mark':'')+(n>1?' merged':'')+
+        '" style="top:'+grp.y.toFixed(2)+'px" data-group="'+i+'" title="'+esc(tip+n+'句台词，点击定位')+
+        '" aria-label="'+esc(tip+n+'句台词，点击定位'+(n>1?'，连续点击可逐句切换':''))+'"></button>';
+    }).join("");
+    var marks=Array.from(container.querySelectorAll(".script-chapter"));
+    $("#railMilestones").innerHTML=marks.map(function(node){
+      var pct=railClamp((railTop(node)-start)/span,0,1);
+      return '<span class="rail-milestone" style="top:'+(6+pct*available).toFixed(2)+'px"></span>';
+    }).join("");
+    updateRailPosition();
+  });
+}
+function updateRailPosition(){
+  if(selectedTab!=="script")return;
+  var s=railState;
+  var toolbar=$("#scriptPanel").querySelector(".script-toolbar");
+  var focus=window.scrollY+toolbar.getBoundingClientRect().height+28;
+  var f=railClamp((focus-s.start)/Math.max(1,s.end-s.start),0,1);
+  $("#railNow").style.top=(6+f*s.length).toFixed(2)+"px";
+}
+function jumpToRailEntry(ent,dragging){
+  if(!ent)return;
+  var toolbar=$("#scriptPanel").querySelector(".script-toolbar");
+  var y=railTop(ent.node)-toolbar.getBoundingClientRect().height-13;
+  window.scrollTo({top:Math.max(0,y),behavior:dragging?"instant":(motion?"smooth":"instant")});
+  if(dragging){
+    var title=["第一场","第二场","第三场","尾声"][ent.chapter];
+    $("#railHint").textContent=title+" · "+(ent.word||"台词").slice(0,15);
+  }
+  railVisible();
+}
+function nearestRailEntry(clientY){
+  var r=$("#scriptRail").getBoundingClientRect();
+  var y=clientY-r.top,entries=railState.entries;
+  if(!entries.length)return null;
+  // Keep each original dialogue's exact projected position even inside a merged marker.
+  var best=entries[0],dist=Infinity;
+  for(var i=0;i<entries.length;i++){
+    var diff=Math.abs(entries[i].y-y);
+    if(diff<dist){dist=diff;best=entries[i]}
+  }
+  return best;
+}
+$("#scriptRail").addEventListener("pointerdown",function(e){
+  if(selectedTab!=="script")return;
+  e.preventDefault();e.stopPropagation();
+  railState.dragging=true;
+  this.classList.add("dragging","show");
+  clearTimeout(railHideTimer);
+  try{this.setPointerCapture(e.pointerId)}catch(_){}
+  var clusterEl=e.target.closest(".rail-tick");
+  var ent=null;
+  if(clusterEl){
+    var i=Number(clusterEl.dataset.group),group=railState.clusters[i];
+    if(group&&group.entries.length>0){
+      // A cluster occupies one tiny mark; repeated taps cycle its independent dialogue targets.
+      if(railLastCluster===i&&Date.now()-railLastAt<3000)railClusterChoice++;
+      else railClusterChoice=0;
+      railLastCluster=i;railLastAt=Date.now();
+      ent=group.entries[railClusterChoice%group.entries.length];
+    }
+  }
+  if(!ent)ent=nearestRailEntry(e.clientY);
+  jumpToRailEntry(ent,true);vibrate(7);
+});
+$("#scriptRail").addEventListener("pointermove",function(e){
+  if(!railState.dragging)return;
+  e.preventDefault();
+  jumpToRailEntry(nearestRailEntry(e.clientY),true);
+});
+function finishRailPointer(){
+  if(!railState.dragging)return;
+  railState.dragging=false;
+  $("#scriptRail").classList.remove("dragging");
+  railVisible();
+}
+$("#scriptRail").addEventListener("pointerup",finishRailPointer);
+$("#scriptRail").addEventListener("pointercancel",finishRailPointer);
+$("#scriptRail").addEventListener("lostpointercapture",finishRailPointer);
+$("#scriptPanel").addEventListener("toggle",function(e){
+  if(e.target.matches&&e.target.matches("details"))setTimeout(buildScriptRail,0);
+},true);
+
 var scrollQueued=false;
 window.addEventListener("scroll",function(){
   if(selectedTab!=="script"||scrollQueued)return;
   scrollQueued=true;
   requestAnimationFrame(function(){
     scrollQueued=false;
+    railVisible();
+    updateRailPosition();
     var threshold=$("#scriptPanel").querySelector(".script-toolbar").getBoundingClientRect().height+30;
     var active=0;
     for(var i=0;i<scenes.length;i++){
