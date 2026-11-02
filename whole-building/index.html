@@ -7,6 +7,32 @@
 .toast{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom));left:50%;transform:translate(-50%,14px);opacity:0;pointer-events:none;border-radius:50px;padding:9px 18px;background:#263e34;color:#fff;font-size:12px;max-width:90vw;white-space:nowrap;box-shadow:0 10px 25px #1a2f2533;transition:opacity .25s,transform .35s cubic-bezier(.22,1.3,.36,1);z-index:65}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:450px){.wrap{padding:0 17px calc(102px + env(safe-area-inset-bottom))}.mini span{font-size:10px}.cast-row{grid-template-columns:78px 1fr auto;gap:8px}.cast-row .who{font-size:14px}.cast-row .choose{min-width:56px;padding:6px 9px}.cast-row .about{font-size:11px}.story-lead p{font-size:15px}.words{font-size:16px}.filtered-line .words{font-size:17px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+.reader-intro{padding:15px 0 13px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.reader-intro strong{font-size:15px;color:#2d483b}
+.reader-intro span{color:#859288;font-size:11px}
+.read-flow{padding:3px 0 7px}
+.script-chapter{scroll-margin-top:166px}
+.chapter-title{border-bottom:1px solid #e2e9e2;padding:20px 0 10px;margin:0 0 5px}
+.chapter-title h2{margin:0;font-size:20px;line-height:1.45}
+.chapter-title p{margin:3px 0 0;color:#8a968c;font-size:11px}
+.read-dialogue{--role:#557665;line-height:1.72;padding:7px 5px 7px 8px;margin:2px 0;border-left:3px solid transparent;border-radius:6px;overflow-wrap:anywhere}
+.read-speaker{display:inline;color:var(--role);font-weight:830;font-size:14px;white-space:nowrap}
+.read-quote{display:inline;color:#22312a;font-size:15.5px;font-weight:650;letter-spacing:.005em}
+.read-dialogue.is-highlight{background:linear-gradient(100deg,#e4efe6,#eef4ed 84%,#f3f7f0);border-left-color:var(--role);border-radius:8px;padding:8px 7px 8px 12px;margin-left:-5px;margin-right:-5px;box-shadow:inset 0 0 0 1px #d8e8d9}
+.read-dialogue.is-highlight .read-speaker{font-weight:870}
+.read-dialogue.is-highlight .read-quote{font-weight:750;color:#182c21}
+.read-stage{font-size:12px;line-height:1.75;color:#78857b;padding:4px 8px;margin:5px 0;border-radius:7px;background:#eff2ed8a}
+.read-stage.read-screen{color:#55715e;background:#edf4ec;font-style:normal;font-weight:620}
+.read-stage.read-fx{color:#cedfd0;background:#2b3d34;font-style:normal;font-size:12px;padding:9px 12px}
+.read-stage.read-fx .read-fx-label{color:#b3cbb7;font-size:11px;font-weight:720;display:block;margin-bottom:3px}
+.chapter-camera{margin:16px 0 17px;border:1px solid var(--line);border-radius:11px;background:#fff;overflow:hidden}
+.chapter-camera summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;list-style:none;font-size:12px;color:#667d6c;font-weight:740;padding:11px 12px;user-select:none}
+.chapter-camera summary::-webkit-details-marker{display:none}
+.chapter-camera summary:after{content:"⌄";font-size:18px;line-height:1;transition:transform .35s cubic-bezier(.22,1.28,.36,1)}
+.chapter-camera[open] summary:after{transform:rotate(180deg)}
+.chapter-camera .camline{font-size:12px;padding:8px 12px;line-height:1.7;color:#65766b;border-top:1px solid #eef1ed}
+@media(max-width:450px){.read-quote{font-size:15px}.read-speaker{font-size:13px}.chapter-title h2{font-size:19px}}
 </style></head><body>
 <div class="wrap">
 <header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V0.2 · 讨论版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
@@ -29,25 +55,24 @@
 <section class="panel" id="scriptPanel" hidden>
 <div class="script-toolbar"><div class="scene-switch" id="sceneSwitch"><div class="shared-thumb" id="sceneThumb"></div>
 <button class="scene-btn active" data-scene="0">第一场</button><button class="scene-btn" data-scene="1">第二场</button><button class="scene-btn" data-scene="2">第三场</button><button class="scene-btn" data-scene="3">尾声</button></div>
-<button class="role-filter" id="filterButton" aria-haspopup="dialog" aria-label="筛选人物台词"><span><span class="filter-label">台词阅读模式</span><b id="filterText">全部人物 · 完整剧情</b></span><span class="down">⌄</span></button></div>
-<div class="scene-caption" id="sceneCaption"></div>
-<div id="scriptLines"></div>
-<div class="disclosure" id="directionFold"><button class="disclosure-head" id="directionButton" aria-expanded="false"><span>展开本场动作与运镜提示</span><span class="chevron" aria-hidden="true"></span></button><div class="drawer" id="directionDrawer"><div class="drawer-inner" id="directionContent"></div></div></div>
-<p class="tiny-note">选角后默认显示自己的台词，每句附上较淡的上一句对手戏。点击上方筛选可随时切回完整剧本。</p>
+<button class="role-filter" id="filterButton" aria-haspopup="dialog" aria-label="选择要高亮的人物台词"><span><span class="filter-label">人物台词高亮</span><b id="filterText">全部人物 · 不高亮</b></span><span class="down">⌄</span></button></div>
+<div class="reader-intro"><strong>完整剧本 · 连续阅读</strong><span>三场 + 尾声，一次下滑即可读完</span></div>
+<div class="read-flow" id="fullScript"></div>
+<p class="tiny-note" style="margin:23px 0 10px">人物高亮不会隐藏其他人的对白、动作和转场。上方场次栏用于快速定位。</p>
 </section>
 <section class="panel" id="castPanel" hidden>
 <div class="eyebrow" style="margin-top:24px">CAST / 演员安排</div><h2 class="section-title" style="margin-top:5px">九人演员安排图</h2><p class="hint">共10人：9名演员、1名摄影。角色安排与当前剧情保持一致。</p>
 <div class="group-head"><b>第一组 · 纠纷当事人</b><span>5人</span></div><div class="group"><div class="mini-grid" id="groupCivil"></div></div>
 <div class="group-head"><b>第二组 · 公安机关</b><span>3人</span></div><div class="group"><div class="mini-grid" id="groupPolice"></div></div>
 <div class="group-head"><b>第三组 · 社区工作人员</b><span>1人</span></div><div class="group"><div class="mini-grid single" id="groupCommunity"></div></div>
-<h2 class="section-title">人物性格与选角</h2><p class="hint">左侧是人物，右侧是人物背景。点击「选这个」，台词页四个场次会自动筛选为这个角色；再点一次即可取消。</p>
+<h2 class="section-title">人物性格与选角</h2><p class="hint">左侧是人物，右侧是人物背景。点击「选这个」，完整剧本自动高亮该角色的台词；再次点击即可取消。</p>
 <div class="cast-list" id="castList"></div>
 <div id="claimedNotice" class="claimed"><span id="claimedText"></span><button id="seeMyLines">看我的台词 ↗</button></div>
 <p class="tiny-note">选角意向仅保存在本机浏览器，不代表组内最终分配，网站不会自动同步到其他人的设备。</p>
 </section>
 </main></div>
 <nav class="bottom" aria-label="主要导航"><div class="bottom-inner" id="bottomTabs"><div class="bottom-thumb" id="bottomThumb"></div><button class="navbtn active" data-tab="story" aria-current="page"><span class="symbol">◈</span>剧情</button><button class="navbtn" data-tab="script"><span class="symbol">☰</span>台词</button><button class="navbtn" data-tab="cast"><span class="symbol">♧</span>人物</button></div></nav>
-<div class="overlay" id="sheetOverlay" aria-hidden="true"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><span class="grabber"></span><div class="sheettop"><strong id="sheetTitle">选择要看的角色台词</strong><button class="sheetclose" id="sheetClose" aria-label="关闭">×</button></div><div class="sheetlist" id="sheetRoles"></div></div></div>
+<div class="overlay" id="sheetOverlay" aria-hidden="true"><div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle"><span class="grabber"></span><div class="sheettop"><strong id="sheetTitle">高亮谁的台词？</strong><button class="sheetclose" id="sheetClose" aria-label="关闭">×</button></div><div class="sheetlist" id="sheetRoles"></div></div></div>
 <div class="toast" id="toast" aria-live="polite"></div>
 <script>
 (function(){
@@ -244,29 +269,83 @@ function thumbGo(track,thumb,button){
 }
 
 function updateBottom(animate){var b=$('.navbtn[data-tab="'+selectedTab+'"]');all(".navbtn").forEach(function(n){var on=n===b;n.classList.toggle("active",on);if(on)n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});if(animate)thumbGo($("#bottomTabs"),$("#bottomThumb"),b);else{var th=$("#bottomThumb");th.style.left=b.offsetLeft+"px";th.style.width=b.offsetWidth+"px"}}
-function switchTab(tab){selectedTab=tab;$("#storyPanel").hidden=tab!=="story";$("#scriptPanel").hidden=tab!=="script";$("#castPanel").hidden=tab!=="cast";updateBottom(true);if(tab==="script"){renderScript();requestAnimationFrame(function(){updateSceneThumb(false)})}window.scrollTo({top:0,behavior:motion?"smooth":"instant"})}
+function switchTab(tab,chapterToJump){
+  selectedTab=tab;
+  $("#storyPanel").hidden=tab!=="story";
+  $("#scriptPanel").hidden=tab!=="script";
+  $("#castPanel").hidden=tab!=="cast";
+  updateBottom(true);
+  if(tab==="script"){
+    renderScript();
+    requestAnimationFrame(function(){updateSceneThumb(false);if(Number.isInteger(chapterToJump))jumpToChapter(chapterToJump)});
+  }
+  window.scrollTo({top:0,behavior:"instant"});
+}
 all(".navbtn").forEach(function(b){b.addEventListener("click",function(e){ripple(b,e,false);vibrate(9);switchTab(b.dataset.tab)})});
-all(".plot-item").forEach(function(b){b.addEventListener("click",function(e){ripple(b.querySelector(".plot-content"),e,false);vibrate(11);activeScene=+b.dataset.scene;readRole=pickedRole||"all";switchTab("script")})});
+all(".plot-item").forEach(function(b){b.addEventListener("click",function(e){ripple(b.querySelector(".plot-content"),e,false);vibrate(11);activeScene=+b.dataset.scene;switchTab("script",activeScene)})});
 function updateSceneThumb(animate){var b=$('.scene-btn[data-scene="'+activeScene+'"]');all(".scene-btn").forEach(function(n){n.classList.toggle("active",n===b);n.setAttribute("aria-pressed",String(n===b))});var el=$("#sceneThumb");if(animate)thumbGo($("#sceneSwitch"),el,b);else{el.style.left=b.offsetLeft+"px";el.style.width=b.offsetWidth+"px"}}
-all(".scene-btn").forEach(function(b){b.onclick=function(e){ripple(b,e,false);vibrate(8);activeScene=+b.dataset.scene;updateSceneThumb(true);renderScript();var cap=$("#sceneCaption").getBoundingClientRect().top+scrollY;if(cap<scrollY+200)window.scrollTo({top:0,behavior:motion?"smooth":"instant"})}});
+all(".scene-btn").forEach(function(b){b.onclick=function(e){ripple(b,e,false);vibrate(8);jumpToChapter(+b.dataset.scene)}});
 window.addEventListener("resize",function(){updateBottom(false);updateSceneThumb(false)});
 function currentScene(){return scenes[activeScene]}
-function rowHtml(item){var t=item[0],who=item[1],txt=item[2];if(t==="d"){return '<div class="dialogue" style="--role:'+roleInfo(who).color+'"><div class="speaker">'+esc(who)+'</div><div class="words">“'+esc(txt)+'”</div></div>'}if(t==="a")return '<div class="direction">'+esc(txt)+'</div>';if(t==="fx2")return '<div class="cue">舆情反转（后期约4—5秒，演员无需念评论）</div><div class="direction" style="font-style:normal;background:#27352f;color:#e4ece4">“原来当晚就分别调查了”　“家暴告诫办得有依据”　“警方回应得挺清楚”<br>“劝回家那句确实不妥，整改要落实”　“小三道德有错也不能乱抓”　“物业投诉后续还得管”</div>';if(t==="fx")return '<div class="cue">舆情后期画面（演员无需念台词）</div><div class="direction" style="font-style:normal;background:#27352f;color:#e4ece4">“警察帮小三说话？”　“女子被家暴还劝回家？”　“物业不管扰民？”　“完整视频呢？”<br><small style="opacity:.72">2—3秒黑底多立场弹幕快速交叠上浮</small></div>';return '<div class="cue">'+esc(txt)+'</div>'}
-function filteredHtml(lines){var rows=[];lines.forEach(function(item,i){if(item[0]!=="d"||item[1]!==readRole)return;var prior=null;for(var j=i-1;j>=0;j--){if(lines[j][0]==="d"&&lines[j][1]!==readRole){prior=lines[j];break}}var action=[];for(var k=i-1;k>=0&&k>=i-2;k--){if(lines[k][0]==="a"&&(lines[k][1]===readRole||!lines[k][1]))action.unshift(lines[k][2])}if(i+1<lines.length&&lines[i+1][0]==="a"&&lines[i+1][1]===readRole)action.push(lines[i+1][2]);rows.push('<div class="dialogue filtered-line" style="--role:'+roleInfo(readRole).color+'">'+(prior?'<div class="partner"><b>对手戏 · '+esc(prior[1])+'</b><span>“'+esc(prior[2])+'”</span></div>':'')+'<div class="speaker">'+esc(readRole)+' · 我的台词</div><div class="words">“'+esc(item[2])+'”</div>'+action.map(function(a){return '<div class="direction">'+esc(a)+'</div>'}).join('')+'</div>')});return rows.join('')||'<div class="empty">这个角色本场没有台词。<br>可以切换其他场次，或选择完整剧本。</div>'}
-function renderScript(){var s=currentScene();$("#sceneCaption").innerHTML='<h2>'+esc(s.title)+'</h2><p>'+esc(s.meta)+'</p>';$("#filterText").textContent=readRole==="all"?"全部人物 · 完整剧情":readRole+" · 只看我的台词";$("#scriptLines").innerHTML=readRole==="all"?s.lines.map(rowHtml).join(""):filteredHtml(s.lines);$("#directionContent").innerHTML=s.camera.map(function(x,i){return '<div class="camline" style="animation-delay:'+Math.min(150,i*36)+'ms">'+esc(x)+'</div>'}).join("");collapseFold()}
-function collapseFold(){var el=$("#directionFold");el.classList.remove("open");$("#directionButton").setAttribute("aria-expanded","false");$("#directionDrawer").style.height="0px"}
-$("#directionButton").onclick=function(){var fold=$("#directionFold"),d=$("#directionDrawer"),expand=!fold.classList.contains("open"),current=d.getBoundingClientRect().height;d.style.transition="none";d.style.height=current+"px";void d.offsetHeight;fold.classList.toggle("open",expand);this.setAttribute("aria-expanded",String(expand));d.style.transition="height "+(expand?430:280)+"ms cubic-bezier(.18,.82,.22,1)";d.style.height=expand?d.scrollHeight+"px":"0px";vibrate(7);if(expand&&motion)all(".camline").forEach(function(n,i){n.animate([{opacity:0,transform:"translateY(-9px) scaleY(.86)"},{opacity:1,transform:"none"}],{duration:235,delay:58+Math.min(180,i*38),easing:"cubic-bezier(.18,.86,.25,1)"})})};
+
+function rowHtml(item){
+  var type=item[0],person=item[1],word=item[2];
+  if(type==="d"){
+    var selected=readRole!=="all"&&readRole===person;
+    return '<div class="read-dialogue'+(selected?' is-highlight':'')+'" style="--role:'+roleInfo(person).color+'"><span class="read-speaker">'+esc(person)+'：</span><span class="read-quote">“'+esc(word)+'”</span></div>';
+  }
+  if(type==="fx2")return '<div class="read-stage read-fx"><span class="read-fx-label">舆情反转 · 后期画面（演员无需念词）</span>“原来当晚就分别调查了”　“家暴告诫办得有依据”　“警方回应得挺清楚”　“劝回家那句确实不妥，整改要落实”　“小三道德有错也不能乱抓”</div>';
+  if(type==="fx")return '<div class="read-stage read-fx"><span class="read-fx-label">舆情发酵 · 后期画面（演员无需念词）</span>“警察帮小三说话？”　“女子被家暴还劝回家？”　“物业不管扰民？”　“完整视频呢？”</div>';
+  if(type==="a")return '<div class="read-stage">'+esc(word)+'</div>';
+  return '<div class="read-stage read-screen">'+esc(word)+'</div>';
+}
+function renderScript(){
+  $("#filterText").textContent=readRole==="all"?"全部人物 · 不高亮":readRole+" · 台词高亮";
+  $("#fullScript").innerHTML=scenes.map(function(s,i){
+    var cam=s.camera.map(function(line){return '<div class="camline">'+esc(line)+'</div>'}).join("");
+    return '<section class="script-chapter" id="chapter-'+i+'"><div class="chapter-title"><h2>'+esc(s.title)+'</h2><p>'+esc(s.meta)+'</p></div>'+
+      s.lines.map(rowHtml).join("")+
+      '<details class="chapter-camera"><summary>本场镜头与动作参考</summary>'+cam+'</details></section>';
+  }).join("");
+  updateSceneThumb(false);
+}
+function jumpToChapter(index){
+  activeScene=index;
+  updateSceneThumb(true);
+  var target=document.getElementById("chapter-"+index);
+  if(!target)return;
+  var toolbar=$("#scriptPanel").querySelector(".script-toolbar");
+  var offset=toolbar.getBoundingClientRect().height+12;
+  var y=target.getBoundingClientRect().top+window.scrollY-offset;
+  window.scrollTo({top:Math.max(0,y),behavior:motion?"smooth":"instant"});
+}
+var scrollQueued=false;
+window.addEventListener("scroll",function(){
+  if(selectedTab!=="script"||scrollQueued)return;
+  scrollQueued=true;
+  requestAnimationFrame(function(){
+    scrollQueued=false;
+    var threshold=$("#scriptPanel").querySelector(".script-toolbar").getBoundingClientRect().height+30;
+    var active=0;
+    for(var i=0;i<scenes.length;i++){
+      var el=document.getElementById("chapter-"+i);
+      if(el&&el.getBoundingClientRect().top<=threshold)active=i;
+    }
+    if(active!==activeScene){activeScene=active;updateSceneThumb(true)}
+  });
+},{passive:true});
+
 var overlay=$("#sheetOverlay");
 function openSheet(){renderSheet();overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");document.body.classList.add("sheet-visible");vibrate(8);$("#sheetClose").focus()}
 function closeSheet(){overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");document.body.classList.remove("sheet-visible");$("#filterButton").focus()}
 $("#filterButton").onclick=openSheet;$("#sheetClose").onclick=closeSheet;overlay.addEventListener("click",function(e){if(e.target===overlay)closeSheet()});document.addEventListener("keydown",function(e){if(e.key==="Escape"&&overlay.classList.contains("open"))closeSheet()});
-function renderSheet(){var arr=[{id:"all",sub:"完整场次",color:"#55705d"}].concat(roles);$("#sheetRoles").innerHTML=arr.map(function(r){var val=r.id;return '<button class="sheetrole '+(readRole===val?'on':'')+'" data-id="'+esc(val)+'"><span class="avatar" style="color:'+r.color+'">'+(val==="all"?"全":esc(val.charAt(0)))+'</span><span style="flex:1"><strong>'+(val==="all"?"全部人物":esc(val))+'</strong><small>'+(val==="all"?"显示该场所有对白与动作":"只看"+esc(val)+"的台词 · "+esc(r.sub))+'</small></span><span class="check">✓</span></button>'}).join("");all(".sheetrole").forEach(function(n){n.onclick=function(e){ripple(n,e,true);vibrate(11);readRole=n.dataset.id;renderScript();closeSheet();toast(readRole==="all"?"已切换为完整剧本":"正在查看 "+readRole+" 的台词")}})}
+function renderSheet(){var arr=[{id:"all",sub:"不突出任何人物",color:"#55705d"}].concat(roles);$("#sheetRoles").innerHTML=arr.map(function(r){var val=r.id;return '<button class="sheetrole '+(readRole===val?'on':'')+'" data-id="'+esc(val)+'"><span class="avatar" style="color:'+r.color+'">'+(val==="all"?"全":esc(val.charAt(0)))+'</span><span style="flex:1"><strong>'+(val==="all"?"全部人物":esc(val))+'</strong><small>'+(val==="all"?"显示该场所有对白与动作":"高亮"+esc(val)+"的台词 · "+esc(r.sub))+'</small></span><span class="check">✓</span></button>'}).join("");all(".sheetrole").forEach(function(n){n.onclick=function(e){ripple(n,e,true);vibrate(11);readRole=n.dataset.id;renderScript();closeSheet();toast(readRole==="all"?"全文已取消高亮":"已高亮 "+readRole+" 的台词")}})}
 function iconSvg(type){var a='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">';if(type==="police")return a+'<path d="M12 2 20 6v6c0 5-3.6 8-8 10-4.4-2-8-5-8-10V6z"/><path d="M9 12h6"/></svg>';if(type==="house")return a+'<path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-8h6v8"/></svg>';if(type==="property")return a+'<path d="M5 21V5h9v16M14 10h6v11M8 9h2M8 13h2M8 17h2"/></svg>';if(type==="community")return a+'<circle cx="8" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M2 21v-3a6 6 0 0 1 12 0v3M14 17a5 5 0 0 1 8 4"/></svg>';return a+'<circle cx="12" cy="8" r="4"/><path d="M4 22v-3a8 8 0 0 1 16 0v3"/></svg>'}
 function miniRole(name,icon){return '<div class="mini">'+iconSvg(icon||"person")+'<span>'+esc(name)+'</span></div>'}
 $("#groupCivil").innerHTML=miniRole("丈夫 · 陈强")+miniRole("妻子 · 林晓")+miniRole("男小三 · 王祥")+miniRole("邻居 · 老周","house")+miniRole("物业 · 小李","property");
 $("#groupPolice").innerHTML=miniRole("主处警民警","police")+miniRole("年轻民警","police")+miniRole("派出所所长","police");
 $("#groupCommunity").innerHTML=miniRole("社区网格员","community");
-function castRows(){var d=$("#castList");d.innerHTML=roles.map(function(r){return '<div class="cast-row '+(pickedRole===r.id?'picked':'')+'" style="--role:'+r.color+'"><div class="who">'+esc(r.id)+'<small>'+esc(r.sub)+'</small></div><div class="about">'+esc(r.desc)+'</div><button class="choose '+(pickedRole===r.id?'chosen':'')+'" data-pick="'+esc(r.id)+'">'+(pickedRole===r.id?'✓ 已选':'选这个')+'</button></div>'}).join("");all("[data-pick]").forEach(function(b){b.addEventListener("click",function(e){ripple(b,e,true);vibrate([11,20,10]);var next=pickedRole===b.dataset.pick?"":b.dataset.pick;pickedRole=next;savePick(next);readRole=next||"all";castRows();renderScript();var note=$("#claimedNotice");note.classList.toggle("show",!!next);$("#claimedText").textContent=next?"已选择「"+next+"」，台词已自动筛选。":"";toast(next?"已选 "+next+" · 台词自动筛选":"已取消角色选择 · 恢复完整剧本")})})}
+function castRows(){var d=$("#castList");d.innerHTML=roles.map(function(r){return '<div class="cast-row '+(pickedRole===r.id?'picked':'')+'" style="--role:'+r.color+'"><div class="who">'+esc(r.id)+'<small>'+esc(r.sub)+'</small></div><div class="about">'+esc(r.desc)+'</div><button class="choose '+(pickedRole===r.id?'chosen':'')+'" data-pick="'+esc(r.id)+'">'+(pickedRole===r.id?'✓ 已选':'选这个')+'</button></div>'}).join("");all("[data-pick]").forEach(function(b){b.addEventListener("click",function(e){ripple(b,e,true);vibrate([11,20,10]);var next=pickedRole===b.dataset.pick?"":b.dataset.pick;pickedRole=next;savePick(next);readRole=next||"all";castRows();renderScript();var note=$("#claimedNotice");note.classList.toggle("show",!!next);$("#claimedText").textContent=next?"已选择「"+next+"」，台词已自动高亮。":"";toast(next?"已选 "+next+" · 全文高亮台词":"已取消角色选择 · 不再高亮")})})}
 $("#seeMyLines").onclick=function(){switchTab("script")};castRows();renderScript();updateBottom(false);updateSceneThumb(false);
 })();
 </script></body></html>
