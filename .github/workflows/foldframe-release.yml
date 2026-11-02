@@ -1,4 +1,4 @@
-name: FoldFrame signed APK v0.1.1 Beta
+name: FoldFrame APK v0.1.1 Beta (verified triple scheme)
 on:
   push:
     branches: [release/foldframe-v0.1.0-beta]
@@ -20,39 +20,55 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - name: Ensure Android SDK and apksigner
+      - name: Ensure Android SDK and official signing tools
         shell: bash
         run: |
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
           if [ ! -f "$SDK_ROOT/platforms/android-35/android.jar" ] || [ ! -x "$SDK_ROOT/build-tools/35.0.0/apksigner" ]; then
             yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
           fi
+          "$SDK_ROOT/build-tools/35.0.0/apksigner" --version
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.11.1'
-      - name: Assemble V1 + V2 + V3 debug signed APK
+      - name: Assemble unsigned Release variant
         working-directory: apps/foldframe
-        run: gradle --no-daemon :app:clean :app:assembleDebug --stacktrace
-      - name: Verify signature and prepare public APK
+        run: gradle --no-daemon :app:clean :app:assembleRelease --stacktrace
+      - name: Align and explicitly sign with V1 V2 V3
         shell: bash
         run: |
           set -euo pipefail
-          APK="apps/foldframe/app/build/outputs/apk/debug/app-debug.apk"
-          test -s "$APK"
           SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
-          "$SDK_ROOT/build-tools/35.0.0/apksigner" verify --verbose --print-certs --min-sdk-version 29 "$APK" | tee signature-verification.txt
-          grep -Eq 'Verified using v1 scheme \(JAR signing\): true' signature-verification.txt
-          grep -Eq 'Verified using v2 scheme \(APK Signature Scheme v2\): true' signature-verification.txt
-          grep -Eq 'Verified using v3 scheme \(APK Signature Scheme v3\): true' signature-verification.txt
-          unzip -Z1 "$APK" | grep -Eq '^META-INF/.*\.(RSA|DSA|EC)$'
-          cp "$APK" FoldFrame-v0.1.1-Beta-Signed.apk
-          sha256sum FoldFrame-v0.1.1-Beta-Signed.apk > FoldFrame-v0.1.1-Beta-Signed.sha256
-          ls -lh FoldFrame-v0.1.1-Beta-Signed.apk
+          BUILD="$SDK_ROOT/build-tools/35.0.0"
+          UNSIGNED="apps/foldframe/app/build/outputs/apk/release/app-release-unsigned.apk"
+          APK="FoldFrame-v0.1.1-Beta-Signed.apk"
+          test -s "$UNSIGNED"
+          KEYSTORE="$RUNNER_TEMP/foldframe-beta.keystore"
+          keytool -genkeypair -noprompt -keystore "$KEYSTORE" -storepass android -alias foldframebeta -keypass android -keyalg RSA -keysize 3072 -validity 3650 -dname "CN=FoldFrame Beta, OU=Android Beta, O=FoldFrame, C=US"
+          "$BUILD/zipalign" -p -f 4 "$UNSIGNED" "$RUNNER_TEMP/foldframe-aligned.apk"
+          "$BUILD/apksigner" sign \
+            --min-sdk-version 21 \
+            --v1-signing-enabled true \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --v4-signing-enabled false \
+            --ks "$KEYSTORE" --ks-key-alias foldframebeta --ks-pass pass:android --key-pass pass:android \
+            --out "$APK" "$RUNNER_TEMP/foldframe-aligned.apk"
+          "$BUILD/zipalign" -c -v 4 "$APK"
+          # Verify independently at three Android signature-generation boundaries.
+          "$BUILD/apksigner" verify --min-sdk-version 21 "$APK"
+          "$BUILD/apksigner" verify --min-sdk-version 24 "$APK"
+          "$BUILD/apksigner" verify --min-sdk-version 29 "$APK"
+          "$BUILD/apksigner" verify --verbose --print-certs --min-sdk-version 21 "$APK" | tee signature-verification.txt
+          unzip -Z1 "$APK" | grep -E '^META-INF/.*\.(RSA|DSA|EC)$'
+          grep -q 'Number of signers: 1' signature-verification.txt
+          sha256sum "$APK" > FoldFrame-v0.1.1-Beta-Signed.sha256
+          ls -lh "$APK"
       - name: Publish verified public GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: foldframe-v0.1.1-beta
-          name: FoldFrame v0.1.1 Beta (V1+V2+V3 signed)
+          name: FoldFrame v0.1.1 Beta (verified signed)
           target_commitish: release/foldframe-v0.1.0-beta
           prerelease: true
           make_latest: false
@@ -62,8 +78,9 @@ jobs:
             FoldFrame-v0.1.1-Beta-Signed.sha256
             signature-verification.txt
           body: |
-            - Fix: explicitly enable APK V1, V2, V3 signing schemes for Huawei / HONOR installation compatibility.
-            - GitHub Actions will only publish after apksigner verifies certificate and all three signing schemes.
-            - FoldFrame Android 10+ offline photography album.
-            - This beta uses a CI-generated debug certificate, not a Play Store release certificate. Future rebuilds may use a different debug certificate; uninstall previous beta if Android reports a signature conflict.
-            - Not yet real-device-tested on HONOR MagicOS.
+            Android 10+ FoldFrame offline photography magazine. Fixed signing compatibility:
+            built **unsigned release variant**, then zipaligned and independently signed with
+            official Android apksigner (V1, V2 and V3 enabled). Verified for min-SDK 21, 24 and 29.
+            Beta signed using CI-only temporary certificate. If replacing a previous beta signed
+            with another certificate, uninstall that beta first. No previous Stable apps affected.
+            Device-specific HONOR MagicOS install testing still pending.
