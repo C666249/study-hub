@@ -1,0 +1,57 @@
+name: FoldFrame v0.1.0 Beta (public APK)
+on:
+  push:
+    branches:
+      - release/foldframe-v0.1.0-beta
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Ensure Android SDK Platform 35
+        shell: bash
+        run: |
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          if [ ! -f "$SDK_ROOT/platforms/android-35/android.jar" ]; then
+            yes | "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0"
+          fi
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.11.1'
+      - name: Build Beta debug-signed APK
+        working-directory: apps/foldframe
+        run: gradle :app:assembleDebug --stacktrace
+      - name: Prepare browser-download APK
+        shell: bash
+        run: |
+          cp apps/foldframe/app/build/outputs/apk/debug/app-debug.apk FoldFrame-v0.1.0-Beta.apk
+          test -s FoldFrame-v0.1.0-Beta.apk
+          sha256sum FoldFrame-v0.1.0-Beta.apk > FoldFrame-v0.1.0-Beta.sha256
+          ls -lh FoldFrame-v0.1.0-Beta.apk
+      - name: Publish public GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: foldframe-v0.1.0-beta
+          name: FoldFrame v0.1.0 Beta
+          target_commitish: release/foldframe-v0.1.0-beta
+          prerelease: true
+          make_latest: false
+          files: |
+            FoldFrame-v0.1.0-Beta.apk
+            FoldFrame-v0.1.0-Beta.sha256
+          fail_on_unmatched_files: true
+          body: |
+            FoldFrame 安卓摄影相册 Beta（Android 10+）。
+            离线相册、杂志封面、照片导入、3D 翻页、长按排序、拼贴导出。
+            此 APK 为 GitHub Actions debug 签名测试包，尚未完成荣耀 MagicOS 真机验收。
+            与个人应用源码库的 Stable 不共用签名；更新版本可能需要卸载重装。

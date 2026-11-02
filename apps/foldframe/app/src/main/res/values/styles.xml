@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.FoldFrame" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:statusBarColor">#F4F0E9</item>
+        <item name="android:navigationBarColor">#F4F0E9</item>
+    </style>
+</resources>
