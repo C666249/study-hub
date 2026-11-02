@@ -306,50 +306,60 @@ public final class MainActivity extends Activity {
         try {
             startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
         } catch(RuntimeException ex) {
-            Toast.makeText(this,"请在系统设置里允许 Pulse 访问使用情况",Toast.LENGTH_LONG).show();
+            Toast.makeText(this,"请在系统设置里允许 PulseFlow 访问使用情况",Toast.LENGTH_LONG).show();
         }
     }
 
     private void editQuota(){
         android.content.SharedPreferences prefs=getSharedPreferences(QuotaUsage.PREFS,MODE_PRIVATE);
         LinearLayout body=column();
-        body.setPadding(dp(20),dp(12),dp(20),dp(5));
-        body.addView(label("每月套餐流量总额（GB，1GB=1024MB）",13,MUTED,false));
+        body.setPadding(dp(22),dp(15),dp(22),dp(8));
+        body.addView(label("MONTHLY ALLOWANCE   /   GB",11,MINT,true));
         EditText totalField=new EditText(this);
         totalField.setSingleLine(true);
+        totalField.setTextSize(21);
+        totalField.setTextColor(WHITE);
+        totalField.setBackgroundTintList(ColorStateList.valueOf(MINT));
         totalField.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
         totalField.setText(String.format(Locale.US,"%.1f",prefs.getFloat(QuotaUsage.KEY_TOTAL,(float)QuotaUsage.DEFAULT_GB)));
         body.addView(totalField);
-        gap(body,12);
-        body.addView(label("每月账期起始日（1–31日）",13,MUTED,false));
+        gap(body,19);
+        body.addView(label("RESET DAY   /   1—31",11,MINT,true));
         EditText dayField=new EditText(this);
         dayField.setSingleLine(true);
+        dayField.setTextSize(21);
+        dayField.setTextColor(WHITE);
+        dayField.setBackgroundTintList(ColorStateList.valueOf(MINT));
         dayField.setInputType(InputType.TYPE_CLASS_NUMBER);
         dayField.setText(String.valueOf(prefs.getInt(QuotaUsage.KEY_DAY,QuotaUsage.DEFAULT_DAY)));
         body.addView(dayField);
-        gap(body,8);
-        body.addView(label("例如130GB，每月1日重置。账期按手机当前时区计算。",12,MUTED,false));
-        AlertDialog dialog=new AlertDialog.Builder(this)
-            .setTitle("设置每月移动流量套餐")
+        AlertDialog dialog=new AlertDialog.Builder(this,AlertDialog.THEME_DEVICE_DEFAULT_DARK)
+            .setTitle("Plan settings")
             .setView(body)
-            .setNegativeButton("取消",null)
-            .setPositiveButton("保存",null)
+            .setNegativeButton("Cancel",null)
+            .setPositiveButton("Save",null)
             .create();
-        dialog.setOnShowListener(ignore->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
-            try {
-                double total=Double.parseDouble(totalField.getText().toString().trim());
-                int day=Integer.parseInt(dayField.getText().toString().trim());
-                if(!Double.isFinite(total)||total<0.1||total>100000||day<1||day>31)
-                    throw new IllegalArgumentException();
-                prefs.edit().putFloat(QuotaUsage.KEY_TOTAL,(float)total)
-                    .putInt(QuotaUsage.KEY_DAY,day).apply();
-                dialog.dismiss();
-                lastQuotaQueryAt=0;
-                refreshQuota(true);
-            } catch(Exception bad){
-                Toast.makeText(this,"请填写有效总额（0.1–100000GB）和账期日（1–31）",Toast.LENGTH_LONG).show();
-            }
-        }));
+        dialog.setOnShowListener(ignore->{
+            if(dialog.getWindow()!=null)
+                dialog.getWindow().setBackgroundDrawable(round(0xFF182A39,24,0xFF42615E));
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(MINT);
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(MUTED);
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+                try {
+                    double total=Double.parseDouble(totalField.getText().toString().trim());
+                    int day=Integer.parseInt(dayField.getText().toString().trim());
+                    if(!Double.isFinite(total)||total<0.1||total>100000||day<1||day>31)
+                        throw new IllegalArgumentException();
+                    prefs.edit().putFloat(QuotaUsage.KEY_TOTAL,(float)total)
+                        .putInt(QuotaUsage.KEY_DAY,day).apply();
+                    dialog.dismiss();
+                    lastQuotaQueryAt=0;
+                    refreshQuota(true);
+                } catch(Exception bad){
+                    Toast.makeText(this,"Please enter a valid plan and reset day.",Toast.LENGTH_LONG).show();
+                }
+            });
+        });
         dialog.show();
     }
 
