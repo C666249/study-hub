@@ -1,0 +1,49 @@
+name: App Factory · Publish Compiled Private FMV Beta
+on:
+  push:
+    branches: ['factory/demo-v01']
+    paths:
+      - '.github/workflows/app-factory-public-fmv-publish.yml'
+permissions:
+  contents: write
+jobs:
+  distribute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Transfer compiled APK only from private build artifact
+        shell: bash
+        env:
+          BUNDLE_URL: 'https://sdmntprcacentral.oaiusercontent.com/files/00000000-20a8-820d-a90b-a26be19edaec/raw?se=2026-11-02T07%3A33%3A10Z&sp=r&sv=2026-02-06&sr=b&scid=e1ee906e-c631-5d34-b067-be976817fd60&skoid=434ec24f-a0f0-4e64-b0de-2e2053f69735&sktid=a48cca56-e6da-484e-a814-9c849652bcb3&skt=2026-11-01T18%3A58%3A29Z&ske=2026-11-02T18%3A58%3A29Z&sks=b&skv=2026-02-06&sig=vVlqybQy514Pn4CsTP/bh89C1LcJxVBJnrwhYMrXttk%3D'
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location --retry 2 --max-time 90 "$BUNDLE_URL" --output /tmp/bundle.zip
+          mkdir -p /tmp/fmv-dist dist
+          unzip -q /tmp/bundle.zip -d /tmp/fmv-dist
+          (cd /tmp/fmv-dist && grep 'FactoryShowcase-beta-debug.apk' CHECKSUMS.sha256 | sha256sum -c -)
+          cp /tmp/fmv-dist/FactoryShowcase-beta-debug.apk dist/AppFactory-FMV-Beta-v0.1.0-debug.apk
+          (cd dist && sha256sum *.apk > SHA256SUMS.txt)
+          test -s dist/AppFactory-FMV-Beta-v0.1.0-debug.apk
+          echo "APK binary copied; no private FMV source files are published."
+      - name: Verify Android identity and APK signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          APK=dist/AppFactory-FMV-Beta-v0.1.0-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify "$APK"
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging "$APK" | grep "package: name='dev.personalapp.factory.showcase.beta'"
+      - name: Publish public Beta prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=app-factory-fmv-beta-v0.1.0
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Existing release; preserving immutable artifact."
+          else
+            gh release create "$tag" dist/AppFactory-FMV-Beta-v0.1.0-debug.apk dist/SHA256SUMS.txt \
+              --target "$GITHUB_SHA" --prerelease --latest=false \
+              --title "App Factory FMV Beta v0.1.0 · Real Private-source Motion Binary" \
+              --notes "Compiled from the private personal-app-stack feature/app-factory-v1 using real, unmodified FMV FlowLedger v2.1.14 Kotlin View components. The public release contains APK and checksum only, no private source. Package dev.personalapp.factory.showcase.beta. CI compilation passed, hardware haptics / UI not device-verified. Ephemeral debug signing; uninstall before upgrading to a differently signed APK."
+          fi
