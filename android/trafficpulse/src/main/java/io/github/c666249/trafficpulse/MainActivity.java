@@ -12,6 +12,11 @@ import android.os.*;
 import android.provider.Settings;
 import android.view.*;
 import android.widget.*;
+import android.text.InputType;
+import android.content.res.ColorStateList;
+import java.util.Locale;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /** Polished, fully native on-device bandwidth dashboard, without Internet permission. */
 public final class MainActivity extends Activity {
@@ -20,6 +25,11 @@ public final class MainActivity extends Activity {
     private final Handler ui=new Handler(Looper.getMainLooper());
     private TextView down,up,sessionDown,sessionUp,network,activity,action,overlay,foot;
     private SpeedGraph graph;
+    private TextView quotaRemaining, quotaDetail, quotaStatus;
+    private ProgressBar quotaProgress;
+    private final ExecutorService quotaWorker=Executors.newSingleThreadExecutor();
+    private volatile boolean quotaBusy=false;
+    private long lastQuotaQueryAt=0;
     private boolean pendingOverlay=false;
     private final Runnable refresh=new Runnable(){
         @Override public void run(){drawLive();ui.postDelayed(this,1000);}
@@ -117,6 +127,55 @@ public final class MainActivity extends Activity {
         TextView u=label("    ● 上传",12,VIOLET,true);legends.addView(u);
         gap(root,16);
 
+
+        // Monthly mobile-data allowance estimate; independent of live SpeedState.
+        LinearLayout quotaCard=column();
+        quotaCard.setPadding(dp(19),dp(19),dp(19),dp(20));
+        quotaCard.setBackground(round(CARD,21,BORDER));
+        root.addView(quotaCard,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout quotaHeading=row();
+        quotaHeading.setGravity(Gravity.CENTER_VERTICAL);
+        quotaCard.addView(quotaHeading);
+        quotaHeading.addView(label("中国移动 · 套餐余量估算",16,WHITE,true));
+        View titleGap=new View(this);
+        quotaHeading.addView(titleGap,new LinearLayout.LayoutParams(0,1,1));
+        TextView editQuota=label("设置  ›",13,MINT,true);
+        editQuota.setPadding(dp(8),dp(5),dp(1),dp(5));
+        quotaHeading.addView(editQuota);
+        editQuota.setOnClickListener(v->editQuota());
+        gap(quotaCard,14);
+        quotaRemaining=label("— GB",31,MINT,true);
+        quotaCard.addView(quotaRemaining);
+        gap(quotaCard,11);
+        quotaProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
+        quotaProgress.setMax(1000);
+        quotaProgress.setProgressTintList(ColorStateList.valueOf(MINT));
+        quotaProgress.setProgressBackgroundTintList(ColorStateList.valueOf(0xFF2F4050));
+        quotaCard.addView(quotaProgress,new LinearLayout.LayoutParams(-1,dp(7)));
+        gap(quotaCard,12);
+        quotaDetail=label("请授权读取移动网络用量",12,MUTED,false);
+        quotaCard.addView(quotaDetail);
+        gap(quotaCard,8);
+        quotaStatus=label("读取系统网络统计历史，无需始终开启测速服务",12,MUTED,false);
+        quotaStatus.setLineSpacing(dp(3),1);
+        quotaCard.addView(quotaStatus);
+        gap(quotaCard,12);
+        TextView grant=label("授予使用情况访问权限",13,MINT,true);
+        grant.setPadding(0,dp(10),0,dp(10));
+        quotaCard.addView(grant);
+        grant.setOnClickListener(v->openUsageAccess());
+        TextView official=label("打开中国移动官方套餐余量查询",13,MUTED,true);
+        official.setPadding(0,dp(9),0,dp(4));
+        quotaCard.addView(official);
+        official.setOnClickListener(v->{
+            try {
+                startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://touch.10086.cn/i/mobile/packremainqry.html")));
+            } catch(RuntimeException ex) {
+                Toast.makeText(this,"没有可用浏览器",Toast.LENGTH_SHORT).show();
+            }
+        });
+        gap(root,16);
+
         LinearLayout usage=column();usage.setPadding(dp(19),dp(18),dp(19),dp(18));
         usage.setBackground(round(CARD,21,BORDER));root.addView(usage);
         usage.addView(label("本次监控累计流量",16,WHITE,true));gap(usage,14);
@@ -152,6 +211,7 @@ public final class MainActivity extends Activity {
             refreshOverlayService();
         }
         ui.removeCallbacks(refresh);ui.post(refresh);
+        refreshQuota(true);
     }
     @Override protected void onPause(){
         ui.removeCallbacks(refresh);
@@ -194,6 +254,7 @@ public final class MainActivity extends Activity {
         sessionDown.setText(SpeedState.size(s.totalDown));
         sessionUp.setText(SpeedState.size(s.totalUp));
         graph.setSamples(s.downHistory,s.upHistory);
+        if(android.os.SystemClock.elapsedRealtime()-lastQuotaQueryAt>60000L)refreshQuota(false);
         activity.setText(s.running?"● 正在监控":"● 已暂停");
         activity.setTextColor(s.running?MINT:MUTED);
         action.setText(s.running?"停止实时监控":"开始实时监控");
@@ -203,6 +264,92 @@ public final class MainActivity extends Activity {
         overlay.setText(enabled?"关闭桌面悬浮测速窗":"开启桌面悬浮测速窗");
         network.setText(currentNetwork());
     }
+
+    private void openUsageAccess(){
+        try {
+            startActivity(new Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS));
+        } catch(RuntimeException ex) {
+            Toast.makeText(this,"请在系统设置里允许 Pulse 访问使用情况",Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void editQuota(){
+        android.content.SharedPreferences prefs=getSharedPreferences(QuotaUsage.PREFS,MODE_PRIVATE);
+        LinearLayout body=column();
+        body.setPadding(dp(20),dp(12),dp(20),dp(5));
+        body.addView(label("每月套餐流量总额（GB，1GB=1024MB）",13,MUTED,false));
+        EditText totalField=new EditText(this);
+        totalField.setSingleLine(true);
+        totalField.setInputType(InputType.TYPE_CLASS_NUMBER|InputType.TYPE_NUMBER_FLAG_DECIMAL);
+        totalField.setText(String.format(Locale.US,"%.1f",prefs.getFloat(QuotaUsage.KEY_TOTAL,(float)QuotaUsage.DEFAULT_GB)));
+        body.addView(totalField);
+        gap(body,12);
+        body.addView(label("每月账期起始日（1–31日）",13,MUTED,false));
+        EditText dayField=new EditText(this);
+        dayField.setSingleLine(true);
+        dayField.setInputType(InputType.TYPE_CLASS_NUMBER);
+        dayField.setText(String.valueOf(prefs.getInt(QuotaUsage.KEY_DAY,QuotaUsage.DEFAULT_DAY)));
+        body.addView(dayField);
+        gap(body,8);
+        body.addView(label("例如130GB，每月1日重置。账期按手机当前时区计算。",12,MUTED,false));
+        AlertDialog dialog=new AlertDialog.Builder(this)
+            .setTitle("设置每月移动流量套餐")
+            .setView(body)
+            .setNegativeButton("取消",null)
+            .setPositiveButton("保存",null)
+            .create();
+        dialog.setOnShowListener(ignore->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{
+            try {
+                double total=Double.parseDouble(totalField.getText().toString().trim());
+                int day=Integer.parseInt(dayField.getText().toString().trim());
+                if(!Double.isFinite(total)||total<0.1||total>100000||day<1||day>31)
+                    throw new IllegalArgumentException();
+                prefs.edit().putFloat(QuotaUsage.KEY_TOTAL,(float)total)
+                    .putInt(QuotaUsage.KEY_DAY,day).apply();
+                dialog.dismiss();
+                lastQuotaQueryAt=0;
+                refreshQuota(true);
+            } catch(Exception bad){
+                Toast.makeText(this,"请填写有效总额（0.1–100000GB）和账期日（1–31）",Toast.LENGTH_LONG).show();
+            }
+        }));
+        dialog.show();
+    }
+
+    private void refreshQuota(boolean force){
+        if(quotaRemaining==null || quotaBusy)return;
+        if(!force && android.os.SystemClock.elapsedRealtime()-lastQuotaQueryAt<60000L)return;
+        lastQuotaQueryAt=android.os.SystemClock.elapsedRealtime();
+        quotaBusy=true;
+        quotaWorker.execute(()->{
+            QuotaUsage.Result result=QuotaUsage.query(getApplicationContext());
+            runOnUiThread(()->{
+                quotaBusy=false;
+                if(isFinishing()||isDestroyed()||quotaRemaining==null)return;
+                if(result.success){
+                    double usedGb=result.usedBytes/QuotaUsage.GIB;
+                    quotaRemaining.setText(String.format(Locale.CHINA,"%.2f GB",result.remainingGb));
+                    quotaDetail.setText(String.format(Locale.CHINA,"已用 %.2f GB  /  套餐 %.1f GB",
+                        usedGb,result.totalGb));
+                    quotaProgress.setProgress((int)Math.min(1000,Math.round(1000*usedGb/result.totalGb)));
+                    quotaStatus.setText("账期自 "+QuotaUsage.date(result.cycleStart)+" 起 · 每月"
+                        +result.cycleDay+"日重置\n全设备所有 SIM 卡的移动网络用量合计，非运营商官方余额");
+                }else{
+                    quotaRemaining.setText("— GB");
+                    quotaProgress.setProgress(0);
+                    quotaDetail.setText(String.format(Locale.CHINA,"套餐 %.1f GB · 每月%d日重置",result.totalGb,result.cycleDay));
+                    quotaStatus.setText(result.error+"\n无需持续后台运行，授权后可读取历史累计用量");
+                }
+            });
+        });
+    }
+
+    @Override protected void onDestroy(){
+        ui.removeCallbacks(refresh);
+        quotaWorker.shutdownNow();
+        super.onDestroy();
+    }
+
     private String currentNetwork(){
         ConnectivityManager cm=(ConnectivityManager)getSystemService(CONNECTIVITY_SERVICE);
         if(cm==null)return "网络未知";
