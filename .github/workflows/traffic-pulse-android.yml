@@ -1,0 +1,84 @@
+name: Traffic Pulse · Android Preview APK
+on:
+  push:
+    branches: ['feature/traffic-pulse-v01']
+    paths:
+      - 'android/trafficpulse/**'
+      - 'android/settings.gradle.kts'
+      - '.github/workflows/traffic-pulse-android.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Install SDK 35
+        shell: bash
+        run: |
+          set -euo pipefail
+          SDKMANAGER="$(find "$ANDROID_HOME/cmdline-tools" -type f -name sdkmanager | sort -r | head -n 1)"
+          test -x "$SDKMANAGER"
+          "$SDKMANAGER" 'platforms;android-35' 'build-tools;35.0.0'
+      - name: Source privacy & foreground-service policy checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          x=Path('android/trafficpulse/src/main/AndroidManifest.xml').read_text()
+          assert 'android.permission.INTERNET' not in x
+          assert 'android.permission.ACCESS_NETWORK_STATE' in x
+          assert 'android:foregroundServiceType="specialUse"' in x
+          assert 'FOREGROUND_SERVICE_SPECIAL_USE' in x
+          assert 'android.permission.SYSTEM_ALERT_WINDOW' in x
+          assert 'android:exported="false"' in x
+          assert 'android:allowBackup="false"' in x
+          print("Permissions, privacy, and foreground-service declarations verified")
+          PY
+      - name: Compile Android Debug APK
+        run: bash android/gradlew -p android --no-daemon :trafficpulse:assembleDebug --stacktrace
+      - name: Verify APK contents, package and debug signature
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          apk=android/trafficpulse/build/outputs/apk/debug/trafficpulse-debug.apk
+          test -s "$apk"
+          cp "$apk" dist/TrafficPulse-v0.1.0-preview.apk
+          AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
+          SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
+          "$SIGNER" verify --verbose dist/TrafficPulse-v0.1.0-preview.apk
+          "$AAPT" dump badging dist/TrafficPulse-v0.1.0-preview.apk | grep -F "package: name='io.github.c666249.trafficpulse' versionCode='1' versionName='0.1.0'"
+          "$AAPT" dump permissions dist/TrafficPulse-v0.1.0-preview.apk > /tmp/perms.txt
+          if grep -q 'android.permission.INTERNET' /tmp/perms.txt; then
+            echo "Unexpected Internet permission detected!"; exit 1
+          fi
+          (cd dist && sha256sum *.apk > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TrafficPulse-Android-Preview
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+      - name: Public GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag=traffic-pulse-v0.1.0-preview
+          if gh release view "$tag" >/dev/null 2>&1; then
+            echo "Preview tag already exists; refusing to silently replace binary"
+          else
+            gh release create "$tag" dist/TrafficPulse-v0.1.0-preview.apk dist/SHA256SUMS.txt \
+              --title "流速 Pulse v0.1.0 · Android 实时网络测速" \
+              --target "$GITHUB_SHA" --prerelease --latest=false \
+              --notes "原生 Android 测速：上下行速率、60秒走势图、当前网络类型、监控期间的流量累计、后台通知和可选拖动悬浮窗。系统 TrafficStats 统计，不请求 INTERNET，不上传数据。需用户主动启用，悬浮窗需系统额外授权。测试版使用临时 GitHub CI Debug 签名，后续更新可能需要先卸载；不保证同签名覆盖升级。尚未完成荣耀 MagicOS 真机测试；后台省电设置可能导致服务中止。"
+          fi
