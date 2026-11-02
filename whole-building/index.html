@@ -36,7 +36,7 @@
 
 /* 全剧缩略导航：指示点按整份剧本的真实内容高度投影，不遮挡正文。 */
 .script-rail{
-  position:fixed;z-index:28;top:50%;right:max(0px,calc((100vw - 800px)/2 + 1px));
+  position:fixed;z-index:28;top:50%;top:50dvh;right:max(0px,calc((100vw - 800px)/2 + 1px));
   width:19px;height:clamp(154px,34dvh,258px);transform:translateY(-50%);
   opacity:0;visibility:hidden;pointer-events:none;
   transition:opacity .75s ease,visibility 0s linear .75s;
@@ -374,7 +374,7 @@ function railVisible(){
         nav.classList.remove("show");
         nav.setAttribute("aria-hidden","true");
       }
-    },135);
+    },2000);
   }
 }
 function hideScriptRail(immediately){
