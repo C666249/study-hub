@@ -1,20 +1,11 @@
 pluginManagement {
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
+    repositories { google(); mavenCentral(); gradlePluginPortal() }
 }
-
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-    repositories {
-        google()
-        mavenCentral()
-        maven(url = "https://jitpack.io")
-    }
+    repositories { google(); mavenCentral(); maven(url = "https://jitpack.io") }
 }
-
 rootProject.name = "StudyHubAndroid"
 include(":app")
 include(":rewarder")
+include(":factory-demo")
