@@ -66,7 +66,7 @@
 @media(prefers-reduced-motion:reduce){.script-rail,.rail-hint{transition-duration:.01ms!important}}
 </style></head><body>
 <div class="wrap">
-<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.5 · 全文导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
+<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.5.2 · 全文导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
 <main>
 <section class="panel" id="storyPanel">
 <div class="story-lead"><div class="eyebrow">THE STORY / 剧情导读</div><h2>一个抓奸现场，三种截然不同的真相。</h2>
@@ -365,17 +365,22 @@ function railClamp(a,min,max){return Math.max(min,Math.min(max,a))}
 function railTop(el){return el.getBoundingClientRect().top+window.scrollY}
 function railVisible(){
   if(selectedTab!=="script"||$("#sheetOverlay").classList.contains("open"))return;
-  var nav=$("#scriptRail");
-  nav.classList.add("show");nav.setAttribute("aria-hidden","false");
   clearTimeout(railHideTimer);
-  if(!railState.dragging){
-    railHideTimer=setTimeout(function(){
-      if(!railState.dragging){
-        nav.classList.remove("show");
-        nav.setAttribute("aria-hidden","true");
-      }
-    },2000);
-  }
+  var nav=$("#scriptRail");
+  nav.classList.add("show");
+  nav.setAttribute("aria-hidden","false");
+}
+// The rail is fixed at 50dvh. Visibility is driven by *user input*, not scroll events:
+// programmatic chapter jumps must not reveal it when the reader is idle.
+function scheduleRailFade(){
+  clearTimeout(railHideTimer);
+  if(selectedTab!=="script"||railState.dragging)return;
+  railHideTimer=setTimeout(function(){
+    if(railState.dragging)return;
+    var nav=$("#scriptRail");
+    nav.classList.remove("show");
+    nav.setAttribute("aria-hidden","true");
+  },2000); // wait 2 seconds after release, then CSS fades opacity over 0.75 seconds
 }
 function hideScriptRail(immediately){
   clearTimeout(railHideTimer);
@@ -495,7 +500,7 @@ function finishRailPointer(){
   if(!railState.dragging)return;
   railState.dragging=false;
   $("#scriptRail").classList.remove("dragging");
-  railVisible();
+  scheduleRailFade();
 }
 $("#scriptRail").addEventListener("pointerup",finishRailPointer);
 $("#scriptRail").addEventListener("pointercancel",finishRailPointer);
@@ -504,13 +509,54 @@ $("#scriptPanel").addEventListener("toggle",function(e){
   if(e.target.matches&&e.target.matches("details"))setTimeout(buildScriptRail,0);
 },true);
 
+// Touch scroll: reveal only after the finger actually moves, never on a stationary tap.
+var scriptTouch={startY:0,armed:false,moving:false};
+document.addEventListener("touchstart",function(e){
+  if(selectedTab!=="script"||!e.target.closest("#scriptPanel")||
+    e.target.closest("button,summary,details,.script-rail,.overlay"))return;
+  scriptTouch.startY=e.touches[0].clientY;
+  scriptTouch.armed=true;
+  scriptTouch.moving=false;
+  clearTimeout(railHideTimer);
+},{passive:true});
+document.addEventListener("touchmove",function(e){
+  if(!scriptTouch.armed||selectedTab!=="script")return;
+  if(Math.abs(e.touches[0].clientY-scriptTouch.startY)>7){
+    scriptTouch.moving=true;
+    railVisible();
+  }
+},{passive:true});
+function endScriptTouch(){
+  if(!scriptTouch.armed)return;
+  var moved=scriptTouch.moving;
+  scriptTouch.armed=false;scriptTouch.moving=false;
+  if(moved)scheduleRailFade();
+  else if($("#scriptRail").classList.contains("show"))scheduleRailFade();
+}
+document.addEventListener("touchend",endScriptTouch,{passive:true});
+document.addEventListener("touchcancel",endScriptTouch,{passive:true});
+// Track wheel/keyboard navigation on desktop, including trackpad scrolling.
+window.addEventListener("wheel",function(e){
+  if(selectedTab!=="script"||e.ctrlKey||e.deltaY===0||
+    $("#sheetOverlay").classList.contains("open"))return;
+  railVisible();
+  scheduleRailFade();
+},{passive:true});
+window.addEventListener("keydown",function(e){
+  if(selectedTab!=="script"||$("#sheetOverlay").classList.contains("open")||
+    e.target.closest("input,textarea,select,[contenteditable=true]"))return;
+  if(["ArrowDown","ArrowUp","PageDown","PageUp"," ","Home","End"].includes(e.key)){
+    railVisible();scheduleRailFade();
+  }
+});
+document.addEventListener("visibilitychange",function(){if(document.hidden)hideScriptRail(true)});
+
 var scrollQueued=false;
 window.addEventListener("scroll",function(){
   if(selectedTab!=="script"||scrollQueued)return;
   scrollQueued=true;
   requestAnimationFrame(function(){
     scrollQueued=false;
-    railVisible();
     updateRailPosition();
     var threshold=$("#scriptPanel").querySelector(".script-toolbar").getBoundingClientRect().height+30;
     var active=0;
@@ -523,7 +569,7 @@ window.addEventListener("scroll",function(){
 },{passive:true});
 
 var overlay=$("#sheetOverlay");
-function openSheet(){renderSheet();overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");document.body.classList.add("sheet-visible");vibrate(8);$("#sheetClose").focus()}
+function openSheet(){hideScriptRail(true);renderSheet();overlay.classList.add("open");overlay.setAttribute("aria-hidden","false");document.body.classList.add("sheet-visible");vibrate(8);$("#sheetClose").focus()}
 function closeSheet(){overlay.classList.remove("open");overlay.setAttribute("aria-hidden","true");document.body.classList.remove("sheet-visible");$("#filterButton").focus()}
 $("#filterButton").onclick=openSheet;$("#sheetClose").onclick=closeSheet;overlay.addEventListener("click",function(e){if(e.target===overlay)closeSheet()});document.addEventListener("keydown",function(e){if(e.key==="Escape"&&overlay.classList.contains("open"))closeSheet()});
 function renderSheet(){var arr=[{id:"all",sub:"不突出任何人物",color:"#55705d"}].concat(roles);$("#sheetRoles").innerHTML=arr.map(function(r){var val=r.id;return '<button class="sheetrole '+(readRole===val?'on':'')+'" data-id="'+esc(val)+'"><span class="avatar" style="color:'+r.color+'">'+(val==="all"?"全":esc(val.charAt(0)))+'</span><span style="flex:1"><strong>'+(val==="all"?"全部人物":esc(val))+'</strong><small>'+(val==="all"?"显示该场所有对白与动作":"高亮"+esc(val)+"的台词 · "+esc(r.sub))+'</small></span><span class="check">✓</span></button>'}).join("");all(".sheetrole").forEach(function(n){n.onclick=function(e){ripple(n,e,true);vibrate(11);readRole=n.dataset.id;renderScript();closeSheet();toast(readRole==="all"?"全文已取消高亮":"已高亮 "+readRole+" 的台词")}})}
