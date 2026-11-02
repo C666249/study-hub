@@ -21,7 +21,7 @@ jobs:
           curl --fail --silent --show-error --location --retry 2 --max-time 90 "$BUNDLE_URL" --output /tmp/bundle.zip
           mkdir -p /tmp/fmv-dist dist
           unzip -q /tmp/bundle.zip -d /tmp/fmv-dist
-          (cd /tmp/fmv-dist && grep 'FactoryShowcase-beta-debug.apk' CHECKSUMS.sha256 | sha256sum -c -)
+          (cd /tmp/fmv-dist && grep 'FactoryShowcase-beta-debug.apk' CHECKSUMS.sha256 | sed 's#  dist/#  #' | sha256sum -c -)
           cp /tmp/fmv-dist/FactoryShowcase-beta-debug.apk dist/AppFactory-FMV-Beta-v0.1.0-debug.apk
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
           test -s dist/AppFactory-FMV-Beta-v0.1.0-debug.apk
