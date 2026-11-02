@@ -281,6 +281,14 @@ function ripple(el,e,particles){if(!motion)return;var rc=el.getBoundingClientRec
 function toast(s){var n=$("#toast");n.textContent=s;n.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(function(){n.classList.remove("show")},2200)}
 
 var thumbFrames=new WeakMap();
+// Near-constant travel speed, with a short smooth acceleration and braking zone.
+function chapterEase(p){
+  var ramp=.18;
+  p=Math.max(0,Math.min(1,p));
+  if(p<ramp)return p*p/(2*ramp*(1-ramp));
+  if(p>1-ramp)return 1-(1-p)*(1-p)/(2*ramp*(1-ramp));
+  return (p-ramp/2)/(1-ramp);
+}
 function thumbGo(track,thumb,button){
   var active=thumbFrames.get(thumb);
   if(active){cancelAnimationFrame(active);thumbFrames.delete(thumb)}
@@ -293,11 +301,14 @@ function thumbGo(track,thumb,button){
   }
   var startCenter=fromLeft+fromWidth/2, endCenter=targetLeft+targetWidth/2;
   var travel=endCenter-startCenter, stretch=Math.min(58,Math.abs(travel)*.24);
+  var isSceneBar=track.id==="sceneSwitch";
+  // Only the top scene control changes: longer hops get proportionally more time.
+  var duration=isSceneBar?Math.max(255,Math.min(540,210+Math.abs(travel)*.84)):419;
   var tStart=null;
   function frame(now){
     if(tStart===null)tStart=now;
-    var p=Math.min(1,(now-tStart)/419);
-    var eased=1-Math.pow(1-p,3);
+    var p=Math.min(1,(now-tStart)/duration);
+    var eased=isSceneBar?chapterEase(p):1-Math.pow(1-p,3);
     var recoil=Math.sin(2*Math.PI*p)*(1-p)*travel*.045;
     var center=startCenter+travel*eased+recoil;
     var bulge=Math.max(0,Math.sin(Math.PI*p))*stretch;
@@ -318,6 +329,7 @@ function thumbGo(track,thumb,button){
 
 function updateBottom(animate){var b=$('.navbtn[data-tab="'+selectedTab+'"]');all(".navbtn").forEach(function(n){var on=n===b;n.classList.toggle("active",on);if(on)n.setAttribute("aria-current","page");else n.removeAttribute("aria-current")});if(animate)thumbGo($("#bottomTabs"),$("#bottomThumb"),b);else{var th=$("#bottomThumb");th.style.left=b.offsetLeft+"px";th.style.width=b.offsetWidth+"px"}}
 function switchTab(tab,chapterToJump){
+  stopChapterScroll();
   hideScriptRail(true);
   selectedTab=tab;
   $("#storyPanel").hidden=tab!=="story";
@@ -360,6 +372,40 @@ function renderScript(){
   updateSceneThumb(false);
   if(selectedTab==="script")requestAnimationFrame(buildScriptRail);
 }
+var chapterScroll={raf:0,running:false};
+function stopChapterScroll(){
+  if(chapterScroll.raf)cancelAnimationFrame(chapterScroll.raf);
+  chapterScroll.raf=0;
+  chapterScroll.running=false;
+}
+function moveToChapter(top){
+  stopChapterScroll();
+  var start=window.scrollY;
+  var maxY=Math.max(0,document.documentElement.scrollHeight-window.innerHeight);
+  var end=Math.max(0,Math.min(maxY,top));
+  var distance=end-start;
+  if(!motion||Math.abs(distance)<2){
+    window.scrollTo({top:end,behavior:"instant"});return;
+  }
+  // Distance-aware duration, with a nearly constant cruising speed.
+  // No native smooth scroll: successive taps can interrupt without browser queues.
+  var duration=Math.max(300,Math.min(2400,145+Math.abs(distance)/3.5));
+  var started=null;
+  chapterScroll.running=true;
+  function tick(now){
+    if(!chapterScroll.running)return;
+    if(started===null)started=now;
+    var p=Math.min(1,(now-started)/duration);
+    window.scrollTo({top:start+distance*chapterEase(p),behavior:"instant"});
+    if(p<1)chapterScroll.raf=requestAnimationFrame(tick);
+    else{
+      chapterScroll.raf=0;
+      chapterScroll.running=false;
+      window.scrollTo({top:end,behavior:"instant"});
+    }
+  }
+  chapterScroll.raf=requestAnimationFrame(tick);
+}
 function jumpToChapter(index){
   activeScene=index;
   updateSceneThumb(true);highlightRailLobe();
@@ -368,8 +414,16 @@ function jumpToChapter(index){
   var toolbar=$("#scriptPanel").querySelector(".script-toolbar");
   var offset=toolbar.getBoundingClientRect().height+12;
   var y=target.getBoundingClientRect().top+window.scrollY-offset;
-  window.scrollTo({top:Math.max(0,y),behavior:motion?"smooth":"instant"});
+  moveToChapter(y);
 }
+// Manual reading immediately overrides any in-progress automatic jump.
+document.addEventListener("touchstart",function(e){
+  if(chapterScroll.running&&!e.target.closest(".scene-switch"))stopChapterScroll();
+},{passive:true});
+window.addEventListener("wheel",function(){if(chapterScroll.running)stopChapterScroll()},{passive:true});
+window.addEventListener("keydown",function(e){
+  if(chapterScroll.running&&["ArrowDown","ArrowUp","PageDown","PageUp"," ","Home","End"].includes(e.key))stopChapterScroll();
+});
 
 var railState={entries:[],clusters:[],start:0,end:1,length:1,dragging:false,bounds:[],chapters:[]};
 var railHideTimer=null,railBuildQueued=false;
@@ -613,7 +667,8 @@ window.addEventListener("scroll",function(){
       var el=document.getElementById("chapter-"+i);
       if(el&&el.getBoundingClientRect().top<=threshold)active=i;
     }
-    if(active!==activeScene){activeScene=active;updateSceneThumb(true);highlightRailLobe()}
+    // Do not fight an in-flight chapter click: its tab thumb has one destination.
+    if(!chapterScroll.running&&active!==activeScene){activeScene=active;updateSceneThumb(true);highlightRailLobe()}
   });
 },{passive:true});
 
