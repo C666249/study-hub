@@ -70,15 +70,15 @@
 .rail-lobe,.rail-lobe.current{fill:#bacbbd;opacity:.64;transition:none}
 .rail-joint{fill:#a7bcae;opacity:.73}
 .rail-tick{left:0;width:19px;height:11px;z-index:1}
-.rail-tick:before,.rail-tick.merged:before{width:3.6px;height:2px;border-radius:4px;background:#2e7a50;box-shadow:0 0 0 .4px #e9f1e9;transition:background .15s}
-.rail-tick.role-mark:before{width:3.6px;height:2px;border-radius:4px;background:#24744a}
-.rail-tick:active:before,.rail-tick:focus-visible:before{width:4px;height:2.3px;background:#165a35}
-.rail-now{left:6.2px;width:6.6px;height:3px;border-radius:5px;background:#fffdfc;
+.rail-tick:before,.rail-tick.merged:before{width:5.2px;height:2.4px;border-radius:4px;background:#2e7a50;box-shadow:0 0 0 .4px #e9f1e9;transition:background .15s}
+.rail-tick.role-mark:before{width:5.2px;height:2.4px;border-radius:4px;background:#24744a}
+.rail-tick:active:before,.rail-tick:focus-visible:before{width:5.8px;height:2.6px;background:#165a35}
+.rail-now{left:5.2px;width:8.8px;height:3.6px;border-radius:5px;background:#fffdfc;
  box-shadow:0 0 0 1px #618a71,0 0 5px #315f4650;transition:top .1s linear}
 @media(max-height:430px){.script-rail{height:152px}}
 </style></head><body>
 <div class="wrap">
-<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.7.1 · 极细导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
+<header><div class="kicker">警察舆情防范与处置 · 课程短片</div><div class="maintitle"><h1>全楼都知道</h1><span class="draft">V1.7.2 · 精调导航版</span></div><div class="subtitle">目标10分钟以内 · 9人出演 + 1人摄影 · 三场与尾声</div></header>
 <main>
 <section class="panel" id="storyPanel">
 <div class="story-lead"><div class="eyebrow">THE STORY / 剧情导读</div><h2>一个抓奸现场，三种截然不同的真相。</h2>
@@ -411,7 +411,7 @@ function shapeSvg(bounds,current){
  // Visual-only update: each chapter is a slender, mostly uniform capsule.
  // Its final/first 12% gently neck down to a hairline join. The body does not
  // change color for the active chapter; the white progress dash shows position.
- var cx=9.5,out=[],wide=1.65,neck=.38;
+ var cx=9.5,out=[],wide=2.85,neck=.58;
  function p(x,y){return x.toFixed(2)+" "+y.toFixed(2)}
  for(var i=0;i<4;i++){
   var a=bounds[i],b=bounds[i+1],d=b-a;
@@ -426,7 +426,7 @@ function shapeSvg(bounds,current){
    " L"+p(right,s)+
    " C"+p(right,a+approach*.66)+" "+p(cx+wide*.47,a+approach*.36)+" "+p(cx+neck,a)+"Z";
   out.push('<path class="rail-lobe'+(i===current?' current':'')+'" data-scene="'+i+'" d="'+shape+'"/>');
-  if(i<3)out.push('<circle class="rail-joint" cx="'+cx+'" cy="'+b.toFixed(2)+'" r=".40"/>');
+  if(i<3)out.push('<circle class="rail-joint" cx="'+cx+'" cy="'+b.toFixed(2)+'" r=".58"/>');
  }
  return out.join("");
 }
