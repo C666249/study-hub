@@ -1,7 +1,7 @@
 name: PulseFlow · Android Preview APK
 on:
   push:
-    branches: ['feature/pulseflow-v03']
+    branches: ['feature/pulseflow-v031']
     paths:
       - 'android/trafficpulse/**'
       - 'android/settings.gradle.kts'
@@ -55,6 +55,10 @@ jobs:
           src=(root/'LiquidPillOverlay.java').read_text()
           assert 'ValueAnimator.ofInt(from,target)' in src
           assert 'setDuration(420L)' in src
+          assert 'collapsedWidth = dp(96)' in src
+          assert 'height = dp(36)' in src
+          assert 'collapsedText.setText(String.format(Locale.US,"%.2fG"' in src
+          assert 'collapsedText.setText("剩余' not in src
           assert 'postDelayed(longPress,490)' in src
           assert 'Math.min(dp(350)' in src
           assert 'collapsedText.setText' in src
@@ -74,19 +78,19 @@ jobs:
           mkdir -p dist
           apk=android/trafficpulse/build/outputs/apk/debug/trafficpulse-debug.apk
           test -s "$apk"
-          cp "$apk" dist/PulseFlow-v0.3.0-preview.apk
+          cp "$apk" dist/PulseFlow-v0.3.1-preview.apk
           AAPT="$ANDROID_HOME/build-tools/35.0.0/aapt"
           SIGNER="$ANDROID_HOME/build-tools/35.0.0/apksigner"
-          "$SIGNER" verify --verbose dist/PulseFlow-v0.3.0-preview.apk
-          "$AAPT" dump badging dist/PulseFlow-v0.3.0-preview.apk | grep -F "package: name='io.github.c666249.pulseflow' versionCode='3' versionName='0.3.0'"
-          "$AAPT" dump permissions dist/PulseFlow-v0.3.0-preview.apk > /tmp/perms.txt
+          "$SIGNER" verify --verbose dist/PulseFlow-v0.3.1-preview.apk
+          "$AAPT" dump badging dist/PulseFlow-v0.3.1-preview.apk | grep -F "package: name='io.github.c666249.pulseflow' versionCode='4' versionName='0.3.1'"
+          "$AAPT" dump permissions dist/PulseFlow-v0.3.1-preview.apk > /tmp/perms.txt
           if grep -q 'android.permission.INTERNET' /tmp/perms.txt; then
             echo "Unexpected Internet permission detected!"; exit 1
           fi
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
-          name: PulseFlow-Android-Preview-v0.3.0
+          name: PulseFlow-Android-Preview-v0.3.1
           path: dist/
           if-no-files-found: error
           retention-days: 30
@@ -95,12 +99,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=pulseflow-v0.3.0-preview
+          tag=pulseflow-v0.3.1-preview
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Preview tag already exists; refusing to silently replace binary"
           else
-            gh release create "$tag" dist/PulseFlow-v0.3.0-preview.apk dist/SHA256SUMS.txt \
-              --title "PulseFlow v0.3.0 · Compact Glass Pill" \
+            gh release create "$tag" dist/PulseFlow-v0.3.1-preview.apk dist/SHA256SUMS.txt \
+              --title "PulseFlow v0.3.1 · Micro Balance Pill" \
               --target "$GITHUB_SHA" --prerelease --latest=false \
-              --notes "PulseFlow v0.3.0: new compact quota-first dashboard (the approved design), single-row VPN/network and RX/TX, 60s graph last, dark minimalist plan dialog. Compact translucent white horizontal overlay pill: collapsed remaining data, tap expands continuously to remaining/used/download/upload, long-press reverses, drag to move. Native code uses Android TrafficStats + NetworkStatsManager, no INTERNET permission. System overlay uses translucent white gradient fallback rather than screen capture or claiming optical backdrop refraction. Package io.github.c666249.pulseflow (independent from old Traffic Pulse); usage-access and draw-over-apps permissions must be granted again. Signed with ephemeral CI debug certificate; no in-place signature continuity guarantee. Android hardware performance and MagicOS permissions not yet device-verified."
+              --notes "PulseFlow v0.3.1: micro 96dp x 36dp balance-only collapsed pill; compact quota-first dashboard (the approved design), single-row VPN/network and RX/TX, 60s graph last, dark minimalist plan dialog. Compact translucent white horizontal overlay pill: collapsed remaining data, tap expands continuously to remaining/used/download/upload, long-press reverses, drag to move. Native code uses Android TrafficStats + NetworkStatsManager, no INTERNET permission. System overlay uses translucent white gradient fallback rather than screen capture or claiming optical backdrop refraction. Package io.github.c666249.pulseflow (independent from old Traffic Pulse); usage-access and draw-over-apps permissions must be granted again. Signed with ephemeral CI debug certificate; no in-place signature continuity guarantee. Android hardware performance and MagicOS permissions not yet device-verified."
           fi

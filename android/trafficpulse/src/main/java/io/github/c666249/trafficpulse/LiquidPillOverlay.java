@@ -24,7 +24,7 @@ import java.util.Locale;
 /**
  * PulseFlow native overlay.
  * SAME window, SAME pill, variable width; never destroys/recreates on expand.
- * Collapsed: balance alone. Tap: horizontal 420 ms bilateral expansion.
+ * Collapsed: balance number + G only. Tap: horizontal 420 ms bilateral expansion.
  * Long-press: reverse from the current width. Drag: move/persist position.
  * Frosted-white translucent material is a safe fallback, NOT screen capture
  * or optical refraction of other apps (which would require extra permission).
@@ -67,9 +67,9 @@ public final class LiquidPillOverlay {
         windowManager.getDefaultDisplay().getSize(size);
         screenWidth = size.x;
         screenHeight = size.y;
-        collapsedWidth = dp(136);
+        collapsedWidth = dp(96);
         expandedWidth = Math.max(collapsedWidth + dp(40), Math.min(dp(350), screenWidth - dp(16)));
-        height = dp(42);
+        height = dp(36);
     }
 
     private GradientDrawable material() {
@@ -101,8 +101,8 @@ public final class LiquidPillOverlay {
         root.setClipChildren(false);
         root.setClipToPadding(false);
 
-        collapsedText = label("剩余  — GB", 0xFF253F47, 13f);
-        collapsedText.setPadding(dp(12),0,dp(12),0);
+        collapsedText = label("—G", 0xFF253F47, 14.5f);
+        collapsedText.setPadding(dp(6),0,dp(6),0);
         root.addView(collapsedText, new FrameLayout.LayoutParams(-1,-1));
 
         expandedRow = new LinearLayout(context);
@@ -224,13 +224,13 @@ public final class LiquidPillOverlay {
     public void quota(QuotaUsage.Result result) {
         if (root==null) return;
         if (!result.success) {
-            collapsedText.setText("剩余  — GB");
+            collapsedText.setText("—G");
             remainingText.setText("余 —");
             usedText.setText("用 —");
             return;
         }
         double used=result.usedBytes/QuotaUsage.GIB;
-        collapsedText.setText(String.format(Locale.US,"剩余 %.2fG",result.remainingGb));
+        collapsedText.setText(String.format(Locale.US,"%.2fG",result.remainingGb));
         remainingText.setText(String.format(Locale.US,"余 %.1fG",result.remainingGb));
         usedText.setText(String.format(Locale.US,"用 %.1fG",used));
     }
