@@ -35,13 +35,13 @@ jobs:
           mkdir -p dist
           APK=android/factory-demo/build/outputs/apk/debug/factory-demo-debug.apk
           test -s "$APK"
-          cp "$APK" dist/AppFactoryDemo-v0.1.0-debug.apk
-          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/AppFactoryDemo-v0.1.0-debug.apk
-          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/AppFactoryDemo-v0.1.0-debug.apk | head -n 1
+          cp "$APK" dist/AppFactoryDemo-v0.1.1-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --verbose dist/AppFactoryDemo-v0.1.1-debug.apk
+          "$ANDROID_HOME/build-tools/35.0.0/aapt" dump badging dist/AppFactoryDemo-v0.1.1-debug.apk | head -n 1
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
-          name: AppFactory-Public-Demo-v0.1.0
+          name: AppFactory-Public-Demo-v0.1.1
           path: dist/
           if-no-files-found: error
           retention-days: 30
@@ -50,13 +50,13 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          tag=app-factory-demo-v0.1.0
+          tag=app-factory-demo-v0.1.1
           if gh release view "$tag" >/dev/null 2>&1; then
             echo "Release exists: avoiding binary replacement."
           else
-            gh release create "$tag" dist/AppFactoryDemo-v0.1.0-debug.apk dist/SHA256SUMS.txt \
+            gh release create "$tag" dist/AppFactoryDemo-v0.1.1-debug.apk dist/SHA256SUMS.txt \
               --target "$GITHUB_SHA" \
-              --title "App Factory Demo 0.1.0 (public preview)" \
+              --title "App Factory Demo 0.1.1 (public preview)" \
               --notes "Public original Android UI proof only. Actual FMV source integration remains in private personal-app-stack feature/app-factory-v1. This APK uses an ephemeral GitHub Actions debug signing identity: uninstall it before installing another build. Do not treat this as signed Stable." \
               --prerelease --latest=false
           fi

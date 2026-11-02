@@ -32,6 +32,8 @@ public final class MainActivity extends Activity {
     private View thumb;
     private TextView status;
     private int tab = 0;
+    private ValueAnimator activeTabAnimation;
+    private final List<TextView> tabTextViews = new ArrayList<>();
     private int dp(float n) { return Math.round(n * getResources().getDisplayMetrics().density); }
     private GradientDrawable shape(int color, float corner, Integer border) {
         GradientDrawable d = new GradientDrawable();
@@ -114,7 +116,8 @@ public final class MainActivity extends Activity {
         String[] labels = {"创建", "动效", "发布"};
         for (int i = 0; i < labels.length; i++) {
             final int which = i;
-            TextView v = text(labels[i], 15, Color.WHITE, true);
+            TextView v = text(labels[i], 15, i==0 ? bg : muted, true);
+            tabTextViews.add(v);
             v.setGravity(Gravity.CENTER);
             v.setOnClickListener(ignored -> switchTab(which));
             navLabels.addView(v, new LinearLayout.LayoutParams(0, -1, 1));
@@ -183,7 +186,8 @@ public final class MainActivity extends Activity {
         tab = index;
         if (nav.getWidth()==0) return;
         float distance = (nav.getWidth()-dp(12)) / 3f;
-        float from=prev*distance, to=index*distance;
+        float from=thumb.getTranslationX(), to=index*distance;
+        if (activeTabAnimation != null) activeTabAnimation.cancel();
         ValueAnimator a=ValueAnimator.ofFloat(0f,1f);
         a.setDuration(420);
         a.setInterpolator(new DecelerateInterpolator(1.7f));
@@ -192,7 +196,15 @@ public final class MainActivity extends Activity {
             thumb.setTranslationX(from+(to-from)*f);
             thumb.setScaleX(1f+0.12f*(float)Math.sin(Math.PI*f));
         });
+        activeTabAnimation = a;
         a.start();
+        for (int i = 0; i < tabTextViews.size(); i++) tabTextViews.get(i).setTextColor(i == index ? bg : muted);
+        cards.removeAllViews();
+        final String[] titles = index == 0 ?
+            new String[]{"模板创建器", "独立包名", "Stable / Beta / Cloud", "项目来源追溯"} : index == 1 ?
+            new String[]{"FMV · 弹性导航体验", "Motion · 橡胶阻力卡片", "动效复用规则", "动画时序与触觉"} :
+            new String[]{"GitHub Actions 构建", "三通道安装身份", "APK SHA256 校验", "交付状态和版本记录"};
+        for (int i=0; i<titles.length; i++) addCard(titles[i], i);
         status.setText(index==0 ? "三通道架构 · Public Demo · 无网络权限" :
             index==1 ? "动效案例 · 点击和滑动可测试" :
             "GitHub Actions 构建 · APK & SHA256 · Debug 预览");
