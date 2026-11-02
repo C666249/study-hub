@@ -28,6 +28,7 @@ public final class MainActivity extends Activity {
     private SpeedGraph graph;
     private TextView quotaRemaining, quotaDetail, quotaStatus;
     private ProgressBar quotaProgress;
+    private TextView quotaUsedValue, quotaPlanValue, quotaGrant;
     private final ExecutorService quotaWorker=Executors.newSingleThreadExecutor();
     private volatile boolean quotaBusy=false;
     private long lastQuotaQueryAt=0;
@@ -77,130 +78,165 @@ public final class MainActivity extends Activity {
         t.setTypeface(Typeface.DEFAULT,Typeface.BOLD);
         t.setTextSize(15);
     }
+    private static final int DARK=0xFF0C1522, SURFACE=0xFF172433;
+    private LinearLayout panel(int color, int radius, int border, int padding) {
+        LinearLayout p=column();
+        p.setPadding(dp(padding),dp(padding),dp(padding),dp(padding));
+        p.setBackground(round(color,radius,border));
+        return p;
+    }
+    private String shortRate(double b) {
+        if(b < 1024) return String.format(Locale.US,"%.0fB/s",b);
+        if(b < 1048576) return String.format(Locale.US,"%.0fK/s",b/1024.0);
+        return String.format(Locale.US,"%.1fM/s",b/1048576.0);
+    }
+
     @Override public void onCreate(Bundle saved){
         super.onCreate(saved);
-        getWindow().setStatusBarColor(BACK);getWindow().setNavigationBarColor(BACK);
+        getWindow().setStatusBarColor(DARK);getWindow().setNavigationBarColor(DARK);
         ScrollView scroll=new ScrollView(this);
-        scroll.setFillViewport(true);scroll.setClipToPadding(false);
-        scroll.setVerticalScrollBarEnabled(false);scroll.setBackgroundColor(BACK);
+        scroll.setFillViewport(true);
+        scroll.setVerticalScrollBarEnabled(false);
+        scroll.setBackgroundColor(DARK);
         setContentView(scroll);
         LinearLayout root=column();
-        root.setPadding(dp(22),dp(32),dp(22),dp(26));
+        root.setPadding(dp(19),dp(26),dp(19),dp(22));
         scroll.addView(root,new ScrollView.LayoutParams(-1,-2));
 
-        TextView eyebrow=label("NETWORK INTELLIGENCE   /   PULSE",11,MINT,true);
-        root.addView(eyebrow);gap(root,13);
-        root.addView(label("流速 Pulse",31,WHITE,true));gap(root,9);
-        root.addView(label("每秒更新 · 本机统计 · 无需联网权限",13,MUTED,false));
-        gap(root,25);
+        // Minimal editorial header.
+        root.addView(label("NETWORK INTELLIGENCE  /  PULSEFLOW",10,MINT,true));
+        gap(root,10);
+        LinearLayout brand=row();brand.setGravity(Gravity.CENTER_VERTICAL);
+        root.addView(brand);
+        brand.addView(label("PulseFlow",33,WHITE,true));
+        View spacer=new View(this);brand.addView(spacer,new LinearLayout.LayoutParams(0,1,1));
+        activity=label("● LIVE",11,MINT,true);
+        brand.addView(activity);
+        gap(root,19);
 
-        LinearLayout top=row();
-        top.setGravity(Gravity.CENTER_VERTICAL);
-        root.addView(top);
-        network=label("检测网络中",13,MINT,true);
-        network.setBackground(round(0xFF18372F,12,0));
-        network.setPadding(dp(12),dp(9),dp(12),dp(9));
-        top.addView(network);
-        View spring=new View(this);top.addView(spring,new LinearLayout.LayoutParams(0,1,1));
-        activity=label("● 已暂停",13,MUTED,true);
-        top.addView(activity);gap(root,16);
-
-        LinearLayout rates=row();
-        root.addView(rates,new LinearLayout.LayoutParams(-1,-2));
-        down=speedCard("↓ 下载 DOWNLOAD",MINT,rates);
-        View space=new View(this);rates.addView(space,new LinearLayout.LayoutParams(dp(11),1));
-        up=speedCard("↑ 上传 UPLOAD",VIOLET,rates);
+        // One compact status line: network on the left, RX / TX on the right.
+        LinearLayout status=row();
+        status.setGravity(Gravity.CENTER_VERTICAL);
+        status.setPadding(dp(10),dp(9),dp(10),dp(9));
+        status.setBackground(round(SURFACE,20,BORDER));
+        root.addView(status,new LinearLayout.LayoutParams(-1,dp(60)));
+        network=label("NETWORK",12,MINT,true);
+        network.setGravity(Gravity.CENTER);
+        network.setBackground(round(0xFF204037,15,0));
+        network.setPadding(dp(11),dp(9),dp(11),dp(9));
+        status.addView(network);
+        View flex=new View(this);status.addView(flex,new LinearLayout.LayoutParams(0,1,1));
+        down=label("↓ 0B/s",13,MINT,true);
+        status.addView(down);
+        View rateGap=new View(this);status.addView(rateGap,new LinearLayout.LayoutParams(dp(12),1));
+        up=label("↑ 0B/s",13,VIOLET,true);
+        status.addView(up);
         gap(root,16);
 
-        LinearLayout graphCard=column();
-        graphCard.setPadding(dp(17),dp(19),dp(17),dp(15));
-        graphCard.setBackground(round(CARD,21,BORDER));
-        root.addView(graphCard,new LinearLayout.LayoutParams(-1,-2));
-        LinearLayout graphHead=row();graphHead.setGravity(Gravity.CENTER_VERTICAL);graphCard.addView(graphHead);
-        graphHead.addView(label("实时速度曲线",17,WHITE,true));
-        View blank=new View(this);graphHead.addView(blank,new LinearLayout.LayoutParams(0,1,1));
-        graphHead.addView(label("最近 60 秒",11,MUTED,false));
-        gap(graphCard,15);
-        graph=new SpeedGraph(this);
-        graphCard.addView(graph,new LinearLayout.LayoutParams(-1,dp(160)));
-        LinearLayout legends=row();legends.setGravity(Gravity.CENTER);graphCard.addView(legends);
-        legends.addView(label("● 下载",12,MINT,true));
-        TextView u=label("    ● 上传",12,VIOLET,true);legends.addView(u);
-        gap(root,16);
-
-
-        // Monthly mobile-data allowance estimate; independent of live SpeedState.
-        LinearLayout quotaCard=column();
-        quotaCard.setPadding(dp(19),dp(19),dp(19),dp(20));
-        quotaCard.setBackground(round(CARD,21,BORDER));
+        // Main plan card: remaining / progress / compact metadata.
+        LinearLayout quotaCard=panel(0xFF172C37,24,0xFF3D6D6B,19);
+        GradientDrawable planBackground=new GradientDrawable(
+            GradientDrawable.Orientation.TL_BR,
+            new int[]{0xFF1A4840,0xFF172D39,0xFF252A41});
+        planBackground.setCornerRadius(dp(24));
+        planBackground.setStroke(dp(1),0xFF4D847C);
+        quotaCard.setBackground(planBackground);
         root.addView(quotaCard,new LinearLayout.LayoutParams(-1,-2));
-        LinearLayout quotaHeading=row();
-        quotaHeading.setGravity(Gravity.CENTER_VERTICAL);
-        quotaCard.addView(quotaHeading);
-        quotaHeading.addView(label("中国移动 · 套餐余量估算",16,WHITE,true));
-        View titleGap=new View(this);
-        quotaHeading.addView(titleGap,new LinearLayout.LayoutParams(0,1,1));
-        TextView editQuota=label("设置  ›",13,MINT,true);
-        editQuota.setPadding(dp(8),dp(5),dp(1),dp(5));
-        quotaHeading.addView(editQuota);
-        editQuota.setOnClickListener(v->editQuota());
-        gap(quotaCard,14);
-        quotaRemaining=label("— GB",31,MINT,true);
+        LinearLayout top=row();top.setGravity(Gravity.CENTER_VERTICAL);
+        quotaCard.addView(top);
+        top.addView(label("CHINA MOBILE  /  PLAN",11,0xFFD0E8E6,true));
+        View space=new View(this);top.addView(space,new LinearLayout.LayoutParams(0,1,1));
+        TextView edit=label("⚙",22,MINT,false);
+        edit.setGravity(Gravity.CENTER);
+        edit.setContentDescription("设置流量总额与账期");
+        edit.setPadding(dp(10),0,dp(2),0);
+        top.addView(edit,new LinearLayout.LayoutParams(dp(42),dp(36)));
+        edit.setOnClickListener(v->editQuota());
+        gap(quotaCard,10);
+        quotaCard.addView(label("REMAINING",10,0xFFB2D5D1,true));
+        gap(quotaCard,2);
+        quotaRemaining=label("— GB",39,MINT,true);
         quotaCard.addView(quotaRemaining);
-        gap(quotaCard,11);
+        gap(quotaCard,12);
         quotaProgress=new ProgressBar(this,null,android.R.attr.progressBarStyleHorizontal);
         quotaProgress.setMax(1000);
         quotaProgress.setProgressTintList(ColorStateList.valueOf(MINT));
-        quotaProgress.setProgressBackgroundTintList(ColorStateList.valueOf(0xFF2F4050));
-        quotaCard.addView(quotaProgress,new LinearLayout.LayoutParams(-1,dp(7)));
-        gap(quotaCard,12);
-        quotaDetail=label("请授权读取移动网络用量",12,MUTED,false);
+        quotaProgress.setProgressBackgroundTintList(ColorStateList.valueOf(0xFF304956));
+        quotaCard.addView(quotaProgress,new LinearLayout.LayoutParams(-1,dp(6)));
+        gap(quotaCard,11);
+        quotaDetail=label("USED  —    /    PLAN  130 GB",12,0xFFB7D5D6,false);
         quotaCard.addView(quotaDetail);
-        gap(quotaCard,8);
-        quotaStatus=label("读取系统网络统计历史，无需始终开启测速服务",12,MUTED,false);
-        quotaStatus.setLineSpacing(dp(3),1);
+        gap(quotaCard,6);
+        quotaStatus=label("1st RESET  ·  DEVICE ESTIMATE",11,0xFF8FAFAB,false);
         quotaCard.addView(quotaStatus);
-        gap(quotaCard,12);
-        TextView grant=label("授予使用情况访问权限",13,MINT,true);
-        grant.setPadding(0,dp(10),0,dp(10));
-        quotaCard.addView(grant);
-        grant.setOnClickListener(v->openUsageAccess());
-        TextView official=label("打开中国移动官方套餐余量查询",13,MUTED,true);
-        official.setPadding(0,dp(9),0,dp(4));
-        quotaCard.addView(official);
-        official.setOnClickListener(v->{
-            try {
-                startActivity(new Intent(Intent.ACTION_VIEW,android.net.Uri.parse("https://touch.10086.cn/i/mobile/packremainqry.html")));
-            } catch(RuntimeException ex) {
-                Toast.makeText(this,"没有可用浏览器",Toast.LENGTH_SHORT).show();
-            }
-        });
-        gap(root,16);
+        quotaStatus.setOnClickListener(v->{if(!QuotaUsage.hasAccess(this))openUsageAccess();});
+        gap(root,12);
 
-        LinearLayout usage=column();usage.setPadding(dp(19),dp(18),dp(19),dp(18));
-        usage.setBackground(round(CARD,21,BORDER));root.addView(usage);
-        usage.addView(label("本次监控累计流量",16,WHITE,true));gap(usage,14);
-        LinearLayout usageRow=row();usage.addView(usageRow);
-        LinearLayout rxcol=column(),txcol=column();
-        usageRow.addView(rxcol,new LinearLayout.LayoutParams(0,-2,1));
-        usageRow.addView(txcol,new LinearLayout.LayoutParams(0,-2,1));
-        rxcol.addView(label("累计下载",12,MUTED,false));
-        sessionDown=label("0 B",20,MINT,true);sessionDown.setPadding(0,dp(7),0,0);rxcol.addView(sessionDown);
-        txcol.addView(label("累计上传",12,MUTED,false));
-        sessionUp=label("0 B",20,VIOLET,true);sessionUp.setPadding(0,dp(7),0,0);txcol.addView(sessionUp);
-        gap(root,20);
+        // Compact two-tile quota statistics, no redundant text paragraphs.
+        LinearLayout totals=row();
+        root.addView(totals,new LinearLayout.LayoutParams(-1,-2));
+        LinearLayout usedCard=panel(SURFACE,20,BORDER,15);
+        LinearLayout.LayoutParams tile=new LinearLayout.LayoutParams(0,-2,1);
+        totals.addView(usedCard,tile);
+        usedCard.addView(label("USED",10,MUTED,true));
+        gap(usedCard,7);
+        quotaUsedValue=label("— GB",20,MINT,true);
+        usedCard.addView(quotaUsedValue);
+        View tileGap=new View(this);totals.addView(tileGap,new LinearLayout.LayoutParams(dp(10),1));
+        LinearLayout planCard=panel(0xFF20253B,20,0xFF37395A,15);
+        totals.addView(planCard,new LinearLayout.LayoutParams(0,-2,1));
+        planCard.addView(label("PLAN",10,0xFFC6BAF4,true));
+        gap(planCard,7);
+        quotaPlanValue=label("130 GB",20,VIOLET,true);
+        planCard.addView(quotaPlanValue);
+        gap(root,12);
 
-        action=label("开始实时监控",15,BACK,true);
-        configureClick(action,MINT);root.addView(action,new LinearLayout.LayoutParams(-1,-2));
+        // Last content card is the graph; values below are auxiliary.
+        LinearLayout graphCard=panel(SURFACE,23,BORDER,16);
+        root.addView(graphCard);
+        LinearLayout graphHeading=row();
+        graphHeading.setGravity(Gravity.CENTER_VERTICAL);
+        graphCard.addView(graphHeading);
+        graphHeading.addView(label("REAL-TIME SPEED",15,WHITE,true));
+        View blank=new View(this);graphHeading.addView(blank,new LinearLayout.LayoutParams(0,1,1));
+        graphHeading.addView(label("60S",11,MUTED,true));
+        gap(graphCard,9);
+        graph=new SpeedGraph(this);
+        graphCard.addView(graph,new LinearLayout.LayoutParams(-1,dp(148)));
+        gap(graphCard,4);
+        LinearLayout legend=row();legend.setGravity(Gravity.CENTER);
+        graphCard.addView(legend);
+        legend.addView(label("● DOWNLOAD",11,MINT,true));
+        legend.addView(label("     ● UPLOAD",11,VIOLET,true));
+        gap(graphCard,10);
+        LinearLayout mini=row();mini.setGravity(Gravity.CENTER);
+        graphCard.addView(mini);
+        mini.addView(label("SESSION  ",10,MUTED,true));
+        sessionDown=label("↓ 0 B",11,MINT,false);
+        sessionUp=label("   ↑ 0 B",11,VIOLET,false);
+        mini.addView(sessionDown);mini.addView(sessionUp);
+        gap(root,12);
+
+        // Quiet, bottom-aligned actions instead of full-page instructional text.
+        LinearLayout controls=row();
+        root.addView(controls);
+        action=label("▶  Start",14,DARK,true);
+        action.setGravity(Gravity.CENTER);
+        action.setBackground(round(MINT,17,0));
+        controls.addView(action,new LinearLayout.LayoutParams(0,dp(52),1));
         action.setOnClickListener(v->toggleService());
-        gap(root,10);
-        overlay=label("开启桌面悬浮测速窗",15,WHITE,true);
-        configureClick(overlay,0xFF28374A);
-        root.addView(overlay,new LinearLayout.LayoutParams(-1,-2));
+        View between=new View(this);controls.addView(between,new LinearLayout.LayoutParams(dp(10),1));
+        overlay=label("◉  Glass Pill",14,WHITE,true);
+        overlay.setGravity(Gravity.CENTER);
+        overlay.setBackground(round(0xFF2B3B4E,17,0));
+        controls.addView(overlay,new LinearLayout.LayoutParams(0,dp(52),1));
         overlay.setOnClickListener(v->toggleOverlay());
-        gap(root,20);
-        foot=label("说明：实时速率来自 Android TrafficStats 全设备网络计数器。\n累计数据仅计算本次监控期间的增量；不等于运营商账单流量。\nVPN、多网卡与系统统计可能产生偏差。",12,MUTED,false);
-        foot.setLineSpacing(dp(4),1.0f);root.addView(foot);
+        gap(root,10);
+        quotaGrant=label("SETUP  ·  Usage access",11,MUTED,true);
+        quotaGrant.setGravity(Gravity.CENTER);
+        quotaGrant.setPadding(0,dp(7),0,dp(7));
+        root.addView(quotaGrant);
+        quotaGrant.setOnClickListener(v->openUsageAccess());
         requestNoticePermission();
         drawLive();
     }
@@ -251,18 +287,18 @@ public final class MainActivity extends Activity {
     private void drawLive(){
         if(down==null)return;
         SpeedState.Snapshot s=SpeedState.I.get();
-        down.setText(SpeedState.rate(s.down));up.setText(SpeedState.rate(s.up));
+        down.setText("↓ "+shortRate(s.down));up.setText("↑ "+shortRate(s.up));
         sessionDown.setText(SpeedState.size(s.totalDown));
         sessionUp.setText(SpeedState.size(s.totalUp));
         graph.setSamples(s.downHistory,s.upHistory);
         if(android.os.SystemClock.elapsedRealtime()-lastQuotaQueryAt>60000L)refreshQuota(false);
-        activity.setText(s.running?"● 正在监控":"● 已暂停");
+        activity.setText(s.running?"● LIVE":"○ IDLE");
         activity.setTextColor(s.running?MINT:MUTED);
-        action.setText(s.running?"停止实时监控":"开始实时监控");
+        action.setText(s.running?"■  Stop":"▶  Start");
         action.setTextColor(s.running?WHITE:BACK);
         action.setBackground(round(s.running?0xFF334455:MINT,16,0));
         boolean enabled=getSharedPreferences("settings",MODE_PRIVATE).getBoolean("overlay",false) && Settings.canDrawOverlays(this);
-        overlay.setText(enabled?"关闭桌面悬浮测速窗":"开启桌面悬浮测速窗");
+        overlay.setText(enabled?"◉  Hide Pill":"◉  Glass Pill");
         network.setText(currentNetwork());
     }
 
@@ -318,7 +354,7 @@ public final class MainActivity extends Activity {
     }
 
     private void refreshQuota(boolean force){
-        if(quotaRemaining==null || quotaBusy)return;
+        if(quotaRemaining==null||quotaBusy)return;
         if(!force && android.os.SystemClock.elapsedRealtime()-lastQuotaQueryAt<60000L)return;
         lastQuotaQueryAt=android.os.SystemClock.elapsedRealtime();
         quotaBusy=true;
@@ -327,19 +363,22 @@ public final class MainActivity extends Activity {
             runOnUiThread(()->{
                 quotaBusy=false;
                 if(isFinishing()||isDestroyed()||quotaRemaining==null)return;
+                quotaPlanValue.setText(String.format(Locale.US,"%.1f GB",result.totalGb));
+                quotaGrant.setVisibility(result.success?View.GONE:View.VISIBLE);
                 if(result.success){
-                    double usedGb=result.usedBytes/QuotaUsage.GIB;
-                    quotaRemaining.setText(String.format(Locale.CHINA,"%.2f GB",result.remainingGb));
-                    quotaDetail.setText(String.format(Locale.CHINA,"已用 %.2f GB  /  套餐 %.1f GB",
-                        usedGb,result.totalGb));
-                    quotaProgress.setProgress((int)Math.min(1000,Math.round(1000*usedGb/result.totalGb)));
-                    quotaStatus.setText("账期自 "+QuotaUsage.date(result.cycleStart)+" 起 · 每月"
-                        +result.cycleDay+"日重置\n全设备所有 SIM 卡的移动网络用量合计，非运营商官方余额");
+                    double used=result.usedBytes/QuotaUsage.GIB;
+                    quotaRemaining.setText(String.format(Locale.US,"%.2f GB",result.remainingGb));
+                    quotaUsedValue.setText(String.format(Locale.US,"%.2f GB",used));
+                    quotaDetail.setText(String.format(Locale.US,"USED %.2f GB   /   PLAN %.1f GB",used,result.totalGb));
+                    quotaProgress.setProgress((int)Math.min(1000,Math.round(1000*used/result.totalGb)));
+                    quotaStatus.setText(String.format(Locale.US,"%d%s RESET   ·   DEVICE ESTIMATE",
+                        result.cycleDay, result.cycleDay==1?"ST":"TH"));
                 }else{
                     quotaRemaining.setText("— GB");
+                    quotaUsedValue.setText("— GB");
                     quotaProgress.setProgress(0);
-                    quotaDetail.setText(String.format(Locale.CHINA,"套餐 %.1f GB · 每月%d日重置",result.totalGb,result.cycleDay));
-                    quotaStatus.setText(result.error+"\n无需持续后台运行，授权后可读取历史累计用量");
+                    quotaDetail.setText(String.format(Locale.US,"PLAN %.1f GB",result.totalGb));
+                    quotaStatus.setText("TAP TO GRANT USAGE ACCESS  ›");
                 }
             });
         });
