@@ -12,10 +12,22 @@ android {
         applicationId = "dev.foldframe.atelier"
         minSdk = 29
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0-beta"
+        versionCode = 2
+        versionName = "0.1.1-beta"
     }
-    buildTypes { release { isMinifyEnabled = false } }
+    // MagicOS compatibility: AGP may omit v1 signing on minSdk 24+ builds.
+    // Keep all supported APK signing schemes and fail CI if verification fails.
+    signingConfigs {
+        getByName("debug") {
+            enableV1Signing = true
+            enableV2Signing = true
+            enableV3Signing = true
+        }
+    }
+    buildTypes {
+        getByName("debug") { signingConfig = signingConfigs.getByName("debug") }
+        getByName("release") { isMinifyEnabled = false }
+    }
     compileOptions { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17 }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
