@@ -9,7 +9,7 @@
 - [`workshop/PPT-Design-Workshop-v1.1.0.md`](workshop/PPT-Design-Workshop-v1.1.0.md) — 核心完整规范（原有设计原则、可编辑、动画保护、验收 + 新增视觉复刻硬约束）
 - [`styles/ACADEMIC-POLICE-PARCHMENT-001.md`](styles/ACADEMIC-POLICE-PARCHMENT-001.md) — 暖纸质公安学术汇报风格、两页拆解、微组件清单与可编辑技术边界
 - [`styles/catalog.json`](styles/catalog.json) — 风格目录，持续增量扩展
-- [`assets/references/`](assets/references/) — 参考效果图 PNG（REF-01/REF-02）
+- [`assets/references/`](assets/references/) — 参考效果图 JPG（REF-01/REF-02）
 - [`assets/icons/`](assets/icons/) — 同题材的原创 SVG 语义图标草图（**不是**从效果图像素级提取，尚需按原图精修）
 - [`VALIDATION.md`](VALIDATION.md) — 可编辑 PPTX 的逐项复刻验收模板
 
