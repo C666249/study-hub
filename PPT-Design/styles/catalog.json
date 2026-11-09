@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "workshop_version": "1.1.0",
+  "updated_at": "2026-11-09",
+  "styles": [
+    {
+      "id": "ISLAND-QINGJIN-001",
+      "name": "青金海岛·古纸卷宗",
+      "status": "design-recorded-assets-incomplete",
+      "ref": "../workshop/PPT-Design-Workshop-v1.1.0.md#四青金海岛风格包与卷宗时间轴",
+      "tags": [
+        "岛屿",
+        "旅游",
+        "历史",
+        "青金",
+        "古纸"
+      ],
+      "notes": "历史风格独立保留；最终源图与动画版 PPTX 尚未归档验证"
+    },
+    {
+      "id": "ACADEMIC-POLICE-PARCHMENT-001",
+      "name": "暖纸质公安学术汇报",
+      "status": "visual-references-archived-template-unverified",
+      "ref": "ACADEMIC-POLICE-PARCHMENT-001.md",
+      "tags": [
+        "学术",
+        "公安",
+        "治理",
+        "法理情",
+        "暖米白",
+        "铜棕",
+        "海军蓝",
+        "卡片",
+        "小图标"
+      ],
+      "reference_images": [
+        "../assets/references/REF-01-law-reason-empathy.jpg",
+        "../assets/references/REF-02-police-review.jpg"
+      ],
+      "icons": [
+        "police-cap",
+        "scales",
+        "clapperboard",
+        "open-book",
+        "shield-check",
+        "message-circle",
+        "target"
+      ],
+      "notes": "两张效果图为视觉真值参考；图标 SVG 为语义草图，尚非像素级复刻；未有已验收的可编辑 PPTX"
+    }
+  ]
+}
