@@ -1,13 +1,13 @@
 {
   "schema_version": 1,
-  "workshop_version": "1.1.0",
+  "workshop_version": "1.2.0",
   "updated_at": "2026-11-09",
   "styles": [
     {
       "id": "ISLAND-QINGJIN-001",
       "name": "青金海岛·古纸卷宗",
       "status": "design-recorded-assets-incomplete",
-      "ref": "../workshop/PPT-Design-Workshop-v1.1.0.md#四青金海岛风格包与卷宗时间轴",
+      "ref": "../workshop/PPT-Design-Workshop-v1.2.0.md#四青金海岛风格包与卷宗时间轴",
       "tags": [
         "岛屿",
         "旅游",
@@ -15,7 +15,7 @@
         "青金",
         "古纸"
       ],
-      "notes": "历史风格独立保留；最终源图与动画版 PPTX 尚未归档验证"
+      "notes": "历史风格保留；v1.2.0 的重影与逐页验收规则同样适用；最终源图与动画版 PPTX 尚未归档验证"
     },
     {
       "id": "ACADEMIC-POLICE-PARCHMENT-001",
@@ -31,7 +31,11 @@
         "铜棕",
         "海军蓝",
         "卡片",
-        "小图标"
+        "小图标",
+        "双色双折角",
+        "情境插画",
+        "高保真复刻",
+        "混合交付"
       ],
       "reference_images": [
         "../assets/references/REF-01-law-reason-empathy.jpg",
@@ -46,7 +50,17 @@
         "message-circle",
         "target"
       ],
-      "notes": "两张效果图为视觉真值参考；图标 SVG 为语义草图，尚非像素级复刻；未有已验收的可编辑 PPTX"
+      "notes": "当前仅两张原始参考 REF-01/REF-02 已入库；已有扩展版式经验和案例复盘，但不代表四张完整源图或可编辑 PPTX 已验证；允许经用户单独授权的混合整图页",
+      "layout_families": [
+        "cover-editorial",
+        "narrative-retrospective",
+        "three-column-reasoning",
+        "process-timeline"
+      ],
+      "case_studies": [
+        "../cases/CASE-001-POLICE-PPT-RECONSTRUCTION.md"
+      ],
+      "qa_checklist": "../VALIDATION.md"
     }
   ]
 }
