@@ -196,7 +196,7 @@ const q=cQuestions(s)[no]||{stem:'这道题的完整题干仍待校对',options:
 $('#prompt').textContent=q.stem;
 $('#letters').innerHTML='ABCD'.split('').map(l=>'<button class="option '+(a===l?'active':'')+'" data-a="'+l+'" '+(!hasSource||!q.options[l]?'disabled':'')+'><span class="opt-letter">'+l+'</span><span>'+escapeHtml(q.options[l]||'选项缺失，暂不可作答')+'</span></button>').join('');
 }
-$$('#letters .option').forEach(btn=>btn.onclick=()=>{saved.readingAnswers||={};saved.readingAnswers[extraKey()]=btn.dataset.a;persist();renderExtraQuestion();if(modeSection==='A')$('[data-blank]').filter(x=>Number(x.dataset.blank)===no).forEach(x=>{x.textContent=no+' · '+btn.dataset.a;x.classList.add('selected')})});
+$$('#letters .option').forEach(btn=>btn.onclick=()=>{saved.readingAnswers||={};saved.readingAnswers[extraKey()]=btn.dataset.a;persist();renderExtraQuestion();if(modeSection==='A')$$('[data-blank]').filter(x=>Number(x.dataset.blank)===no).forEach(x=>{x.textContent=no+' · '+btn.dataset.a;x.classList.add('selected')})});
 $('#prevBtn').disabled=ix===0;$('#nextBtn').textContent=ix===9?'查看答题总览':'下一题';
 $('#markBtn').textContent=saved.manual[extraKey()]?'已标记复习':'标记复习';
 box.classList.toggle('collapsed',collapsed);$('#reader').classList.toggle('reader-collapsed',collapsed&&!hidden);$('#reader').classList.toggle('reader-card-hidden',hidden);$('#reviveBtn').classList.toggle('hidden',!hidden);box.classList.toggle('hidden',hidden);$('#collapseBtn').setAttribute('aria-expanded',String(!collapsed));$('#qsteps').innerHTML='';
