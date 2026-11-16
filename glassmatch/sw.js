@@ -19,8 +19,12 @@ self.addEventListener('install',event=>{
 
 self.addEventListener('activate',event=>{
   event.waitUntil((async()=>{
-    const names=await caches.keys();
-    await Promise.all(names.filter(n=>n.startsWith('glassmatch-')&&n!==CACHE).map(n=>caches.delete(n)));
+    const current=await caches.open(CACHE);
+    const ready=await current.match(new URL('./index.html',self.registration.scope)) || await current.match(new URL('./',self.registration.scope));
+    if(ready){
+      const names=await caches.keys();
+      await Promise.all(names.filter(n=>n.startsWith('glassmatch-')&&n!==CACHE).map(n=>caches.delete(n)));
+    }
     await self.clients.claim();
   })());
 });
