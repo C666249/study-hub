@@ -1,6 +1,6 @@
 /* GlassMatch PWA · resilient offline navigation.
    Independent asset prefetch: one unavailable image must never abort service worker install. */
-const CACHE='glassmatch-v4-recovery-20261117';
+const CACHE='glassmatch-v4-1-bilingual-20261117';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon.svg','./search-lexi-v4.js','./search-lexi-v4.css'];
 
 self.addEventListener('install',event=>{
