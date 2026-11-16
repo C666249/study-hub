@@ -1,7 +1,7 @@
 {
-  "name": "GlassMatch V2 · 六级段落匹配",
+  "name": "GlassMatch V3 · 六级段落匹配",
   "short_name": "GlassMatch",
-  "description": "六级段落匹配 · 液态玻璃离线练习",
+  "description": "六级全阅读练习 · 词典 / 错题本 / 液态玻璃",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
