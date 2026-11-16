@@ -232,22 +232,25 @@ $('#paper').addEventListener('pointerup',()=>{const selected=window.getSelection
 
 
 // Lexi × Wenku Search Plane: retain underlying page; right-to-left entry, shared geometry
-let searchExitTimer=0,searchEntering=0;
+let searchExitTimer=0,searchEntering=0,searchHistoryPushed=false;
 function reducedSearchMotion(){return !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;}
 function openSearchOverlay(origin){
 const panel=$('#dictionary');clearTimeout(searchExitTimer);panel.classList.remove('hidden');
 if(!panel.classList.contains('search-open')){
+if(!searchHistoryPushed&&window.history?.pushState){window.history.pushState({glassmatchSearch:true},'',window.location.pathname+window.location.search+'#search');searchHistoryPushed=true;}
 const source=origin||document.querySelector('.tab[data-tab="dictionary"]');
 panel.style.pointerEvents='none';renderDictionary();
 requestAnimationFrame(()=>{panel.classList.add('search-open');panel.style.pointerEvents='';if(source)animateBridge(source,$('#dictSearch'));});
 } else renderDictionary();
 }
-function closeSearchOverlay(){
+function closeSearchOverlay(fromHistory=false){
 const panel=$('#dictionary');if(panel.classList.contains('hidden'))return;
+if(searchHistoryPushed){searchHistoryPushed=false;if(!fromHistory)window.history?.back?.();}
 panel.classList.remove('search-open');const ticket=++searchEntering;
 searchExitTimer=setTimeout(()=>{if(ticket===searchEntering&&!panel.classList.contains('search-open'))panel.classList.add('hidden');},500);
 }
-$('#dictClose').onclick=closeSearchOverlay;
+$('#dictClose').onclick=()=>closeSearchOverlay();
+window.addEventListener('popstate',()=>{if($('#dictionary').classList.contains('search-open'))closeSearchOverlay(true)});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#dictionary').classList.contains('hidden')){closeSearchOverlay();e.preventDefault();}});
 function animateBridge(from,to){
 if(reducedSearchMotion()||!from||!to)return;const host=$('#app'),a=from.getBoundingClientRect(),b=to.getBoundingClientRect(),base=host.getBoundingClientRect();if(a.width<2||b.width<2)return;
