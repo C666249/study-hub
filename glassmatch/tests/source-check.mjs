@@ -34,5 +34,10 @@ assert(lexi.includes('content.scrollHeight')&&lexi.includes('rows.slice().revers
 assert(lexi.includes('lexi-word-ghost')&&lexi.includes('getComputedStyle(title).fontSize'),'word hero/baseline source missing');
 assert(lexi.includes('window.addEventListener(\'popstate\''),'Android browser Back handling missing');
 assert(lexiStyle.includes('max-height:calc(77dvh')&&!lexiStyle.includes('height:100%;padding:calc(24px'),'compact Lexi search curtain not found');
+assert(lexi.includes("const ZH_CACHE_KEY=")&&lexi.includes("langpair:'en|zh-CN'"),'Chinese translation or cache missing');
+assert(lexi.includes('function chinesePartLabel(')&&lexi.includes('lexi-pos-abbr'),'POS-specific bilingual labels missing');
+assert(lexi.includes('lexi-example-en')&&lexi.includes('lexi-example-zh'),'paired bilingual example rendering missing');
+assert(lexi.includes('function translateAllParts(')&&lexi.includes('definitionRenderId'),'progressive translation/stale result guard missing');
+assert(lexiStyle.includes('#lexi-v4-root #lexi-search-input:focus-visible')&&lexiStyle.includes('outline:none!important'),'sharp input focus outline not removed');
 assert(main.includes('function renderExtraQuestion'),'reading cards missing');
-console.log('GlassMatch source-check PASS: V4 search, scripts, selectors, DOM, 2025 reading data.');
+console.log('GlassMatch source-check PASS: V4.1 bilingual search, scripts, selectors, DOM, 2025 reading data.');
