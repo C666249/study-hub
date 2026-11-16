@@ -96,15 +96,110 @@ window.addEventListener('popstate',()=>{
 });
 scrim.onclick=dismiss;toggle.onclick=()=>drawer(!expanded);
 $('#lexi-word-back').onclick=backDetail;$('#lexi-word-search').onclick=()=>newSearch();
+/* Bilingual dictionary: stable sense identities, paired English/Chinese sentences,
+   progressive free translation and per-sentence local caching. */
+const ZH_CACHE_KEY='glassmatch_zh_segments_v1';
+let zhCache={};try{const j=JSON.parse(localStorage.getItem(ZH_CACHE_KEY)||'{}');if(j&&typeof j==='object'&&!Array.isArray(j))zhCache=j;}catch{}
+let definitionRenderId=0;
+const partsOfSpeech={
+ noun:['n.','名词'],verb:['v.','动词'],adjective:['adj.','形容词'],adverb:['adv.','副词'],
+ pronoun:['pron.','代词'],preposition:['prep.','介词'],conjunction:['conj.','连词'],
+ interjection:['interj.','感叹词'],determiner:['det.','限定词'],
+ 'auxiliary verb':['aux.','助动词'],article:['art.','冠词'],numeral:['num.','数词'],
+ abbreviation:['abbr.','缩写']
+};
+function chinesePartLabel(name){
+ const english=String(name||'').trim(),p=partsOfSpeech[english.toLowerCase()];
+ return p||[english||'词性','词性'];
+}
+function saveChineseCache(){
+ try{const keys=Object.keys(zhCache);if(keys.length>280){for(const k of keys.slice(0,keys.length-240))delete zhCache[k];}
+ localStorage.setItem(ZH_CACHE_KEY,JSON.stringify(zhCache));}catch{}
+}
+function htmlText(value){
+ const box=document.createElement('textarea');box.innerHTML=String(value||'');return box.value.trim();
+}
+async function translateSegment(raw){
+ const source=String(raw||'').replace(/\s+/g,' ').trim();
+ if(!source)return '';
+ if(typeof zhCache[source]==='string'&&zhCache[source])return zhCache[source];
+ if(new TextEncoder().encode(source).length>490)throw Error('句子过长');
+ const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),9000);
+ try{
+  const url='https://api.mymemory.translated.net/get?'+new URLSearchParams({q:source,langpair:'en|zh-CN'}).toString();
+  const response=await fetch(url,{signal:controller.signal});
+  const result=await response.json().catch(()=>null);
+  const text=htmlText(result?.responseData?.translatedText||'');
+  if(!response.ok||Number(result?.responseStatus)!==200||!/[\u3400-\u9fff]/.test(text)||/MYMEMORY WARNING|QUOTA EXCEEDED|DAILY LIMIT/i.test(text))throw Error('翻译暂不可用');
+  zhCache[source]=text;saveChineseCache();return text;
+ }finally{clearTimeout(timer);}
+}
+function updateChineseTarget(node,source,renderId){
+ if(!node||renderId!==definitionRenderId)return;
+ const cached=zhCache[source];
+ if(cached){node.textContent=cached;node.classList.remove('lexi-zh-pending','lexi-zh-unavailable');node.classList.add('lexi-zh-ready');}
+}
+async function translateAllParts(jobs,renderId){
+ // Queue limit prevents bursts against the anonymous, quota-limited service.
+ let cursor=0;
+ async function work(){
+  while(cursor<jobs.length){
+   if(renderId!==definitionRenderId)return;
+   const job=jobs[cursor++],node=document.getElementById(job.id);
+   if(!node)return;
+   try{
+    const zh=await translateSegment(job.en);
+    if(renderId!==definitionRenderId||!node.isConnected)return;
+    node.textContent=zh;node.classList.remove('lexi-zh-pending','lexi-zh-unavailable');node.classList.add('lexi-zh-ready');
+   }catch(err){
+    if(renderId!==definitionRenderId||!node.isConnected)return;
+    node.classList.remove('lexi-zh-pending');node.classList.add('lexi-zh-unavailable');
+    node.textContent='中文暂不可用 · 点击重试';
+    node.setAttribute('role','button');node.setAttribute('tabindex','0');
+    const retry=async()=>{
+     node.textContent='正在获取中文…';node.classList.add('lexi-zh-pending');
+     try{const zh=await translateSegment(job.en);if(renderId!==definitionRenderId||!node.isConnected)return;
+      node.textContent=zh;node.classList.remove('lexi-zh-pending','lexi-zh-unavailable');node.classList.add('lexi-zh-ready');
+      node.removeAttribute('role');node.removeAttribute('tabindex');
+     }catch{if(renderId!==definitionRenderId||!node.isConnected)return;node.classList.remove('lexi-zh-pending');node.textContent='中文暂不可用 · 点击重试';}
+    };
+    node.onclick=retry;node.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();retry();}};
+   }
+  }
+ }
+ await Promise.all([work(),work()]);
+}
 function displayData(word,items){
- activeWord=word;const obj=items[0]||{};title.textContent=obj.word||word;title.classList.add('lexi-hidden-word');
- ipa.textContent=(obj.phonetics||[]).find(p=>p.text)?.text||obj.phonetic||'暂无音标';
- soundUrl=(obj.phonetics||[]).find(p=>p.audio&&/^(https?:)?\/\//.test(p.audio))?.audio||'';
+ const renderId=++definitionRenderId,entry=items?.[0]||{};
+ activeWord=word;title.textContent=entry.word||word;title.classList.add('lexi-hidden-word');
+ ipa.textContent=(entry.phonetics||[]).find(p=>p.text)?.text||entry.phonetic||'暂无音标';
+ soundUrl=(entry.phonetics||[]).find(p=>p.audio&&/^(https?:)?\/\//.test(p.audio))?.audio||'';
  if(soundUrl.startsWith('//'))soundUrl='https:'+soundUrl;play.hidden=!soundUrl;
- definitions.innerHTML=(obj.meanings||[]).slice(0,8).map(m=>'<h3 class="lexi-word-part">'+safe(m.partOfSpeech||'definition')+'</h3>'+
- (m.definitions||[]).slice(0,5).map((d,i)=>'<div class="lexi-def-item">'+(i+1)+'. '+safe(d.definition||'暂无释义')+(d.example?'<small>'+safe(d.example)+'</small>':'')+'</div>').join('')).join('')||'<div class="lexi-def-item">没有可显示的释义</div>';
- $('#lexi-word-credit').textContent='英英释义 · Free Dictionary API / Wiktionary · 查询结果保存在本机';
+ const jobs=[];let serial=0;
+ const meanings=(entry.meanings||[]).slice(0,8);
+ const blocks=meanings.map((m,sectionIndex)=>{
+  const [abbrev,chinese]=chinesePartLabel(m.partOfSpeech);
+  const senses=(m.definitions||[]).slice(0,6).map((d,i)=>{
+   const en=String(d.definition||'').trim(),example=String(d.example||'').trim();
+   const id='lexi-zh-def-'+(++serial),cached=zhCache[en];
+   if(en&&!cached)jobs.push({id,en});
+   let line='<div class="lexi-sense"><div class="lexi-sense-number">'+String(i+1).padStart(2,'0')+'</div><div class="lexi-sense-body">';
+   line+='<div id="'+id+'" class="lexi-definition-zh '+(cached?'lexi-zh-ready':'lexi-zh-pending')+'">'+safe(cached||'中文释义加载中…')+'</div>';
+   line+='<div class="lexi-definition-en">'+safe(en||'暂无英文释义')+'</div>';
+   if(example){
+    const exId='lexi-zh-example-'+(++serial),exZh=zhCache[example];
+    if(!exZh)jobs.push({id:exId,en:example});
+    line+='<div class="lexi-example-pair"><div class="lexi-example-en"><span class="lexi-lang-mark">例句</span><span>'+safe(example)+'</span></div>';
+    line+='<div id="'+exId+'" class="lexi-example-zh '+(exZh?'lexi-zh-ready':'lexi-zh-pending')+'">'+safe(exZh||'中文例句加载中…')+'</div></div>';
+   }
+   return line+'</div></div>';
+  }).join('');
+  return '<section class="lexi-pos-block"><div class="lexi-pos-header"><span class="lexi-pos-abbr">'+safe(abbrev)+'</span><span class="lexi-pos-cn">'+safe(chinese)+'</span><span class="lexi-pos-en">'+safe(m.partOfSpeech||'')+'</span></div><div class="lexi-sense-list">'+senses+'</div></section>';
+ }).join('');
+ definitions.innerHTML=blocks||'<div class="lexi-no-def">没有可显示的词典释义</div>';
+ $('#lexi-word-credit').textContent='英文释义来自免费词典 · 中文释义与例句译文由免费翻译提供';
  view.classList.add('is-visible');view.scrollTop=0;
+ if(jobs.length)translateAllParts(jobs,renderId).catch(()=>{});
 }
 play.onclick=()=>{if(soundUrl)new Audio(soundUrl).play().catch(()=>{})};
 function flyText(word,source){
