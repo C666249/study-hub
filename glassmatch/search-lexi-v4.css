@@ -1,0 +1,53 @@
+/* GlassMatch V4: Lexi-style search sheet, deliberately separate from reading UI. */
+#lexi-v4-root{position:absolute;inset:0;z-index:41;pointer-events:none;font-family:inherit}
+#lexi-v4-root .lexi-layer{box-sizing:border-box}
+#lexi-v4-root button,#lexi-v4-root input{font:inherit}
+#lexi-v4-root button:focus-visible,#lexi-v4-root input:focus-visible{outline:2px solid #3e8a85;outline-offset:2px}
+#lexi-word-view{position:absolute;inset:0;overflow-y:auto;overscroll-behavior:contain;background:linear-gradient(162deg,#f5f5f0,#f4f7f4 53%,#eaf2ef);z-index:2;opacity:0;transform:translate3d(8px,0,0);visibility:hidden;pointer-events:none;transition:opacity 230ms ease,transform 270ms cubic-bezier(.2,.8,.2,1),visibility 0s linear 270ms}
+#lexi-word-view.is-visible{opacity:1;transform:translate3d(0,0,0);visibility:visible;pointer-events:auto;transition:opacity 240ms ease,transform 270ms cubic-bezier(.2,.8,.2,1),visibility 0s}
+.lexi-detail-top{display:flex;align-items:center;gap:12px;margin:calc(12px + env(safe-area-inset-top)) 15px 20px;padding:0 2px;min-height:46px}
+.lexi-detail-top .lexi-ctrl{flex:none;width:42px;height:42px;display:grid;place-items:center;border-radius:16px;color:#41686a;background:rgba(255,255,255,.82);border:1px solid #fff;box-shadow:0 3px 10px #4564690b}
+.lexi-ctrl svg{height:20px;width:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.lexi-detail-top h2{margin:0;flex:1;font-size:17px;letter-spacing:.01em;color:#2d4140}
+.lexi-detail-content{padding:0 16px calc(54px + env(safe-area-inset-bottom));}
+.lexi-detail-code{font:750 10px system-ui;letter-spacing:2.1px;color:#77988f;margin:6px 2px 15px}
+.lexi-word-card{padding:22px 19px 18px;border-radius:22px;border:1px solid rgba(255,255,255,.92);background:rgba(255,255,255,.87);box-shadow:0 8px 24px rgba(48,85,81,.07)}
+.lexi-word-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+#lexi-word-title{min-height:47px;margin:0;line-height:1.13;font-size:31px;letter-spacing:-.7px;font-weight:780;overflow-wrap:anywhere;color:#1f3434}
+#lexi-word-title.lexi-hidden-word{visibility:hidden}
+.lexi-pronounce{display:flex;align-items:center;gap:8px;color:#6b8580;font-size:13px;margin:8px 0 22px}
+.lexi-pronounce button{display:grid;place-items:center;height:35px;width:35px;border-radius:12px;color:#35756a;background:#e8f3ed}
+.lexi-pronounce button svg{height:19px;width:19px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+.lexi-word-part{font-size:12px;font-weight:800;color:#2c7466;margin:16px 0 8px;letter-spacing:.2px}
+.lexi-def-item{padding:11px 0;border-top:1px solid #e3ebe7;font:14px/1.72 system-ui;color:#344b46}
+.lexi-def-item small{display:block;color:#748b85;font:12px/1.67 system-ui;margin-top:7px}
+.lexi-word-credit{margin:15px 2px;color:#849690;font-size:11px;line-height:1.6}
+#lexi-search-scrim{position:absolute;inset:0;z-index:4;background:rgba(28,39,40,.54);opacity:0;visibility:hidden;pointer-events:none;transition:opacity 240ms ease,visibility 0s linear 240ms}
+#lexi-search-scrim.is-visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity 240ms ease,visibility 0s}
+#lexi-search-sheet{box-sizing:border-box;position:absolute;z-index:5;top:calc(11px + env(safe-area-inset-top));left:11px;right:11px;max-width:610px;margin:0 auto;padding:9px 10px 10px;border-radius:20px;background:linear-gradient(145deg,rgba(253,255,252,.98),rgba(238,245,240,.96));border:1px solid rgba(255,255,255,.94);box-shadow:0 20px 56px rgba(24,40,36,.29),inset 0 1px 0 #fff;-webkit-backdrop-filter:blur(25px) saturate(1.32);backdrop-filter:blur(25px) saturate(1.32);transform:translate3d(calc(100vw + 25px),0,0);visibility:hidden;pointer-events:none;transition:transform 420ms cubic-bezier(.21,1.13,.29,1),visibility 0s linear 430ms;will-change:transform;max-height:calc(77dvh - env(safe-area-inset-top));overflow:hidden}
+#lexi-search-sheet.is-visible{transform:translate3d(0,0,0);visibility:visible;pointer-events:auto;transition:transform 420ms cubic-bezier(.21,1.13,.29,1),visibility 0s}
+#lexi-search-sheet.is-exiting{transform:translate3d(calc(100vw + 25px),0,0);pointer-events:none;transition:transform 320ms cubic-bezier(.42,0,1,1)}
+.lexi-search-row{height:48px;border:1px solid #dae6dc;border-radius:13px;background:rgba(255,255,255,.94);display:flex;align-items:center;padding:3px 6px 3px 9px;gap:7px}
+.lexi-search-icon{width:25px;height:25px;flex:none;fill:none;stroke:#548579;stroke-width:1.8;stroke-linecap:round}
+#lexi-search-input{flex:1;min-width:0;border:0;outline:0;background:transparent;color:#233a35;font-size:15px;line-height:24px;padding:7px 0}
+#lexi-search-input::placeholder{color:#98aba4}
+#lexi-search-submit{flex:none;min-width:58px;min-height:36px;padding:8px 13px;background:#2d7562;color:#fff;border-radius:10px;font-size:12px;font-weight:750}
+#lexi-search-submit:disabled{opacity:.52}
+#lexi-history-shell{height:0;overflow:hidden;will-change:height}
+#lexi-history-content{padding:9px 2px 1px}
+#lexi-history-heading{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#68847d;padding:3px 5px 10px;min-height:27px}
+#lexi-history-heading button{width:33px;height:33px;border-radius:10px;display:grid;place-items:center;background:#e9f2ec;color:#5a8175}
+.lexi-chevron{height:8px;width:8px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg);transition:transform 420ms cubic-bezier(.22,1.35,.36,1)}
+#lexi-history-heading [aria-expanded="true"] .lexi-chevron{transform:rotate(225deg)}
+.lexi-history-row{box-sizing:border-box;display:flex;align-items:center;width:100%;min-height:43px;margin:0 0 5px;padding:7px 11px;border-radius:11px;background:rgba(235,243,238,.7);text-align:left;color:#415c54}
+.lexi-history-row:nth-child(2n){background:rgba(246,248,244,.95)}
+.lexi-history-row span{flex:1;font-size:14px;line-height:22px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lexi-history-row svg{width:17px;height:17px;fill:none;stroke:#759189;stroke-width:1.8;flex:none}
+#lexi-search-error{font-size:12px;color:#b05047;line-height:1.5;min-height:0;padding:0 8px;overflow:hidden}
+#lexi-search-error:not(:empty){padding-top:10px}
+#lexi-word-ghost{position:fixed;z-index:8;top:0;left:0;pointer-events:none;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'PingFang SC',sans-serif;font-weight:780;color:#1f3434;line-height:1.15;transform-origin:top left;will-change:transform,font-size}
+#lexi-v4-root .lexi-visually-hidden{position:absolute;clip:rect(0,0,0,0);width:1px;height:1px;overflow:hidden}
+@media(prefers-reduced-motion:reduce){
+ #lexi-search-sheet,#lexi-search-scrim,#lexi-word-view,.lexi-chevron{transition-duration:.01ms!important}
+ #lexi-word-ghost{display:none!important}
+}
