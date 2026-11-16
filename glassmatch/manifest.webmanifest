@@ -1,0 +1,19 @@
+{
+  "name": "GlassMatch V2 · 六级段落匹配",
+  "short_name": "GlassMatch",
+  "description": "六级段落匹配 · 液态玻璃离线练习",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#edf2f3",
+  "theme_color": "#f3f4f5",
+  "lang": "zh-CN",
+  "icons": [
+    {
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
