@@ -152,7 +152,7 @@ return chunks.map(x=>'<p>'+escapeHtml(x)+'</p>').join('');
 function sourceBank(s){return banks[s.id]||[]}
 function cQuestions(s){
 const t=String(s.readingExtra?.C||'');const starts=[...t.matchAll(/^\s*(4[6-9]|5[0-5])\s*[.．]\s+/gm)];
-const out={};for(let j=0;j<starts.length;j++){const m=starts[j],no=+m[1],end=j+1<starts.length?starts[j+1].index:t.length;
+const out={};for(let j=0;j<starts.length;j++){const m=starts[j],no=+m[1];let end=j+1<starts.length?starts[j+1].index:t.length;if(no===50){const second=t.indexOf('Passage Two',m.index);if(second>=0&&second<end)end=second;}
 let block=t.slice(m.index+m[0].length,end).replace(/^\s*6\s*[-•・]\s*\d+\s*$/gm,'').trim();
 const labels=[...block.matchAll(/\b([A-D])\s*[\).]\s*/g)];
 if(!labels.length){out[no]={stem:cleanExamText(block).replace(/\s*\n\s*/g,' ').trim(),options:{}};continue}
