@@ -6,7 +6,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 const html=readFileSync(new URL('../index.html',import.meta.url),'utf8');
 const scripts=[...html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/g)].map(x=>x[1]);
-assert.equal(scripts.length,3,'expected data, app, and SW scripts');
+assert.equal(scripts.length,4,'expected data, app, SW, and external Lexi script tags');
 for(const src of scripts) new Function(src);
 const main=scripts[1];
 assert(!/(?<!\$)\$\(['"][^'"]+['"]\)\.(?:forEach|filter|map|find|reduce|some|every)/.test(main),'querySelector used as a collection');
@@ -26,7 +26,13 @@ for(const set of data.filter(x=>x.readingExtra)){
    for(const k of 'ABCD')assert(new RegExp('\\b'+k+'\\s*\\)').test(raw),set.id+' Q'+m[1]+' option '+k+' missing');
  }
 }
-assert(main.includes('function openSearchOverlay'),'search route missing');
-assert(main.includes('animateHistoryDrawer'),'measured history drawer missing');
+const lexi=readFileSync(new URL('../search-lexi-v4.js',import.meta.url),'utf8');
+const lexiStyle=readFileSync(new URL('../search-lexi-v4.css',import.meta.url),'utf8');
+new Function(lexi);
+assert(html.includes('search-lexi-v4.js')&&html.includes('search-lexi-v4.css'),'Lexi assets not mounted');
+assert(lexi.includes('content.scrollHeight')&&lexi.includes('rows.slice().reverse()'),'measured drawer/cascade missing');
+assert(lexi.includes('lexi-word-ghost')&&lexi.includes('getComputedStyle(title).fontSize'),'word hero/baseline source missing');
+assert(lexi.includes('window.addEventListener(\'popstate\''),'Android browser Back handling missing');
+assert(lexiStyle.includes('max-height:calc(77dvh')&&!lexiStyle.includes('height:100%;padding:calc(24px'),'compact Lexi search curtain not found');
 assert(main.includes('function renderExtraQuestion'),'reading cards missing');
-console.log('GlassMatch source-check PASS: scripts, selectors, DOM, 2025 reading data, search flow.');
+console.log('GlassMatch source-check PASS: V4 search, scripts, selectors, DOM, 2025 reading data.');
