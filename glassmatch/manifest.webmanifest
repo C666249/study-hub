@@ -1,7 +1,7 @@
 {
-  "name": "GlassMatch V3 · 六级段落匹配",
+  "name": "GlassMatch V4 · 六级阅读与 Lexi 查词",
   "short_name": "GlassMatch",
-  "description": "六级全阅读练习 · 词典 / 错题本 / 液态玻璃",
+  "description": "英语六级阅读练习、错题本与 Lexi 连续搜索动画 · 纯静态网页",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
