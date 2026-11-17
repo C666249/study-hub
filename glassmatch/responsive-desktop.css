@@ -1,0 +1,195 @@
+/* GlassMatch dual-screen responsive adapter · desktop-only, preserves mobile.
+   Layout is calculated by the browser using CSS clamp(), dvh and viewport media.
+   No zoom scaling and no new navigation state. */
+@media (min-width: 980px) and (min-height: 580px) {
+  :root {
+    --gm-edge: clamp(22px, 3vw, 54px);
+    --gm-gap: clamp(16px, 2.1vw, 30px);
+    --gm-aside: clamp(350px, 32vw, 540px);
+    --gm-top: calc(154px + env(safe-area-inset-top));
+  }
+  html,body { width:100%;min-width:0;overflow:hidden; }
+  .app {
+    width:100%;max-width:1600px;min-width:0;
+    height:100dvh;margin:0 auto;
+    box-shadow:0 0 65px rgba(26,65,73,.08);
+  }
+  /* Library / wrongbook / profile: responsive multi-column content. */
+  #home.page,#wrong.page,#profile.page {
+    padding:clamp(32px,4.6vh,58px) clamp(32px,6vw,120px) 116px;
+    scrollbar-width:thin;
+  }
+  #home .hero,
+  #home .sectionhdr,
+  #home .filter,
+  #home .setlist,
+  #wrong > .eyebrow,
+  #wrong > h1,
+  #wrong > p,
+  #wronglist,
+  #profile > .eyebrow,
+  #profile > h1,
+  #profile > p,
+  #profile > .glass,
+  #profile > .pill { max-width:1220px; }
+  #home .hero {padding:0 0 clamp(14px,2.2vh,28px);}
+  #home .hero h1 {font-size:clamp(38px,3.2vw,52px);}
+  #home .statstrip {max-width:740px;}
+  #home .setlist{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:16px;align-items:stretch;
+  }
+  #home .setcard {min-height:112px;padding:21px 19px;}
+  #wronglist{
+    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:12px 17px;align-items:start;
+  }
+  #wronglist > .wrongcard{margin:0;}
+  #wronglist > .sectionhdr,#wronglist > .empty{grid-column:1/-1;}
+  #profile > .glass {width:min(100%,850px);padding:26px!important;}
+  .dock {
+    bottom:clamp(14px,2.3vh,28px);
+    width:min(470px,calc(100% - 36px));padding:7px;
+  }
+  .dock-indicator {top:7px;left:7px;height:49px;}
+  .dock .tab{height:49px;font-size:13px;}
+  /* Reader: a reading paper on the left and an independent glass answer
+     column on the right. Neither region overlays or scrolls the other. */
+  #reader .readerbar {
+    position:absolute;
+    top:calc(15px + env(safe-area-inset-top));
+    left:var(--gm-edge);right:var(--gm-edge);
+    min-height:60px;padding:8px 11px;border-radius:22px;
+  }
+  #reader .readerbar h3{font-size:16px;letter-spacing:.12px;}
+  #reader .readerbar .toolbtn{
+    width:43px;height:43px;min-width:43px;border-radius:14px;
+  }
+  #reader .section-switch{
+    top:calc(90px + env(safe-area-inset-top));
+    left:var(--gm-edge);
+    right:calc(var(--gm-edge) + var(--gm-aside) + var(--gm-gap));
+    width:auto;min-height:49px;padding:5px;border-radius:17px;
+  }
+  #reader .section-switch button{font-size:13px;padding:11px 7px;}
+  #reader .paper{
+    position:absolute;
+    top:var(--gm-top);
+    left:var(--gm-edge);
+    right:calc(var(--gm-edge) + var(--gm-aside) + var(--gm-gap));
+    bottom:var(--gm-edge);
+    width:auto;max-width:none;
+    padding:clamp(22px,2.1vw,36px) clamp(21px,2.6vw,43px) 55px!important;
+    border-radius:25px;
+    border:1px solid rgba(235,242,240,.95);
+    background:rgba(255,255,254,.88);
+    box-shadow:0 12px 40px rgba(54,95,104,.07);
+    scrollbar-width:thin;
+    scroll-padding-top:18px;
+  }
+  #reader.reader-collapsed .paper,
+  #reader.reader-card-hidden .paper{padding-bottom:55px!important;}
+  #reader .paper .article-head h2{font-size:clamp(26px,2.0vw,34px);}
+  #reader .paper .para,
+  #reader .paper .reading-text{
+    font-size:clamp(16px,1.12vw,18px);
+    line-height:1.85;
+  }
+  #reader .paper .para{gap:17px;margin-bottom:23px;}
+  #reader .paper .reading-plain{font-size:clamp(16px,1.1vw,18px);line-height:1.85;}
+  #reader .paper .imagepage{max-width:100%;height:auto;margin-inline:auto;}
+  #reader .reader-bottom{
+    top:var(--gm-top);
+    right:var(--gm-edge);
+    bottom:var(--gm-edge);
+    left:auto;
+    width:var(--gm-aside);
+    display:flex;align-items:stretch;
+    pointer-events:none;
+  }
+  #reader .reader-bottom .question{
+    width:100%;height:100%!important;max-height:none!important;min-height:0;
+    border-radius:25px;display:flex;flex-direction:column;
+    box-shadow:0 15px 42px rgba(38,78,86,.11);
+  }
+  #reader .reader-bottom .question.collapsed{
+    height:45px!important;min-height:45px!important;
+    align-self:flex-start;border-radius:17px;
+  }
+  #reader .reader-bottom .qhead{
+    min-height:53px;padding:6px 14px 2px;
+  }
+  #reader .reader-bottom .qnum,
+  #reader .reader-bottom .leftinfo{font-size:13px;}
+  #reader .reader-bottom .qbody{
+    flex:1;min-height:0;
+    display:flex;flex-direction:column;
+    padding:9px clamp(15px,1.5vw,23px) 18px;
+    overflow-y:auto;overscroll-behavior:contain;
+    scrollbar-width:thin;
+  }
+  #reader .reader-bottom .prompt{
+    flex:none;min-height:94px;max-height:clamp(122px,26dvh,270px);
+    font-size:clamp(15px,1.03vw,17px);
+    line-height:1.62;overflow-y:auto;padding-bottom:10px;
+  }
+  #reader .reader-bottom .question.qa .prompt,
+  #reader .reader-bottom .question.qc .prompt{
+    max-height:clamp(100px,25dvh,230px);
+    min-height:0;font-size:15px;overflow-y:auto;
+  }
+  #reader .reader-bottom .pickline{margin-top:10px;flex:none;}
+  #reader .reader-bottom .letters{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:7px;flex:none;
+  }
+  #reader .reader-bottom .option{min-height:36px;font-size:13px;}
+  #reader .reader-bottom .question.qa .letters{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+  }
+  #reader .reader-bottom .question.qa .option{
+    padding:8px;min-height:43px;font-size:12px;
+  }
+  #reader .reader-bottom .question.qc .letters{
+    display:flex;flex-direction:column;gap:9px;
+  }
+  #reader .reader-bottom .question.qc .option{
+    width:100%;font-size:14px;min-height:43px;padding:11px;
+  }
+  #reader .reader-bottom .qactions{
+    margin-top:auto;padding:14px 0 4px;
+    flex:none;position:sticky;bottom:-18px;
+    background:linear-gradient(0deg,rgba(249,252,252,.98) 73%,rgba(249,252,252,.82));
+    z-index:2;
+  }
+  #reader .reader-bottom .qaction{min-height:43px;font-size:13px;}
+  #reader .reader-bottom .revive{
+    top:7px;bottom:auto;right:5px;
+  }
+  /* All primary screens grow with browser width; overlays stay comfortable. */
+  .modalbg{align-items:center;justify-items:center;padding:28px;}
+  .sheet{
+    width:min(570px,100%);max-height:min(80dvh,790px);
+    border-radius:26px;padding:30px;
+  }
+  #lexi-word-view .lexi-detail-top{
+    width:min(800px,calc(100% - 56px));
+    margin:clamp(22px,4vh,42px) auto 20px;
+  }
+  #lexi-word-view .lexi-detail-content{
+    max-width:800px;margin:0 auto;padding:0 0 65px;
+  }
+  #lexi-word-view .lexi-word-card{padding:28px 32px;}
+  #lexi-word-view #lexi-word-title{font-size:clamp(32px,2.7vw,44px);}
+  #lexi-search-sheet{
+    top:clamp(22px,4vh,45px);max-width:650px;
+  }
+  #lexi-v4-root .lexi-search-row{height:53px;}
+}
+/* Three columns only when cards can remain comfortably readable. */
+@media (min-width: 1480px) and (min-height: 580px) {
+  #home .setlist {grid-template-columns:repeat(3,minmax(0,1fr));}
+}
+/* Laptop browsers with short windows remain in the compact single-column mode.
+   Narrow browser resizing crosses 980px and restores the original mobile UX. */
