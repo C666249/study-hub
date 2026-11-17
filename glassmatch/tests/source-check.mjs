@@ -39,5 +39,14 @@ assert(lexi.includes('function chinesePartLabel(')&&lexi.includes('lexi-pos-abbr
 assert(lexi.includes('lexi-example-en')&&lexi.includes('lexi-example-zh'),'paired bilingual example rendering missing');
 assert(lexi.includes('function translateAllParts(')&&lexi.includes('definitionRenderId'),'progressive translation/stale result guard missing');
 assert(lexiStyle.includes('#lexi-v4-root #lexi-search-input:focus-visible')&&lexiStyle.includes('outline:none!important'),'sharp input focus outline not removed');
+const desktop=readFileSync(new URL('../responsive-desktop.css',import.meta.url),'utf8');
+assert(html.includes('<style id="glassmatch-responsive-desktop">\n'+desktop+'\n</style>'),'responsive file not synchronized with inline CSS');
+assert(/@media\s*\(min-width:\s*980px\)\s*and\s*\(min-height:\s*580px\)/.test(desktop),'responsive breakpoint missing');
+assert(desktop.includes('clamp(350px, 32vw, 540px)')&&desktop.includes('100dvh'),'browser-size calculations missing');
+assert(desktop.includes('#reader .paper')&&desktop.includes('#reader .reader-bottom'),'desktop reader split missing');
+assert(desktop.includes('#reader .reader-bottom .question.collapsed'),'desktop collapse layout missing');
+assert(desktop.includes('#lexi-word-view .lexi-detail-content'),'desktop dictionary layout missing');
+assert(desktop.includes('repeat(2,minmax(0,1fr))')&&desktop.includes('repeat(3,minmax(0,1fr))'),'responsive library columns missing');
+assert(html.includes('height:clamp(235px,32dvh,330px)!important'),'original mobile answer-card rule missing');
 assert(main.includes('function renderExtraQuestion'),'reading cards missing');
-console.log('GlassMatch source-check PASS: V4.1 bilingual search, scripts, selectors, DOM, 2025 reading data.');
+console.log('GlassMatch source-check PASS: bilingual dictionary, phone layout, desktop split reader, scripts, data.');
