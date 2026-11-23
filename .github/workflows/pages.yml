@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url || steps.deployment_retry.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - name: Restore and verify complete Study Atelier release
@@ -60,5 +60,54 @@ jobs:
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+      - name: Validate FMV page and scene assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s fmv/index.html
+          test -s fmv/fmv-real-scenes.js
+          test -s fmv/fmv-real-scenes.css
+          node --check fmv/fmv-real-scenes.js
+          node - <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('fmv/index.html','utf8');
+          const js = fs.readFileSync('fmv/fmv-real-scenes.js','utf8');
+          if (!html.includes('fmv-real-scenes.js') || !html.includes('fmv-real-scenes.css')) throw Error('FMV sibling assets missing');
+          if (!js.includes('window.FMVScenes=')) throw Error('independent FMV scenes not registered');
+          const ids=[...js.matchAll(/'((?:FMV|APP|PAGE)-[A-Z0-9-]+-\\d{3})':'[a-z]+',?/g)];
+          if(ids.length<30) throw Error('too few explicit scenes: '+ids.length);
+          console.log('FMV scenes checked:',ids.length);
+          NODE
+      - name: Headless browser render smoke test
+        shell: bash
+        run: |
+          set -euo pipefail
+          if command -v google-chrome >/dev/null 2>&1; then
+            timeout 45s google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=1500 --dump-dom "file://$GITHUB_WORKSPACE/fmv/index.html" > "$RUNNER_TEMP/fmv-dom.html" 2> "$RUNNER_TEMP/fmv-chrome.log"
+            grep -q 'data-real="true"' "$RUNNER_TEMP/fmv-dom.html"
+            grep -q 'class="fx-chipset"' "$RUNNER_TEMP/fmv-dom.html"
+            grep -q 'class="fx-rubber"' "$RUNNER_TEMP/fmv-dom.html"
+            echo 'FMV headless Chrome produced live Jelly & Rubber scenes.'
+          else
+            echo 'Chrome not on runner; Node syntax + asset checks passed.'
+          fi
+      - name: Wait for artifact indexing to avoid Pages API race
+        run: sleep 20
       - id: deployment
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+      - name: Retry transient Pages artifact lookup failures
+        if: steps.deployment.outcome == 'failure'
+        run: sleep 20
+      - id: deployment_retry
+        if: steps.deployment.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+      - name: Confirm Pages deployment
+        shell: bash
+        run: |
+          if [ "${{ steps.deployment.outcome }}" != "success" ] && [ "${{ steps.deployment_retry.outcome }}" != "success" ]; then
+            echo "::error::GitHub Pages deployment failed."
+            exit 1
+          fi
+          echo 'Pages deployment completed.'
+
