@@ -223,7 +223,7 @@ list.addEventListener('pointercancel',()=>{p=null;if(row){row.style.transform=''
 function setupParticles(stage){
 const c=stage.querySelector('canvas'),ctx=c.getContext('2d');if(!ctx)return;
 let width=0,height=0,target={x:.5,y:.5},points=Array.from({length:75},(_,i)=>({x:((i*37+17)%101)/101,y:((i*71+19)%97)/97,z:.2+((i*13)%80)/100,phase:i}));
-function size(){const rect=stage.getBoundingClientRect();width=rect.width;height=rect.height;c.width=Math.round(width*Math.min(2,devicePixelRatio||1));c.height=Math.round(height*Math.min(2,devicePixelRatio||1));ctx.setTransform(c.width/width,0,0,c.height/height,0,0)}
+function size(){const rect=stage.getBoundingClientRect();width=Math.max(1,rect.width);height=Math.max(1,rect.height);c.width=Math.round(width*Math.min(2,devicePixelRatio||1));c.height=Math.round(height*Math.min(2,devicePixelRatio||1));ctx.setTransform(c.width/width,0,0,c.height/height,0,0)}
 const obs=new ResizeObserver(size);obs.observe(stage);size();
 stage.addEventListener('pointermove',e=>{const r=stage.getBoundingClientRect();target.x=(e.clientX-r.left)/r.width;target.y=(e.clientY-r.top)/r.height});
 stage.addEventListener('pointerleave',()=>{target={x:.5,y:.5}});
