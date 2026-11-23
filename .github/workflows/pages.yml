@@ -74,7 +74,7 @@ jobs:
           const js = fs.readFileSync('fmv/fmv-real-scenes.js','utf8');
           if (!html.includes('fmv-real-scenes.js') || !html.includes('fmv-real-scenes.css')) throw Error('FMV sibling assets missing');
           if (!js.includes('window.FMVScenes=')) throw Error('independent FMV scenes not registered');
-          const ids=[...js.matchAll(/'((?:FMV|APP|PAGE)-[A-Z0-9-]+-\\d{3})':'[a-z]+',?/g)];
+          const ids=[...js.matchAll(/'((?:FMV|APP|PAGE)-[A-Z0-9-]+-\d{3})':'[a-z]+',?/g)];
           if(ids.length<30) throw Error('too few explicit scenes: '+ids.length);
           console.log('FMV scenes checked:',ids.length);
           NODE
