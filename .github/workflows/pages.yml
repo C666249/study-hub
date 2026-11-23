@@ -83,13 +83,25 @@ jobs:
         run: |
           set -euo pipefail
           if command -v google-chrome >/dev/null 2>&1; then
-            timeout 45s google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --virtual-time-budget=1500 --dump-dom "file://$GITHUB_WORKSPACE/fmv/index.html" > "$RUNNER_TEMP/fmv-dom.html" 2> "$RUNNER_TEMP/fmv-chrome.log"
-            grep -q 'data-real="true"' "$RUNNER_TEMP/fmv-dom.html"
-            grep -q 'class="fx-chipset"' "$RUNNER_TEMP/fmv-dom.html"
-            grep -q 'class="fx-rubber"' "$RUNNER_TEMP/fmv-dom.html"
-            echo 'FMV headless Chrome produced live Jelly & Rubber scenes.'
+            set +e
+            timeout 45s google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --allow-file-access-from-files --virtual-time-budget=2200 --dump-dom "file://$GITHUB_WORKSPACE/fmv/index.html" > "$RUNNER_TEMP/fmv-dom.html" 2> "$RUNNER_TEMP/fmv-chrome.log"
+            chrome_status=$?
+            set -e
+            echo "Headless Chrome exit status: $chrome_status"
+            echo "Headless DOM bytes: $(wc -c < "$RUNNER_TEMP/fmv-dom.html")"
+            if [ "$chrome_status" -ne 0 ] || ! grep -q 'data-real="true"' "$RUNNER_TEMP/fmv-dom.html" || ! grep -q 'class="fx-chipset"' "$RUNNER_TEMP/fmv-dom.html" || ! grep -q 'class="fx-rubber"' "$RUNNER_TEMP/fmv-dom.html"; then
+              echo "::error::FMV dynamic scenes did not render correctly."
+              echo 'Chrome errors:'
+              tail -n 30 "$RUNNER_TEMP/fmv-chrome.log"
+              echo 'Dynamic scene markers:'
+              grep -oE 'data-real="[^"]+"|class="fx-chipset"|class="fx-rubber"' "$RUNNER_TEMP/fmv-dom.html" | sort | uniq -c || true
+              echo 'Rendered page body excerpt:'
+              tail -c 1800 "$RUNNER_TEMP/fmv-dom.html"
+              exit 1
+            fi
+            echo 'FMV live Jelly / Rubber stage DOM rendered successfully.'
           else
-            echo 'Chrome not on runner; Node syntax + asset checks passed.'
+            echo 'Chrome unavailable; Node syntax and source-file checks already passed.'
           fi
       - name: Wait for artifact indexing to avoid Pages API race
         run: sleep 20
