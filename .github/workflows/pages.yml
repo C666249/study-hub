@@ -79,6 +79,14 @@ jobs:
           if(ids.length<30) throw Error('too few explicit scenes: '+ids.length);
           console.log('FMV scenes checked:',ids.length);
           NODE
+      - name: Verify non-blank no-script fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s fmv/lite.html
+          grep -q 'id="fmv-fallback"' fmv/index.html
+          grep -q 'class="fallback-entry"' fmv/index.html
+          ! grep -qi '<script' fmv/lite.html
       - name: Headless browser render smoke test
         shell: bash
         run: |
@@ -101,6 +109,15 @@ jobs:
               exit 1
             fi
             echo 'FMV live Jelly / Rubber stage DOM rendered successfully.'
+            grep -q 'class="fallback-entry"' fmv/index.html
+            test "$(grep -o 'class="fallback-entry"' fmv/index.html | wc -l)" -eq 84
+            test "$(grep -o 'class="entry"' fmv/lite.html | wc -l)" -eq 84
+            if grep -qi '<script' fmv/lite.html; then
+              echo "::error::FMV lite must remain script-free"; exit 1
+            fi
+            timeout 45s google-chrome --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage --allow-file-access-from-files --window-size=390,844 --virtual-time-budget=1600 --dump-dom "file://$GITHUB_WORKSPACE/fmv/index.html" > "$RUNNER_TEMP/fmv-mobile.html" 2> "$RUNNER_TEMP/fmv-mobile-chrome.log"
+            grep -q 'data-real="true"' "$RUNNER_TEMP/fmv-mobile.html"
+            echo 'Mobile-size headless Chrome also rendered interactive scene cards.'
           else
             echo 'Chrome unavailable; Node syntax and source-file checks already passed.'
           fi
@@ -123,4 +140,15 @@ jobs:
             exit 1
           fi
           echo 'Pages deployment completed.'
+      - name: Probe live FMV URLs after deployment
+        shell: bash
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          for path in fmv/ fmv/lite.html; do
+            url="https://c666249.github.io/study-hub/$path"
+            echo "Checking live site: $url"
+            curl -fLsS --retry 4 --retry-delay 3 --connect-timeout 12 --max-time 40 -o "$RUNNER_TEMP/fmv-live.html" -w "HTTP %{http_code} / bytes %{size_download}\n" "$url"
+            grep -q '<!doctype html>' "$RUNNER_TEMP/fmv-live.html"
+          done
 
